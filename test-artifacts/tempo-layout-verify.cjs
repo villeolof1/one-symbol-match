@@ -5,10 +5,11 @@ const root = path.resolve(__dirname, "..");
 const url = "file:///" + path.join(root, "index.html").replace(/\\/g, "/");
 const outDir = path.join(root, "test-artifacts");
 
-async function setupRunningGame(page) {
+async function setupRunningGame(page, target = 10) {
   await page.goto(url);
   await page.click('[data-tab="game"]');
-  await page.evaluate(() => {
+  await page.evaluate((targetScore) => {
+    document.getElementById("targetScore").value = String(targetScore);
     setupGame(false);
     clearCountdown();
     hideStartOverlay();
@@ -17,16 +18,17 @@ async function setupRunningGame(page) {
     mountMiddleCard(false, false);
     updateCooldownUi("p1");
     updateCooldownUi("p2");
-  });
+  }, target);
   await page.waitForTimeout(250);
 }
 
 async function layoutMetrics(page) {
   return page.evaluate(() => {
     const viewport = { w: innerWidth, h: innerHeight };
-    const cards = [...document.querySelectorAll(".game-screen .match-card:not(.preloaded-next-card)")].map((el) => {
+    const rectPayload = (el) => {
       const r = el.getBoundingClientRect();
       return {
+        selector: el.id || el.className,
         classes: el.className,
         left: r.left,
         top: r.top,
@@ -36,19 +38,66 @@ async function layoutMetrics(page) {
         height: r.height,
         clipped: r.left < -1 || r.top < -1 || r.right > innerWidth + 1 || r.bottom > innerHeight + 1
       };
-    });
-    const footStates = [...document.querySelectorAll(".game-screen .player-foot")].map((el) => {
-      const r = el.getBoundingClientRect();
+    };
+    const cards = [...document.querySelectorAll(".game-screen .match-card:not(.preloaded-next-card)")].map(rectPayload);
+    const labels = [...document.querySelectorAll(".game-screen .player-head")].map(rectPayload);
+    const cooldowns = [...document.querySelectorAll(".game-screen .player-foot.cooling")].map(rectPayload);
+    const activeCards = [...document.querySelectorAll(".active-player-card")].map(rectPayload);
+    const piles = [...document.querySelectorAll(".game-screen .card-pile")].map((pile) => {
+      const payload = rectPayload(pile);
+      const slot = pile.closest(".game-card-slot");
+      const active = slot ? slot.querySelector(".active-player-card") : null;
+      const cardRect = active ? active.getBoundingClientRect() : null;
+      const foot = slot && slot.id === "p1Slot" ? document.querySelector("#p1Panel .player-foot.cooling") : slot && slot.id === "p2Slot" ? document.querySelector("#p2Panel .player-foot.cooling") : null;
+      const footRect = foot ? foot.getBoundingClientRect() : null;
+      const firstVisible = [...pile.children].find((layer) => Number(getComputedStyle(layer).opacity) > 0.05);
+      const layerRect = firstVisible ? firstVisible.getBoundingClientRect() : null;
       return {
-        classes: el.className,
-        opacity: getComputedStyle(el).opacity,
-        left: r.left,
-        right: r.right,
-        width: r.width
+        ...payload,
+        hasVisibleLayer: !!firstVisible,
+        behindCard: !cardRect || !layerRect || layerRect.top >= cardRect.top - 8,
+        overlapsCooldown: !!footRect && layerRect && layerRect.bottom > footRect.top && layerRect.top < footRect.bottom && layerRect.right > footRect.left && layerRect.left < footRect.right
       };
     });
-    return { viewport, cards, footStates };
+    const middle = document.querySelector(".middle-zone .match-card");
+    return { viewport, cards, labels, cooldowns, activeCards, piles, middle: middle ? rectPayload(middle) : null };
   });
+}
+
+function hasClipped(metrics) {
+  return [...metrics.cards, ...metrics.labels, ...metrics.cooldowns, ...metrics.piles].some((item) => item.clipped);
+}
+
+function hasBadPile(metrics) {
+  return metrics.piles.some((pile) => pile.hasVisibleLayer && (!pile.behindCard || pile.overlapsCooldown || pile.clipped));
+}
+
+async function forceWrong(page, which = "p1") {
+  await page.evaluate((playerKey) => {
+    const player = game[playerKey];
+    const shared = sharedSymbolIds(player.card, game.middle)[0];
+    const wrong = player.card.symbols.find((id) => id !== shared);
+    const item = layoutForCard(player.card).find((candidate) => candidate.symbolId === wrong);
+    player.cursor = { x: item.x, y: item.y };
+    updateDot(playerKey);
+    updateSelection(playerKey);
+    answer(playerKey);
+  }, which);
+  await page.waitForTimeout(140);
+}
+
+async function forceCorrect(page, which = "p2") {
+  return page.evaluate((playerKey) => {
+    const player = game[playerKey];
+    const shared = sharedSymbolIds(player.card, game.middle)[0];
+    const item = layoutForCard(player.card).find((candidate) => candidate.symbolId === shared);
+    player.cursor = { x: item.x, y: item.y };
+    updateDot(playerKey);
+    updateSelection(playerKey);
+    const t0 = performance.now();
+    answer(playerKey);
+    return performance.now() - t0;
+  }, which);
 }
 
 async function run() {
@@ -67,6 +116,27 @@ async function run() {
   const staticChecks = await page.evaluate(() => {
     const deckSets = { full: fullDeck, classic55: deckConfigs.classic55.cards, quick31: quickDeck };
     const validations = {};
+    let minGap = Infinity;
+    let overlappingPairs = 0;
+    let centerItems = 0;
+    let edgeItems = 0;
+    let emptyQuadrantCards = 0;
+    let narrowSpreadCards = 0;
+    let lowCoverageCards = 0;
+    let emptyHalfCards = 0;
+    let centerVoidCards = 0;
+    let minSymbolSize = Infinity;
+    let maxSymbolSize = 0;
+    let minCoverage = Infinity;
+    let maxHalfEmpty = 0;
+    let maxQuadrantEmpty = 0;
+    let maxVisualGap = 0;
+    let largeEdgeClipRisk = 0;
+    let lowSizeRangeCards = 0;
+    let minSizeRange = Infinity;
+    let missingSmallCards = 0;
+    let missingLargeCards = 0;
+    let tinySymbolCount = 0;
     for (const [name, deck] of Object.entries(deckSets)) {
       let badPairs = 0;
       for (let i = 0; i < deck.length; i++) {
@@ -75,106 +145,229 @@ async function run() {
         }
       }
       validations[name] = badPairs;
-    }
-    let minGap = Infinity;
-    let tightPairs = 0;
-    let centerItems = 0;
-    for (const deck of Object.values(deckSets)) {
       for (const card of deck) {
         const layout = layoutForCard(card);
-        centerItems += layout.filter((item) => Math.hypot(item.x - 50, item.y - 50) < 11).length;
+        const coverage = sampleFaceCoverage(layout);
+        minCoverage = Math.min(minCoverage, coverage.coverage);
+        maxHalfEmpty = Math.max(maxHalfEmpty, coverage.maxHalfEmpty);
+        maxQuadrantEmpty = Math.max(maxQuadrantEmpty, coverage.maxQuadrantEmpty);
+        maxVisualGap = Math.max(maxVisualGap, coverage.maxVisualGap || 0);
+        if (coverage.coverage < 0.62) lowCoverageCards++;
+        if (coverage.maxHalfEmpty > 0.48) emptyHalfCards++;
+        if (!layout.some((item) => Math.hypot(item.x - 50, item.y - 50) < 13)) centerVoidCards++;
+        const quadrants = [0, 0, 0, 0];
+        let minX = 100, maxX = 0, minY = 100, maxY = 0;
+        let cardMinSize = Infinity, cardMaxSize = 0;
+        let cardSmallCount = 0, cardLargeCount = 0;
+        for (const item of layout) {
+          minSymbolSize = Math.min(minSymbolSize, item.size);
+          maxSymbolSize = Math.max(maxSymbolSize, item.size);
+          cardMinSize = Math.min(cardMinSize, item.size);
+          cardMaxSize = Math.max(cardMaxSize, item.size);
+          if (item.size < 16.5) cardSmallCount++;
+          if (item.size > 30) cardLargeCount++;
+          if (item.size < 12.8) tinySymbolCount++;
+          if (item.size > 30 && Math.hypot(item.x - 50, item.y - 50) > 45.2 - item.size * 0.38) largeEdgeClipRisk++;
+          centerItems += Math.hypot(item.x - 50, item.y - 50) < 13 ? 1 : 0;
+          edgeItems += Math.hypot(item.x - 50, item.y - 50) > 30 ? 1 : 0;
+          quadrants[(item.y < 50 ? 0 : 2) + (item.x < 50 ? 0 : 1)] += 1;
+          minX = Math.min(minX, item.x); maxX = Math.max(maxX, item.x);
+          minY = Math.min(minY, item.y); maxY = Math.max(maxY, item.y);
+        }
+        const sizeRange = cardMaxSize - cardMinSize;
+        minSizeRange = Math.min(minSizeRange, sizeRange);
+        if (sizeRange < 14) lowSizeRangeCards++;
+        if (cardSmallCount < 1) missingSmallCards++;
+        if (cardLargeCount < 1) missingLargeCards++;
+        if (quadrants.some((count) => count === 0)) emptyQuadrantCards++;
+        if (maxX - minX < 50 || maxY - minY < 50) narrowSpreadCards++;
         for (let i = 0; i < layout.length; i++) {
           for (let j = i + 1; j < layout.length; j++) {
             const a = layout[i];
             const b = layout[j];
             const gap = Math.hypot(a.x - b.x, a.y - b.y) - a.hitRadius - b.hitRadius;
             minGap = Math.min(minGap, gap);
-            if (gap < 0) tightPairs++;
+            if (gap < 0) overlappingPairs++;
           }
         }
       }
     }
     const files = symbols.map((symbol) => symbol.file);
-    return { validations, minGap, tightPairs, centerItems, fileCount: new Set(files).size };
+    return { validations, minGap, overlappingPairs, centerItems, edgeItems, emptyQuadrantCards, narrowSpreadCards, lowCoverageCards, emptyHalfCards, centerVoidCards, minSymbolSize, maxSymbolSize, minSizeRange, lowSizeRangeCards, missingSmallCards, missingLargeCards, tinySymbolCount, minCoverage, maxHalfEmpty, maxQuadrantEmpty, maxVisualGap, largeEdgeClipRisk, fileCount: new Set(files).size };
   });
 
   const cooldownBefore = await page.evaluate(() => [...document.querySelectorAll(".player-foot.cooling")].length);
-  await page.evaluate(() => {
-    const shared = sharedSymbolIds(game.p1.card, game.middle)[0];
-    const wrong = game.p1.card.symbols.find((id) => id !== shared);
-    const item = layoutForCard(game.p1.card).find((candidate) => candidate.symbolId === wrong);
-    game.p1.cursor = { x: item.x, y: item.y };
-    updateDot("p1");
-    updateSelection("p1");
-    answer("p1");
-  });
-  await page.waitForTimeout(120);
+  const scoreStart = await page.evaluate(() => ({
+    p1Text: document.getElementById("p1Score").textContent,
+    p2Text: document.getElementById("p2Score").textContent,
+    p1Label: document.getElementById("p1Target").textContent,
+    p2Label: document.getElementById("p2Target").textContent
+  }));
+  await forceWrong(page, "p1");
   const cooldownAfterWrong = await page.evaluate(() => {
     const foot = document.querySelector("#p1Panel .player-foot");
     const bar = document.querySelector("#p1Panel .coolbar");
+    const text = document.querySelector("#p1Panel .cooltext");
     const card = document.querySelector("#p1Slot .active-player-card");
     const fr = foot.getBoundingClientRect();
     const br = bar.getBoundingClientRect();
     const cr = card.getBoundingClientRect();
     return {
       footCooling: foot.classList.contains("cooling"),
-      footOpacity: getComputedStyle(foot).opacity,
+      footText: text.textContent,
+      footRect: { top: fr.top, bottom: fr.bottom, left: fr.left, right: fr.right },
       barRect: { top: br.top, bottom: br.bottom, left: br.left, right: br.right },
       cardRect: { top: cr.top, bottom: cr.bottom, left: cr.left, right: cr.right },
       barCenterDelta: Math.abs((br.left + br.right) / 2 - (cr.left + cr.right) / 2),
       barOverlapsCard: br.top < cr.bottom && br.bottom > cr.top,
+      clipped: fr.left < -1 || fr.top < -1 || fr.right > innerWidth + 1 || fr.bottom > innerHeight + 1,
       cooldownMs: Math.round(game.p1.cooldownUntil - performance.now())
     };
   });
   await page.screenshot({ path: path.join(outDir, "tempo-desktop-cooldown.png"), fullPage: false });
 
-  await page.evaluate(() => {
-    game.p1.cooldownUntil = 0;
-    updateCooldownUi("p1");
-    const shared = sharedSymbolIds(game.p2.card, game.middle)[0];
-    const item = layoutForCard(game.p2.card).find((candidate) => candidate.symbolId === shared);
-    game.p2.cursor = { x: item.x, y: item.y };
-    updateDot("p2");
-    updateSelection("p2");
-  });
-  const answerTiming = await page.evaluate(() => {
-    const t0 = performance.now();
-    answer("p2");
-    return performance.now() - t0;
-  });
-  await page.waitForTimeout(760);
+  await page.evaluate(() => { game.p1.cooldownUntil = 0; updateCooldownUi("p1"); });
+  const answerTiming = await forceCorrect(page, "p2");
+  const scoreAfterCorrect = await page.evaluate(() => ({
+    p1Text: document.getElementById("p1Score").textContent,
+    p2Text: document.getElementById("p2Score").textContent,
+    p1Internal: game.p1.score,
+    p2Internal: game.p2.score
+  }));
+  await page.waitForTimeout(820);
   const afterCorrect = await layoutMetrics(page);
   await page.screenshot({ path: path.join(outDir, "tempo-desktop-after-correct.png"), fullPage: false });
 
-  await page.setViewportSize({ width: 1366, height: 768 });
-  await setupRunningGame(page);
-  const laptop = await layoutMetrics(page);
-  await page.screenshot({ path: path.join(outDir, "tempo-laptop-running.png"), fullPage: false });
+  const countdownChecks = await page.evaluate(async () => {
+    setupGame(false);
+    const start = performance.now();
+    beginCountdown();
+    const samples = [];
+    const sampleAt = async (ms) => new Promise((resolve) => {
+      setTimeout(() => {
+        samples.push({
+          ms: Math.round(performance.now() - start),
+          text: document.getElementById("countdownText").textContent,
+          running: game.running,
+          counting: game.counting
+        });
+        resolve();
+      }, ms);
+    });
+    await sampleAt(120);
+    await sampleAt(920);
+    await sampleAt(220);
+    await sampleAt(880);
+    await sampleAt(220);
+    await sampleAt(880);
+    await sampleAt(220);
+    await sampleAt(620);
+    return samples;
+  });
+  await page.screenshot({ path: path.join(outDir, "tempo-countdown-go.png"), fullPage: false });
 
-  await page.setViewportSize({ width: 390, height: 844 });
-  await setupRunningGame(page);
-  const mobile = await layoutMetrics(page);
-  await page.screenshot({ path: path.join(outDir, "tempo-mobile-running.png"), fullPage: false });
+  await setupRunningGame(page, 1);
+  const winTiming = await forceCorrect(page, "p1");
+  await page.waitForTimeout(1050);
+  const winState = await page.evaluate(() => {
+    const overlay = document.querySelector(".win-overlay");
+    const card = document.querySelector(".win-card");
+    if (!overlay || !card) return { exists: false };
+    const r = card.getBoundingClientRect();
+    return {
+      exists: true,
+      leaving: overlay.classList.contains("leaving"),
+      text: card.textContent,
+      rect: { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height },
+      clipped: r.left < -1 || r.top < -1 || r.right > innerWidth + 1 || r.bottom > innerHeight + 1
+    };
+  });
+  await page.waitForTimeout(2200);
+  const winReadyState = await page.evaluate(() => {
+    const startButton = document.getElementById("middleStart");
+    const middle = document.querySelector("#middleSlot .card-back");
+    const br = startButton.getBoundingClientRect();
+    return {
+      overlayGone: !document.querySelector(".win-overlay"),
+      middleBack: !!middle,
+      buttonVisible: !startButton.classList.contains("hidden"),
+      buttonText: startButton.textContent,
+      playAgainClass: document.querySelector("#startOverlay .start-panel").classList.contains("play-again"),
+      buttonRect: { left: br.left, top: br.top, right: br.right, bottom: br.bottom, width: br.width, height: br.height },
+      clipped: br.left < -1 || br.top < -1 || br.right > innerWidth + 1 || br.bottom > innerHeight + 1
+    };
+  });
+  await page.screenshot({ path: path.join(outDir, "tempo-win-play-again.png"), fullPage: false });
+  await page.dispatchEvent("#middleStart", "click");
+  await page.waitForTimeout(180);
+  const playAgainState = await page.evaluate(() => ({
+    overlayGone: !document.querySelector(".win-overlay"),
+    p1Score: game.p1.score,
+    p2Score: game.p2.score,
+    running: game.running,
+    counting: game.counting,
+    ended: game.ended,
+    scoreText: document.getElementById("p1Score").textContent,
+    countdownText: document.getElementById("countdownText").textContent
+  }));
+
+  const viewportCases = [
+    ["laptop", 1366, 768],
+    ["tablet-short", 900, 700],
+    ["mobile", 390, 844],
+    ["mobile-short", 390, 720]
+  ];
+  const responsive = {};
+  for (const [name, width, height] of viewportCases) {
+    await page.setViewportSize({ width, height });
+    await setupRunningGame(page);
+    await forceWrong(page, "p1");
+    responsive[name] = await layoutMetrics(page);
+    await page.screenshot({ path: path.join(outDir, `tempo-${name}-running.png`), fullPage: false });
+  }
 
   const result = {
     staticChecks,
     desktopBefore,
     cooldownBefore,
+    scoreStart,
     cooldownAfterWrong,
     answerTimingMs: Number(answerTiming.toFixed(3)),
+    scoreAfterCorrect,
     afterCorrect,
-    laptop,
-    mobile,
+    countdownChecks,
+    winTimingMs: Number(winTiming.toFixed(3)),
+    winState,
+    winReadyState,
+    playAgainState,
+    responsive,
     errors
   };
   await browser.close();
   console.log(JSON.stringify(result, null, 2));
+
   if (errors.length) process.exitCode = 1;
   if (Object.values(staticChecks.validations).some(Boolean)) process.exitCode = 1;
-  if (staticChecks.tightPairs > 0 || staticChecks.centerItems < 15) process.exitCode = 1;
-  if (desktopBefore.cards.some((card) => card.clipped) || afterCorrect.cards.some((card) => card.clipped) || laptop.cards.some((card) => card.clipped) || mobile.cards.some((card) => card.clipped)) process.exitCode = 1;
-  if (cooldownBefore !== 0 || !cooldownAfterWrong.footCooling || cooldownAfterWrong.barCenterDelta > 2 || cooldownAfterWrong.barOverlapsCard) process.exitCode = 1;
-  if (answerTiming > 10) process.exitCode = 1;
+  if (staticChecks.fileCount !== 57 || staticChecks.overlappingPairs > 0) process.exitCode = 1;
+  if (staticChecks.minSymbolSize < 13.0 || staticChecks.maxSymbolSize < 32 || staticChecks.minSizeRange < 14 || staticChecks.minCoverage < 0.56 || staticChecks.maxHalfEmpty > 0.54 || staticChecks.maxQuadrantEmpty > 0.62 || staticChecks.maxVisualGap > 8.8 || staticChecks.largeEdgeClipRisk > 0) process.exitCode = 1;
+  if (staticChecks.centerItems < 80 || staticChecks.edgeItems < 480 || staticChecks.emptyQuadrantCards > 0 || staticChecks.narrowSpreadCards > 12 || staticChecks.lowCoverageCards > 0 || staticChecks.emptyHalfCards > 0 || staticChecks.centerVoidCards > 12 || staticChecks.lowSizeRangeCards > 0 || staticChecks.missingSmallCards > 0 || staticChecks.missingLargeCards > 0 || staticChecks.tinySymbolCount > 0) process.exitCode = 1;
+  if (hasClipped(desktopBefore) || hasClipped(afterCorrect) || hasBadPile(desktopBefore) || hasBadPile(afterCorrect)) process.exitCode = 1;
+  if (desktopBefore.middle.width <= Math.max(...desktopBefore.activeCards.map((card) => card.width))) process.exitCode = 1;
+  if (cooldownBefore !== 0 || !cooldownAfterWrong.footCooling || !/s$/.test(cooldownAfterWrong.footText) || cooldownAfterWrong.barCenterDelta > 2 || cooldownAfterWrong.barOverlapsCard || cooldownAfterWrong.clipped) process.exitCode = 1;
+  if (scoreStart.p1Text !== "10" || scoreStart.p2Text !== "10" || scoreStart.p1Label !== "LEFT" || scoreStart.p2Label !== "LEFT") process.exitCode = 1;
+  if (scoreAfterCorrect.p2Internal !== 1 || scoreAfterCorrect.p2Text !== "9") process.exitCode = 1;
+  if (answerTiming > 10 || winTiming > 35) process.exitCode = 1;
+  const expectedCountdown = ["3", "2", "2", "1", "1", "GO!", "GO!", "GO!"];
+  if (countdownChecks.some((sample, idx) => sample.text !== expectedCountdown[idx])) process.exitCode = 1;
+  if (countdownChecks.slice(0, 6).some((sample) => sample.running || !sample.counting)) process.exitCode = 1;
+  if (!countdownChecks[countdownChecks.length - 1].running) process.exitCode = 1;
+  if (!winState.exists || winState.leaving || !winState.text.includes("WINS") || winState.clipped) process.exitCode = 1;
+  if (!winReadyState.overlayGone || !winReadyState.middleBack || !winReadyState.buttonVisible || !winReadyState.buttonText.includes("PLAY AGAIN") || !winReadyState.playAgainClass || winReadyState.clipped) process.exitCode = 1;
+  if (!playAgainState.overlayGone || playAgainState.p1Score !== 0 || playAgainState.p2Score !== 0 || !playAgainState.counting || playAgainState.ended || playAgainState.scoreText !== "1") process.exitCode = 1;
+  for (const metrics of Object.values(responsive)) {
+    if (hasClipped(metrics) || hasBadPile(metrics)) process.exitCode = 1;
+    if (metrics.middle.width <= Math.max(...metrics.activeCards.map((card) => card.width))) process.exitCode = 1;
+  }
 }
 
 run().catch((err) => {
