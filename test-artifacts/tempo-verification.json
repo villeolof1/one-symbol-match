@@ -1,0 +1,177 @@
+{
+  "modes": {
+    "full": {
+      "label": "Full 57 / 8",
+      "cards": 57,
+      "symbolCount": 57,
+      "symbolsPerCard": 8,
+      "validationOk": true,
+      "validationProblems": [],
+      "minGap": 2.43,
+      "tightPairs": 0,
+      "minSymbolSize": 14.2,
+      "maxSymbolSize": 27.67,
+      "statsText": "57\ncards in current deck\n57\nsymbols in current deck\n8\nsymbols on each card\n8–8\nuses per symbol",
+      "validationText": "Valid. Checked 1,596 card pairs: every pair shares exactly one symbol."
+    },
+    "classic55": {
+      "label": "Classic 55 / 8",
+      "cards": 55,
+      "symbolCount": 57,
+      "symbolsPerCard": 8,
+      "validationOk": true,
+      "validationProblems": [],
+      "minGap": 2.43,
+      "tightPairs": 0,
+      "minSymbolSize": 14.2,
+      "maxSymbolSize": 27.67,
+      "statsText": "55\ncards in current deck\n57\nsymbols in current deck\n8\nsymbols on each card\n6–8\nuses per symbol",
+      "validationText": "Valid. Checked 1,485 card pairs: every pair shares exactly one symbol."
+    },
+    "quick31": {
+      "label": "Quick 31 / 6",
+      "cards": 31,
+      "symbolCount": 31,
+      "symbolsPerCard": 6,
+      "validationOk": true,
+      "validationProblems": [],
+      "minGap": 2.55,
+      "tightPairs": 0,
+      "minSymbolSize": 18.41,
+      "maxSymbolSize": 31.5,
+      "statsText": "31\ncards in current deck\n31\nsymbols in current deck\n6\nsymbols on each card\n6–6\nuses per symbol",
+      "validationText": "Valid. Checked 465 card pairs: every pair shares exactly one symbol."
+    }
+  },
+  "wrongAndScore": {
+    "initial": {
+      "coordinateSystem": "card percent coordinates; origin top-left; x right; y down",
+      "mode": "game",
+      "deckMode": "full",
+      "deckLabel": "Full 57 / 8",
+      "symbolsPerCard": 8,
+      "running": true,
+      "counting": false,
+      "revealed": true,
+      "ended": false,
+      "status": "Go! Shared symbol, then answer. WASD left · arrows right.",
+      "middleCardId": 32,
+      "p1": {
+        "score": 0,
+        "cardId": 51,
+        "cursor": {
+          "x": 87.4,
+          "y": 50
+        },
+        "selectedSymbolId": null,
+        "selectedSymbol": null,
+        "cooldownMs": 0
+      },
+      "p2": {
+        "score": 0,
+        "cardId": 37,
+        "cursor": {
+          "x": 87.4,
+          "y": 50
+        },
+        "selectedSymbolId": null,
+        "selectedSymbol": null,
+        "cooldownMs": 0
+      }
+    },
+    "afterWrong": {
+      "coordinateSystem": "card percent coordinates; origin top-left; x right; y down",
+      "mode": "game",
+      "deckMode": "full",
+      "deckLabel": "Full 57 / 8",
+      "symbolsPerCard": 8,
+      "running": true,
+      "counting": false,
+      "revealed": true,
+      "ended": false,
+      "status": "Player 1 missed. Cooldown 2.8s.",
+      "middleCardId": 32,
+      "p1": {
+        "score": 0,
+        "cardId": 51,
+        "cursor": {
+          "x": 49.78,
+          "y": 17.89
+        },
+        "selectedSymbolId": 2,
+        "selectedSymbol": "Rocket",
+        "cooldownMs": 2797
+      },
+      "p2": {
+        "score": 0,
+        "cardId": 37,
+        "cursor": {
+          "x": 87.4,
+          "y": 50
+        },
+        "selectedSymbolId": null,
+        "selectedSymbol": null,
+        "cooldownMs": 0
+      }
+    },
+    "afterCorrect": {
+      "coordinateSystem": "card percent coordinates; origin top-left; x right; y down",
+      "mode": "game",
+      "deckMode": "full",
+      "deckLabel": "Full 57 / 8",
+      "symbolsPerCard": 8,
+      "running": true,
+      "counting": false,
+      "revealed": true,
+      "ended": false,
+      "status": "Player 1 scored: Robot",
+      "middleCardId": 51,
+      "p1": {
+        "score": 1,
+        "cardId": 35,
+        "cursor": {
+          "x": 50,
+          "y": 50
+        },
+        "selectedSymbolId": null,
+        "selectedSymbol": null,
+        "cooldownMs": 0
+      },
+      "p2": {
+        "score": 0,
+        "cardId": 37,
+        "cursor": {
+          "x": 87.4,
+          "y": 50
+        },
+        "selectedSymbolId": null,
+        "selectedSymbol": null,
+        "cooldownMs": 0
+      }
+    },
+    "answerReturnMs": 3.2999999821186066,
+    "flyingCards": 0,
+    "middleRect": {
+      "left": 540,
+      "top": 67.171875,
+      "right": 1060,
+      "bottom": 587.171875,
+      "width": 520,
+      "height": 520
+    },
+    "viewport": {
+      "width": 1600,
+      "height": 1000
+    }
+  },
+  "perf": {
+    "frames": 141,
+    "avgFrameMs": 16.66595744680851,
+    "p95FrameMs": 16.799999999999272,
+    "maxFrameMs": 16.80000000000109,
+    "over50ms": 0,
+    "over66ms": 0
+  },
+  "consoleMessages": [],
+  "pageErrors": []
+}

@@ -11,6 +11,7 @@ Open `index.html` directly in a modern browser. No server, install, or internet 
 - 8 symbols per card
 - Exactly one shared symbol between every pair of cards
 - Optional 55-card classic-style deck count
+- Optional quick 31-card deck with 6 symbols per card
 - Randomized symbol position, direction, and size per card, with collision-aware spacing
 
 The project uses original object symbols and original code. It does not use official Dobble / Spot It! artwork or branding.
@@ -26,6 +27,7 @@ Scroll through all generated cards, reshuffle the visual layout, show/hide symbo
 The game screen is optimized as a near-fullscreen arena:
 
 - The middle/shared card is centered above the player cards and is noticeably larger.
+- The active game layout uses larger, less boxed-in cards with small corner player labels so matching is easier to scan quickly.
 - The left player uses W/A/S/D + Space.
 - The right player uses Arrow keys + Enter.
 - Each player card has a cleaner real-pile-style stack beneath it, with one visible circular card layer per card behind the active card.
@@ -41,6 +43,7 @@ The game screen is optimized as a near-fullscreen arena:
 - Lightweight generated sound effects play for correct, wrong, and win events.
 - The final point triggers a clear win animation with a large winner banner and burst effect.
 - The symbol layout uses deliberate size variation with overlap checks, so icons are not uniform and should not pile up.
+- The symbol layout uses larger object sizes, more varied rotation, and strict overlap checks for a faster, more readable pace.
 - The heavy card fade overlay has been reduced so symbols stay crisp.
 - The game renders optimized 512px transparent object images from `assets/symbols/512/` while keeping the full-size originals separate.
 
@@ -66,3 +69,4 @@ Latest polish pass:
 - Card piles now use cleaner stacked circular layers instead of artificial straight side/counting lines.
 - The pile edges are subtler and more realistic while still representing cards behind the active card: one card left means no under-pile, and a winning player slot empties after the final card is sent.
 - Score-transition protection remains active so a near-simultaneous answer during the switch is ignored rather than punished.
+- The quick 31-card mode uses a smaller exact one-shared-symbol deck for a faster/easier variant without replacing the default 8-symbol game.

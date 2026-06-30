@@ -1,0 +1,150 @@
+{
+  "modeSummary": {
+    "full": {
+      "ok": true,
+      "cards": 57,
+      "symbolsPerCard": 8,
+      "tightPairs": 0,
+      "minGap": 2.43
+    },
+    "classic55": {
+      "ok": true,
+      "cards": 55,
+      "symbolsPerCard": 8,
+      "tightPairs": 0,
+      "minGap": 2.43
+    },
+    "quick31": {
+      "ok": true,
+      "cards": 31,
+      "symbolsPerCard": 6,
+      "tightPairs": 0,
+      "minGap": 2.55
+    }
+  },
+  "gameplay": {
+    "before": {
+      "coordinateSystem": "card percent coordinates; origin top-left; x right; y down",
+      "mode": "game",
+      "deckMode": "full",
+      "deckLabel": "Full 57 / 8",
+      "symbolsPerCard": 8,
+      "running": true,
+      "counting": false,
+      "revealed": true,
+      "ended": false,
+      "status": "Go! Shared symbol, then answer. WASD left · arrows right.",
+      "middleCardId": 5,
+      "p1": {
+        "score": 0,
+        "cardId": 23,
+        "cursor": {
+          "x": 50,
+          "y": 50
+        },
+        "selectedSymbolId": null,
+        "selectedSymbol": null,
+        "cooldownMs": 0
+      },
+      "p2": {
+        "score": 0,
+        "cardId": 7,
+        "cursor": {
+          "x": 50,
+          "y": 50
+        },
+        "selectedSymbolId": null,
+        "selectedSymbol": null,
+        "cooldownMs": 0
+      }
+    },
+    "after": {
+      "coordinateSystem": "card percent coordinates; origin top-left; x right; y down",
+      "mode": "game",
+      "deckMode": "full",
+      "deckLabel": "Full 57 / 8",
+      "symbolsPerCard": 8,
+      "running": true,
+      "counting": false,
+      "revealed": true,
+      "ended": false,
+      "status": "Player 1 scored: Kite",
+      "middleCardId": 23,
+      "p1": {
+        "score": 1,
+        "cardId": 56,
+        "cursor": {
+          "x": 50,
+          "y": 50
+        },
+        "selectedSymbolId": null,
+        "selectedSymbol": null,
+        "cooldownMs": 0
+      },
+      "p2": {
+        "score": 0,
+        "cardId": 7,
+        "cursor": {
+          "x": 50,
+          "y": 50
+        },
+        "selectedSymbolId": null,
+        "selectedSymbol": null,
+        "cooldownMs": 0
+      }
+    },
+    "answerReturnMs": 2.800000011920929,
+    "flyingCards": 0
+  },
+  "mobileFit": {
+    "cards": [
+      {
+        "top": 136.21875,
+        "bottom": 389.40625,
+        "left": 68.40625,
+        "right": 321.59375,
+        "width": 253.1875,
+        "height": 253.1875
+      },
+      {
+        "top": 620.578125,
+        "bottom": 814.6875,
+        "left": 97.9375,
+        "right": 292.046875,
+        "width": 194.109375,
+        "height": 194.109375
+      },
+      {
+        "top": 620.9663696289062,
+        "bottom": 814.29931640625,
+        "left": 98.32572174072266,
+        "right": 291.6586685180664,
+        "width": 193.33294677734375,
+        "height": 193.33294677734375
+      },
+      {
+        "top": 395.90625,
+        "bottom": 590.015625,
+        "left": 97.9375,
+        "right": 292.046875,
+        "width": 194.109375,
+        "height": 194.109375
+      },
+      {
+        "top": 396.2944641113281,
+        "bottom": 589.62744140625,
+        "left": 98.32572174072266,
+        "right": 291.6586685180664,
+        "width": 193.33294677734375,
+        "height": 193.33297729492188
+      }
+    ],
+    "overlaps": 2,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  "consoleMessages": [],
+  "pageErrors": []
+}
