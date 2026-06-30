@@ -1,0 +1,51 @@
+{
+  "browseState": {
+    "mode": "browse",
+    "cardCount": 57,
+    "imageCount": 456,
+    "firstImage": "assets/symbols/512/rocket.png",
+    "symbolChips": 57
+  },
+  "validationText": "Valid. Checked 1,596 card pairs: every pair shares exactly one symbol.",
+  "gameState": {
+    "coordinateSystem": "card percent coordinates; origin top-left; x right; y down",
+    "mode": "game",
+    "running": true,
+    "counting": false,
+    "revealed": true,
+    "ended": false,
+    "status": "Go! Shared symbol, then answer. WASD left · arrows right.",
+    "middleCardId": 37,
+    "p1": {
+      "score": 0,
+      "cardId": 5,
+      "cursor": {
+        "x": 80.8,
+        "y": 50
+      },
+      "selectedSymbolId": 49,
+      "selectedSymbol": "Clock",
+      "cooldownMs": 0
+    },
+    "p2": {
+      "score": 0,
+      "cardId": 35,
+      "cursor": {
+        "x": 87.38,
+        "y": 50
+      },
+      "selectedSymbolId": null,
+      "selectedSymbol": null,
+      "cooldownMs": 0
+    }
+  },
+  "perfState": {
+    "gameImages": 40,
+    "loadedGameImages": 40,
+    "hasAdvanceTime": true,
+    "hasRenderText": true,
+    "headerCardGap": 21
+  },
+  "consoleMessages": [],
+  "pageErrors": []
+}

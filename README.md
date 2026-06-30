@@ -6,14 +6,14 @@ Open `index.html` directly in a modern browser. No server, install, or internet 
 
 ## What it generates
 
-- 57 recognizable emoji-style symbols with simple names
+- 57 recognizable object symbols with simple names
 - 57 mathematically generated cards
 - 8 symbols per card
 - Exactly one shared symbol between every pair of cards
 - Optional 55-card classic-style deck count
 - Randomized symbol position, direction, and size per card, with collision-aware spacing
 
-The project uses original emoji-based symbols and original code. It does not use official Dobble / Spot It! artwork or branding.
+The project uses original object symbols and original code. It does not use official Dobble / Spot It! artwork or branding.
 
 ## Views
 
@@ -42,6 +42,7 @@ The game screen is optimized as a near-fullscreen arena:
 - The final point triggers a clear win animation with a large winner banner and burst effect.
 - The symbol layout uses deliberate size variation with overlap checks, so icons are not uniform and should not pile up.
 - The heavy card fade overlay has been reduced so symbols stay crisp.
+- The game renders optimized 512px transparent object images from `assets/symbols/512/` while keeping the full-size originals separate.
 
 Controls:
 
@@ -60,6 +61,7 @@ Rules:
 Latest polish pass:
 
 - Replacement player cards are now pre-rendered while play is happening, hidden behind the current card, so the next card can appear immediately when the top card flies away.
+- Current and next gameplay card images are decoded ahead of use, while the browse grid lazy-loads images to keep startup responsive.
 - Correct-answer flight still has the same readable travel time, but the keypress-to-movement response is more immediate because the replacement card is no longer built during the animation.
 - Card piles now use cleaner stacked circular layers instead of artificial straight side/counting lines.
 - The pile edges are subtler and more realistic while still representing cards behind the active card: one card left means no under-pile, and a winning player slot empties after the final card is sent.

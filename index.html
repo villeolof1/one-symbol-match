@@ -85,7 +85,7 @@
       transition:filter .08s, background .08s, outline .08s, box-shadow .08s, transform .08s;
       will-change:auto;
     }
-    .symbol .emoji{display:block; transform-origin:center; filter:saturate(1.08) contrast(1.04)}
+    .symbol .symbol-img{display:block; width:100%; height:100%; object-fit:contain; transform-origin:center; pointer-events:none; user-select:none}
     .symbol.selected{outline:4px solid rgba(37,99,235,.98); background:rgba(37,99,235,.14); box-shadow:0 0 0 9px rgba(37,99,235,.11),0 0 25px rgba(37,99,235,.25); z-index:4}
     .symbol.p2selected{outline-color:var(--p2); background:rgba(168,85,247,.16); box-shadow:0 0 0 9px rgba(168,85,247,.13),0 0 26px rgba(236,72,153,.28); z-index:4}
     .symbol.sharedhint{outline:3px solid rgba(22,163,74,.95); background:rgba(22,163,74,.12)}
@@ -99,7 +99,7 @@
     .symbol-label{position:absolute; transform:translate(-50%,-50%); z-index:7; color:#0f172a; background:rgba(255,255,255,.94); border:1px solid rgba(15,23,42,.14); border-radius:999px; padding:2px 6px; font-size:10px; font-weight:900; box-shadow:0 3px 10px rgba(15,23,42,.14); pointer-events:none; white-space:nowrap}
     .hidden{display:none!important}.note{color:#c7d6eb; line-height:1.55; margin:10px 0 0}.surface .note{color:var(--muted)}
     .callout{border:1px solid #b8d3ff; background:#eef6ff; border-radius:18px; padding:13px 14px; color:#15324f; line-height:1.5}
-    .symbol-list{display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:10px; margin-top:14px}.symbol-chip{border:1px solid var(--line); border-radius:16px; background:#fff; color:var(--ink); padding:10px 11px; display:flex; gap:9px; align-items:center}.symbol-chip .e{font-size:28px}.symbol-chip .n{font-weight:900}.symbol-chip .id{font-size:11px;color:var(--muted)}
+    .symbol-list{display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:10px; margin-top:14px}.symbol-chip{border:1px solid var(--line); border-radius:16px; background:#fff; color:var(--ink); padding:10px 11px; display:flex; gap:9px; align-items:center}.symbol-chip .e{width:34px;height:34px;object-fit:contain;flex:0 0 auto}.symbol-chip .n{font-weight:900}.symbol-chip .id{font-size:11px;color:var(--muted)}
     .explain{max-width:1040px; line-height:1.6; color:#dce7ff}.explain h2,.explain h3{color:#fff; letter-spacing:-.03em}.explain code{background:rgba(255,255,255,.1); padding:2px 6px; border-radius:8px}.explain pre{background:rgba(2,8,19,.44); border:1px solid var(--line-dark); padding:14px; border-radius:17px; overflow:auto}
     .pairtester{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:16px; align-items:start}.pair-result{grid-column:1/-1}
 
@@ -154,11 +154,12 @@
     #middleStart:hover{transform:translateY(-2px); filter:brightness(1.06)}
     .countdown-text{min-height:86px; min-width:86px; display:grid; place-items:center; border-radius:50%; color:#fff; font-size:78px; font-weight:1000; text-shadow:0 8px 26px rgba(0,0,0,.35); background:rgba(3,7,18,.24); border:1px solid rgba(255,255,255,.20); box-shadow:0 20px 60px rgba(0,0,0,.24); animation:countPulse .42s ease-out}
     .countdown-text.go{font-size:42px; border-radius:999px; padding:0 28px; width:auto}
-    .flying-card{position:fixed!important; margin:0!important; pointer-events:none; z-index:1000; will-change:transform,opacity; backface-visibility:hidden; contain:layout paint; transition:transform .40s cubic-bezier(.14,.84,.18,1), opacity .40s ease-out, filter .40s ease-out; box-shadow:0 26px 70px rgba(0,0,0,.38),0 0 0 8px rgba(255,255,255,.12)!important}
+    .flying-card{position:fixed!important; margin:0!important; pointer-events:none; z-index:1000; will-change:transform,opacity; backface-visibility:hidden; contain:layout paint; transition:transform .40s cubic-bezier(.14,.84,.18,1), opacity .40s ease-out; box-shadow:0 26px 70px rgba(0,0,0,.38),0 0 0 8px rgba(255,255,255,.12)!important}
     .flying-card.p1,.flying-card.p2{outline:7px solid rgba(59,130,246,.92)}
+    .flying-card .cursor-dot{display:none}
     .players-row{width:100%; height:100%; min-height:0; display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:center}
     .player-arena{
-      --player-card-size:min(43vw,38vh,430px);
+      --player-card-size:min(43vw,32vh,390px);
       height:100%; min-height:0; border:1px solid rgba(255,255,255,.12); border-radius:26px; display:grid; grid-template-rows:auto 1fr auto; justify-items:center; align-items:center; padding:8px;
       background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035));
       box-shadow:0 14px 42px rgba(0,0,0,.18); position:relative; overflow:hidden;
@@ -244,7 +245,7 @@
           <span class="pill">57 full math cards</span>
           <span class="pill">8 symbols per card</span>
           <span class="pill">exactly one shared symbol per pair</span>
-          <span class="pill">original emoji-style artwork</span>
+          <span class="pill">original object artwork</span>
         </div>
       </section>
       <nav class="navtabs" aria-label="Main views">
@@ -338,6 +339,7 @@ No symbol selected: answer key does nothing</pre>
     "use strict";
 
     const ORDER = 7;
+    const SYMBOL_ASSET_DIR = "assets/symbols/512/";
     const BASE_SYMBOLS = [
       ["☀️","Sun"],["🌙","Moon"],["⭐","Star"],["☁️","Cloud"],["⚡","Lightning"],["❄️","Snowflake"],["🔥","Fire"],["💧","Water Drop"],
       ["🍀","Clover"],["🌷","Tulip"],["🌲","Pine Tree"],["🌵","Cactus"],["🍄","Mushroom"],["🍎","Apple"],["🍌","Banana"],["🍒","Cherries"],
@@ -347,7 +349,104 @@ No symbol selected: answer key does nothing</pre>
       ["⛵","Sailboat"],["🏠","House"],["🏰","Castle"],["⛺","Tent"],["📷","Camera"],["🎸","Guitar"],["🥁","Drum"],["⚽","Soccer Ball"],
       ["🏀","Basketball"],["♟️","Chess Pawn"],["🤖","Robot"],["👽","Alien"],["👻","Ghost"],["🕷️","Spider"],["🦋","Butterfly"],["🐟","Fish"],["🐢","Turtle"]
     ];
-    const symbols = BASE_SYMBOLS.map(([emoji,name], id) => ({ id, emoji, name }));
+    const OBJECT_SYMBOLS = [
+      { name:"Lighthouse", file:"lighthouse.png" },
+      { name:"Turtle", file:"turtle.png" },
+      { name:"Rocket", file:"rocket.png" },
+      { name:"Crown", file:"crown.png" },
+      { name:"Cupcake", file:"cupcake.png" },
+      { name:"Whale", file:"whale.png" },
+      { name:"Anchor", file:"anchor.png" },
+      { name:"Camera", file:"camera.png" },
+      { name:"Butterfly", file:"butterfly.png" },
+      { name:"Owl", file:"owl.png" },
+      { name:"Fox", file:"fox.png" },
+      { name:"Crescent Moon", file:"crescent moon.png" },
+      { name:"Strawberry", file:"strawberry.png" },
+      { name:"Key", file:"key.png" },
+      { name:"Compass", file:"compass.png" },
+      { name:"Guitar", file:"guitar.png" },
+      { name:"Magic Wand", file:"magic wand.png" },
+      { name:"Cat", file:"cat.png" },
+      { name:"Dog", file:"dog.png" },
+      { name:"Octopus", file:"octopus.png" },
+      { name:"Rainbow", file:"rainbow.png" },
+      { name:"Snowflake", file:"snowflake.png" },
+      { name:"Leaf", file:"leaf.png" },
+      { name:"Flower", file:"flower.png" },
+      { name:"Cactus", file:"cactus.png" },
+      { name:"Apple", file:"apple.png" },
+      { name:"Pizza Slice", file:"pizza slice.png" },
+      { name:"Ice Cream", file:"ice cream.png" },
+      { name:"Heart", file:"heart.png" },
+      { name:"Lightning Bolt", file:"lightning bolt.png" },
+      { name:"Bicycle", file:"bicycle.png" },
+      { name:"Train", file:"train.png" },
+      { name:"Book", file:"book.png" },
+      { name:"Flame", file:"flame.png" },
+      { name:"Carrot", file:"carrot.png" },
+      { name:"Star", file:"star.png" },
+      { name:"Kite", file:"kite.png" },
+      { name:"Robot", file:"robot.png" },
+      { name:"Telescope", file:"telescope.png" },
+      { name:"Cloud", file:"cloud.png" },
+      { name:"Shield", file:"shield.png" },
+      { name:"Donut", file:"donut.png" },
+      { name:"Pretzel", file:"pretzel.png" },
+      { name:"Gem", file:"gem.png" },
+      { name:"Dice", file:"dice.png" },
+      { name:"Teddy Bear", file:"teddy bear.png" },
+      { name:"Balloon", file:"balloon.png" },
+      { name:"Airplane", file:"airplane.png" },
+      { name:"Sailboat", file:"sailboat.png" },
+      { name:"Clock", file:"clock.png" },
+      { name:"Light Bulb", file:"light bulb.png" },
+      { name:"Mask", file:"mask.png" },
+      { name:"Microphone", file:"microphone.png" },
+      { name:"Puzzle Piece", file:"puzzle piece.png" },
+      { name:"Paintbrush", file:"paintbrush.png" },
+      { name:"Yo-Yo", file:"yo-yo.png" },
+      { name:"Drum", file:"drum.png" }
+    ];
+    const symbols = OBJECT_SYMBOLS.map((symbol, id) => ({ id, ...symbol }));
+    const symbolImageCache = new Map();
+
+    function symbolImageUrl(symbol){
+      return SYMBOL_ASSET_DIR + encodeURIComponent(symbol.file).replace(/%2F/g, "/");
+    }
+    function preloadSymbol(symbolId){
+      const symbol = symbols[symbolId];
+      if(!symbol) return null;
+      const url = symbolImageUrl(symbol);
+      let img = symbolImageCache.get(url);
+      if(!img){
+        img = new Image();
+        img.decoding = "async";
+        img.src = url;
+        symbolImageCache.set(url, img);
+      }
+      return img;
+    }
+    function decodeSymbol(symbolId){
+      const img = preloadSymbol(symbolId);
+      if(!img) return Promise.resolve();
+      if(img.complete && img.naturalWidth) return Promise.resolve();
+      if(img.decode) return img.decode().catch(() => {});
+      return new Promise(resolve => {
+        img.addEventListener("load", resolve, { once:true });
+        img.addEventListener("error", resolve, { once:true });
+      });
+    }
+    function warmCardSymbols(card){
+      if(!card) return Promise.resolve();
+      return Promise.all(card.symbols.map(decodeSymbol));
+    }
+    function warmCardSymbolsIdle(card){
+      if(!card) return;
+      const run = () => { warmCardSymbols(card); };
+      if("requestIdleCallback" in window) requestIdleCallback(run, { timeout:300 });
+      else setTimeout(run, 80);
+    }
     let layoutSalt = Number(localStorage.getItem("oneSymbol.layoutSalt") || "43019");
     let deckMode = "full";
     let showNames = false;
@@ -493,7 +592,14 @@ No symbol selected: answer key does nothing</pre>
         symbolEl.style.fontSize = `calc(var(--card-size) * ${item.size / 100})`;
         symbolEl.title = s.name;
         symbolEl.dataset.symbolId = item.symbolId;
-        symbolEl.innerHTML = `<span class="emoji" style="transform:rotate(${item.rot}deg) scaleX(${item.scaleX})">${s.emoji}</span>`;
+        const img = document.createElement("img");
+        img.className = "symbol-img";
+        img.src = symbolImageUrl(s);
+        img.alt = s.name;
+        img.decoding = "async";
+        img.loading = opts.eagerImages ? "eager" : "lazy";
+        img.style.transform = `rotate(${item.rot}deg) scaleX(${item.scaleX})`;
+        symbolEl.appendChild(img);
         el._symbolEls.set(item.symbolId, symbolEl);
         el.appendChild(symbolEl);
         if(opts.showNames || showNames){
@@ -576,11 +682,12 @@ No symbol selected: answer key does nothing</pre>
       right.appendChild(createCardElement(b2,{ hintSymbolId:shared }));
       const res = document.createElement("div");
       res.className = "callout pair-result";
-      res.innerHTML = `Example pair shared symbol: <strong>${symbols[shared].emoji} ${symbols[shared].name}</strong>. The green outline shows the one legal match.`;
+      const sharedSymbol = symbols[shared];
+      res.innerHTML = `Example pair shared symbol: <strong>${sharedSymbol.name}</strong>. The green outline shows the one legal match.`;
       box.append(left,right,res);
     }
     function renderSymbols(){
-      document.getElementById("symbolList").innerHTML = symbols.map(s => `<div class="symbol-chip"><span class="e">${s.emoji}</span><span><span class="n">${s.name}</span><br><span class="id">symbol ${s.id + 1}</span></span></div>`).join("");
+      document.getElementById("symbolList").innerHTML = symbols.map(s => `<div class="symbol-chip"><img class="e" src="${symbolImageUrl(s)}" alt="${s.name}" loading="lazy" decoding="async"><span><span class="n">${s.name}</span><br><span class="id">symbol ${s.id + 1}</span></span></div>`).join("");
     }
     function setTab(name){
       document.querySelectorAll(".tabbtn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
@@ -658,7 +765,7 @@ No symbol selected: answer key does nothing</pre>
       player.lastSelected = newId;
       const dot = player.cardEl._cursorDot;
       if(dot) dot.classList.toggle("idle", newId == null);
-      player.selectedText.textContent = newId == null ? "No symbol" : `${symbols[newId].emoji} ${symbols[newId].name}`;
+      player.selectedText.textContent = newId == null ? "No symbol" : symbols[newId].name;
     }
     function updateSelection(which){
       const player = game[which];
@@ -706,7 +813,8 @@ No symbol selected: answer key does nothing</pre>
         slot.appendChild(back);
         return back;
       }
-      return slot.appendChild(createCardElement(game.middle,{ className:`middle-card ${reveal ? "reveal" : ""}` }));
+      warmCardSymbolsIdle(game.middle);
+      return slot.appendChild(createCardElement(game.middle,{ className:`middle-card ${reveal ? "reveal" : ""}`, eagerImages:true }));
     }
     function makePileElement(which){
       const pile = document.createElement("div");
@@ -773,7 +881,8 @@ No symbol selected: answer key does nothing</pre>
       }
       if(!nextCard) return;
       const preloadCursor = { x:50, y:50 };
-      const el = createCardElement(nextCard, { cursor:preloadCursor, p2:which === "p2", className:"preloaded-next-card" });
+      warmCardSymbolsIdle(nextCard);
+      const el = createCardElement(nextCard, { cursor:preloadCursor, p2:which === "p2", className:"preloaded-next-card", eagerImages:true });
       el.dataset.preparedCardId = String(nextCard.id);
       slot.appendChild(el);
       player.nextCardEl = el;
@@ -817,7 +926,8 @@ No symbol selected: answer key does nothing</pre>
       let el = player.nextCardEl && player.nextPreparedCard === nextCard ? player.nextCardEl : null;
       if(!el){
         if(player.nextCardEl) player.nextCardEl.remove();
-        el = createCardElement(nextCard, { cursor:player.cursor, p2:which === "p2", className:"active-player-card" });
+        warmCardSymbolsIdle(nextCard);
+        el = createCardElement(nextCard, { cursor:player.cursor, p2:which === "p2", className:"active-player-card", eagerImages:true });
         slot.appendChild(el);
       }
       el.classList.remove("preloaded-next-card");
@@ -851,7 +961,8 @@ No symbol selected: answer key does nothing</pre>
         player.selectedText.textContent = "";
         return;
       }
-      player.cardEl = createCardElement(player.card, { cursor:player.cursor, p2:which === "p2", className:"active-player-card" });
+      warmCardSymbolsIdle(player.card);
+      player.cardEl = createCardElement(player.card, { cursor:player.cursor, p2:which === "p2", className:"active-player-card", eagerImages:true });
       slot.appendChild(player.cardEl);
       player.cardPx = player.cardEl.clientWidth || 400;
       preparePreloadedCard(which);
@@ -874,6 +985,9 @@ No symbol selected: answer key does nothing</pre>
       game.p2 = Object.assign(makePlayer(), { panel:oldP2.panel, selectedText:oldP2.selectedText, coolText:oldP2.coolText, coolBar:oldP2.coolBar });
       game.p1.card = game.deck.pop();
       game.p2.card = game.deck.pop();
+      warmCardSymbols(game.middle);
+      warmCardSymbols(game.p1.card);
+      warmCardSymbols(game.p2.card);
       game.running = false;
       game.counting = false;
       game.revealed = false;
@@ -896,6 +1010,7 @@ No symbol selected: answer key does nothing</pre>
     }
     function beginCountdown(){
       if(!game.middle || game.counting || game.running || game.ended) return;
+      ensureAudio();
       game.counting = true;
       game.keys.p1 = {left:false,right:false,up:false,down:false};
       game.keys.p2 = {left:false,right:false,up:false,down:false};
@@ -996,44 +1111,44 @@ No symbol selected: answer key does nothing</pre>
       const from = fromEl.getBoundingClientRect();
       const to = destEl.getBoundingClientRect();
       if(!from.width || !to.width) return 0;
-      const clone = fromEl.cloneNode(true);
-      clone.querySelectorAll(".cursor-dot").forEach(node => node.remove());
-      clone.classList.add("flying-card", which);
-      clone.style.width = `${from.width}px`;
-      clone.style.height = `${from.height}px`;
-      clone.style.left = `${from.left}px`;
-      clone.style.top = `${from.top}px`;
-      clone.style.setProperty("--card-size", `${from.width}px`);
-      clone.style.transform = "translate3d(0,0,0) scale(1)";
-      clone.style.transition = "none";
-      document.body.appendChild(clone);
-      // Hide the original right away; the clone is already in exactly the same place,
-      // so the press feels instant while slower DOM updates wait for the next paint.
-      fromEl.classList.add("source-card-sent");
+      fromEl.classList.add("flying-card", which);
+      fromEl.style.width = `${from.width}px`;
+      fromEl.style.height = `${from.height}px`;
+      fromEl.style.left = `${from.left}px`;
+      fromEl.style.top = `${from.top}px`;
+      fromEl.style.setProperty("--card-size", `${from.width}px`);
+      fromEl.style.transform = "translate3d(0,0,0) scale(1)";
+      fromEl.style.transition = "none";
+      document.body.appendChild(fromEl);
       const dx = (to.left + to.width / 2) - (from.left + from.width / 2);
       const dy = (to.top + to.height / 2) - (from.top + from.height / 2);
       const scale = to.width / from.width;
       const duration = 410;
-      const cleanup = () => clone.remove();
-      if(clone.animate){
+      let cleaned = false;
+      const cleanup = () => {
+        if(cleaned) return;
+        cleaned = true;
+        fromEl.remove();
+        if(game.middle) mountMiddleCard(false, false);
+      };
+      if(fromEl.animate){
         // Start the motion in the next animation frame, before card remounting work.
         requestAnimationFrame(() => {
-          const anim = clone.animate([
-            { transform:"translate3d(0,0,0) scale(1)", opacity:1, filter:"brightness(1.02)" },
-            { transform:`translate3d(${dx * .30}px, ${dy * .18}px, 0) scale(1.055)`, opacity:1, filter:"brightness(1.12)", offset:.20 },
-            { transform:`translate3d(${dx * .78}px, ${dy * .78}px, 0) scale(${1 + (scale - 1) * .78})`, opacity:1, filter:"brightness(1.08)", offset:.74 },
-            { transform:`translate3d(${dx}px, ${dy}px, 0) scale(${scale})`, opacity:.96, filter:"brightness(1.04)" }
+          const anim = fromEl.animate([
+            { transform:"translate3d(0,0,0) scale(1)", opacity:1 },
+            { transform:`translate3d(${dx * .30}px, ${dy * .18}px, 0) scale(1.055)`, opacity:1, offset:.20 },
+            { transform:`translate3d(${dx * .78}px, ${dy * .78}px, 0) scale(${1 + (scale - 1) * .78})`, opacity:1, offset:.74 },
+            { transform:`translate3d(${dx}px, ${dy}px, 0) scale(${scale})`, opacity:.96 }
           ], { duration, easing:"cubic-bezier(.14,.84,.18,1)", fill:"forwards" });
           anim.finished.then(cleanup).catch(cleanup);
         });
       } else {
-        clone.style.transition = `transform ${duration}ms cubic-bezier(.14,.84,.18,1), opacity ${duration}ms ease, filter ${duration}ms ease`;
+        fromEl.style.transition = `transform ${duration}ms cubic-bezier(.14,.84,.18,1), opacity ${duration}ms ease`;
         requestAnimationFrame(() => {
-          clone.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${scale})`;
-          clone.style.opacity = "0.96";
-          clone.style.filter = "brightness(1.04)";
+          fromEl.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${scale})`;
+          fromEl.style.opacity = "0.96";
         });
-        clone.addEventListener("transitionend", cleanup, { once:true });
+        fromEl.addEventListener("transitionend", cleanup, { once:true });
       }
       setTimeout(cleanup, duration + 260);
       return duration;
@@ -1082,7 +1197,7 @@ No symbol selected: answer key does nothing</pre>
         const flightMs = animateScoreFlight(which, scoringCardEl) || 410;
         playSound("correct");
         game.scoringUntil = now() + Math.max(470, flightMs + 100);
-        setStatus(`${playerName} scored: ${symbols[shared].emoji} ${symbols[shared].name}`);
+        setStatus(`${playerName} scored: ${symbols[shared].name}`);
         player.score = nextScore;
         player.wrongStreak = 0;
         player.cooldownUntil = 0;
@@ -1092,20 +1207,19 @@ No symbol selected: answer key does nothing</pre>
           game.running = false;
           game.ended = true;
           player.card = null;
-          promotePreloadedCard(which, scoringCardEl, null);
+          promotePreloadedCard(which, null, null);
           updateScores();
           hideStartOverlay();
           setStatus(`${playerName} wins! Final score ${game.p1.score}–${game.p2.score}.`);
           setTimeout(() => showWin(which), Math.max(360, flightMs + 120));
         } else {
           player.card = nextCard;
-          promotePreloadedCard(which, scoringCardEl, nextCard);
+          promotePreloadedCard(which, null, nextCard);
           updateScores();
           schedulePreloadRefresh(which, 95);
           schedulePreloadRefresh(which === "p1" ? "p2" : "p1", 120);
         }
         requestAnimationFrame(() => setTimeout(() => pulseFeedback(which, "correct"), 28));
-        setTimeout(() => mountMiddleCard(false, false), Math.max(180, flightMs - 55));
       } else {
         player.wrongStreak += 1;
         const ms = cooldownForWrong(player);
@@ -1144,6 +1258,46 @@ No symbol selected: answer key does nothing</pre>
       updateDot(which);
       updateSelection(which);
     }
+    function stepGame(dt){
+      const inGame = !document.getElementById("tab-game").classList.contains("hidden");
+      if(inGame && game.running){
+        movePlayerCursor("p1", dt);
+        movePlayerCursor("p2", dt);
+        updateCooldownUi("p1");
+        updateCooldownUi("p2");
+      }
+    }
+    function playerTextState(which){
+      const player = game[which];
+      return {
+        score:player.score,
+        cardId:player.card ? player.card.id : null,
+        cursor:{ x:Number(player.cursor.x.toFixed(2)), y:Number(player.cursor.y.toFixed(2)) },
+        selectedSymbolId:player.selectedSymbolId,
+        selectedSymbol:player.selectedSymbolId == null ? null : symbols[player.selectedSymbolId].name,
+        cooldownMs:Math.max(0, Math.round(player.cooldownUntil - now()))
+      };
+    }
+    function renderGameToText(){
+      const payload = {
+        coordinateSystem:"card percent coordinates; origin top-left; x right; y down",
+        mode:document.getElementById("tab-game").classList.contains("hidden") ? "browse" : "game",
+        running:game.running,
+        counting:game.counting,
+        revealed:game.revealed,
+        ended:game.ended,
+        status:document.getElementById("gameStatus").textContent,
+        middleCardId:game.middle ? game.middle.id : null,
+        p1:playerTextState("p1"),
+        p2:playerTextState("p2")
+      };
+      return JSON.stringify(payload);
+    }
+    window.render_game_to_text = renderGameToText;
+    window.advanceTime = (ms) => {
+      const steps = Math.max(1, Math.round(ms / (1000 / 60)));
+      for(let i = 0; i < steps; i++) stepGame(1 / 60);
+    };
 
     document.querySelectorAll(".tabbtn").forEach(btn => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
     document.getElementById("exitGame").addEventListener("click", () => setTab("browse"));
@@ -1206,13 +1360,7 @@ No symbol selected: answer key does nothing</pre>
     function tick(t){
       const dt = Math.min(.05, Math.max(0, (t - lastTick) / 1000));
       lastTick = t;
-      const inGame = !document.getElementById("tab-game").classList.contains("hidden");
-      if(inGame && game.running){
-        movePlayerCursor("p1", dt);
-        movePlayerCursor("p2", dt);
-        updateCooldownUi("p1");
-        updateCooldownUi("p2");
-      }
+      stepGame(dt);
       requestAnimationFrame(tick);
     }
 

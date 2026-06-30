@@ -1,0 +1,46 @@
+{
+  "domContentMs": 59,
+  "browseReadyMs": 432,
+  "startup": {
+    "cards": 57,
+    "browseImages": 456,
+    "loadedBrowseImages": 320,
+    "hooks": {
+      "renderText": "function",
+      "advanceTime": "function"
+    }
+  },
+  "setupPerf": {
+    "setupMs": 7.5,
+    "criticalSymbolCount": 21,
+    "criticalDecodeMs": 0.09999999403953552
+  },
+  "runningPerf": {
+    "frames": 125,
+    "avgFrameMs": 18.2656,
+    "p95FrameMs": 16.800000000000182,
+    "maxFrameMs": 50,
+    "over33ms": 5,
+    "over50ms": 0
+  },
+  "scorePerf": {
+    "answerReturnMs": 3,
+    "scoreDelta": 1,
+    "frameCount": 23,
+    "avgFrameMs": 38.40434782608696,
+    "p95FrameMs": 50,
+    "maxFrameMs": 50,
+    "over33ms": 12,
+    "over50ms": 0,
+    "gameImages": 40,
+    "loadedGameImages": 40,
+    "middleImages": 8
+  },
+  "assets": {
+    "count": 57,
+    "totalMB": 12.99,
+    "avgKB": 233.4
+  },
+  "consoleMessages": [],
+  "pageErrors": []
+}
