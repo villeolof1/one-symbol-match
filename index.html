@@ -1,0 +1,1224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>One-Symbol Match Arena</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --bg2:#111b2f;
+      --panel:#f7f9fd;
+      --card:#ffffff;
+      --ink:#111827;
+      --muted:#64748b;
+      --line:#d9e2ee;
+      --line-dark:rgba(255,255,255,.15);
+      --blue:#2563eb;
+      --amber:#f59e0b;
+      --red:#ef4444;
+      --green:#16a34a;
+      --cyan:#06b6d4;
+      --p2:#a855f7;
+      --p2b:#ec4899;
+      --shadow:0 18px 55px rgba(3,7,18,.24);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0; min-height:100%; background:var(--bg); color:#eef6ff}
+    body{
+      background:
+        radial-gradient(circle at 18% 0%,rgba(6,182,212,.25),transparent 30%),
+        radial-gradient(circle at 92% 8%,rgba(245,158,11,.20),transparent 32%),
+        linear-gradient(140deg,#08111f,#101827 52%,#0b1020);
+      overflow-x:hidden;
+    }
+    button,select,input{font:inherit}
+    button{cursor:pointer}
+    .app{width:min(1480px,96vw); margin:0 auto; padding:22px 0 42px}
+    .hero{
+      display:grid; grid-template-columns:minmax(0,1fr) auto; gap:18px; align-items:end;
+      padding:22px; border:1px solid var(--line-dark); border-radius:30px;
+      background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.055));
+      box-shadow:var(--shadow);
+    }
+    h1{font-size:clamp(31px,4.6vw,60px); line-height:.95; margin:0 0 10px; letter-spacing:-.06em}
+    .subtitle{margin:0; color:#c7d6eb; max-width:850px; font-size:clamp(15px,1.4vw,18px); line-height:1.45}
+    .pillrow{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px}
+    .pill{border:1px solid var(--line-dark); border-radius:999px; padding:7px 11px; background:rgba(255,255,255,.08); color:#e7f1ff; font-size:13px; white-space:nowrap}
+    .navtabs{display:flex; flex-wrap:wrap; gap:9px; justify-content:flex-end}
+    .tabbtn,.primary,.ghost,.dangerbtn{
+      border:1px solid var(--line-dark); color:#f8fbff; border-radius:999px; padding:10px 14px;
+      background:rgba(255,255,255,.09); transition:.14s transform,.14s background,.14s border-color,.14s opacity;
+    }
+    .tabbtn:hover,.primary:hover,.ghost:hover,.dangerbtn:hover{transform:translateY(-1px); background:rgba(255,255,255,.15)}
+    .tabbtn.active{background:linear-gradient(135deg,rgba(37,99,235,.52),rgba(6,182,212,.26)); border-color:rgba(125,211,252,.78)}
+    .primary{background:linear-gradient(135deg,rgba(37,99,235,.72),rgba(6,182,212,.36)); border-color:rgba(125,211,252,.84)}
+    .dangerbtn{background:rgba(239,68,68,.17); border-color:rgba(248,113,113,.55)}
+    main{margin-top:18px}
+    .panel{border:1px solid rgba(255,255,255,.12); border-radius:28px; background:rgba(255,255,255,.07); box-shadow:var(--shadow); padding:18px}
+    .surface{background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:24px; padding:16px; box-shadow:0 14px 45px rgba(15,23,42,.16)}
+    .controls{display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:16px}
+    .controlgroup{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+    label.small{font-size:13px; color:#d1dbea}.surface label.small{color:var(--muted)}
+    select,input[type="number"]{border:1px solid var(--line); border-radius:14px; padding:10px 11px; color:var(--ink); background:white; min-height:42px}
+    input[type="checkbox"]{accent-color:var(--blue)}
+    .surface .ghost,.surface .primary,.surface .dangerbtn{color:var(--ink); border-color:var(--line); background:#fff}
+    .surface .primary{color:white; background:linear-gradient(135deg,var(--blue),var(--cyan)); border-color:transparent}
+    .surface .ghost:hover,.surface .dangerbtn:hover{background:#f0f5ff}
+    .statgrid{display:grid; grid-template-columns:repeat(4,minmax(140px,1fr)); gap:10px; margin-bottom:16px}
+    .stat{border:1px solid var(--line); border-radius:18px; background:#fff; padding:14px}
+    .stat .value{font-size:25px; font-weight:900; letter-spacing:-.04em}.stat .label{font-size:12px; color:var(--muted); margin-top:2px}
+    .cardsgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(218px,1fr)); gap:18px; align-items:start}
+    .cardwrap{display:grid; gap:8px; justify-items:center; content-visibility:auto; contain-intrinsic-size:260px 280px}.cardmeta{display:flex; gap:8px; justify-content:space-between; width:min(100%,236px); color:var(--muted); font-size:12px}.cardindex{font-weight:900; color:var(--ink)}
+    .match-card{
+      --card-size:210px; width:var(--card-size); height:var(--card-size); border-radius:50%; position:relative; overflow:hidden;
+      background:radial-gradient(circle at 32% 25%,#fff,#fff 56%,#f2f6fc 82%,#dbe5f2 100%);
+      border:9px solid #fff; box-shadow:0 16px 36px rgba(15,23,42,.22), inset 0 -12px 32px rgba(15,23,42,.08), inset 0 0 0 1px rgba(15,23,42,.08);
+      user-select:none; touch-action:none; flex:0 0 auto; contain:layout paint; transform:translateZ(0);
+    }
+    .match-card::before{content:""; position:absolute; inset:10px; border-radius:50%; border:1px dashed rgba(15,23,42,.10); pointer-events:none; z-index:1}
+    .match-card::after{content:""; position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle at 25% 20%,rgba(255,255,255,.16),transparent 24%); pointer-events:none; z-index:1}
+    .symbol{
+      position:absolute; left:50%; top:50%; display:grid; place-items:center; transform:translate(-50%,-50%); line-height:1; z-index:3;
+      text-shadow:0 2px 0 rgba(255,255,255,.62),0 2px 7px rgba(15,23,42,.16); width:1.25em; height:1.25em; border-radius:999px;
+      transition:filter .08s, background .08s, outline .08s, box-shadow .08s, transform .08s;
+      will-change:auto;
+    }
+    .symbol .emoji{display:block; transform-origin:center; filter:saturate(1.08) contrast(1.04)}
+    .symbol.selected{outline:4px solid rgba(37,99,235,.98); background:rgba(37,99,235,.14); box-shadow:0 0 0 9px rgba(37,99,235,.11),0 0 25px rgba(37,99,235,.25); z-index:4}
+    .symbol.p2selected{outline-color:var(--p2); background:rgba(168,85,247,.16); box-shadow:0 0 0 9px rgba(168,85,247,.13),0 0 26px rgba(236,72,153,.28); z-index:4}
+    .symbol.sharedhint{outline:3px solid rgba(22,163,74,.95); background:rgba(22,163,74,.12)}
+    .cursor-dot{
+      position:absolute; left:0; top:0; width:20px; height:20px; border-radius:999px; transform:translate3d(calc(var(--dot-x,50) * 1px),calc(var(--dot-y,50) * 1px),0) translate(-50%,-50%); z-index:8;
+      background:var(--blue); border:3px solid white; box-shadow:0 0 0 5px rgba(37,99,235,.18),0 8px 18px rgba(15,23,42,.28); pointer-events:none;
+      will-change:transform;
+    }
+    .cursor-dot.p2{background:var(--p2); box-shadow:0 0 0 5px rgba(168,85,247,.20),0 8px 18px rgba(15,23,42,.30)}
+    .cursor-dot.idle{background:#94a3b8; box-shadow:0 0 0 5px rgba(148,163,184,.16),0 8px 18px rgba(15,23,42,.22)}
+    .symbol-label{position:absolute; transform:translate(-50%,-50%); z-index:7; color:#0f172a; background:rgba(255,255,255,.94); border:1px solid rgba(15,23,42,.14); border-radius:999px; padding:2px 6px; font-size:10px; font-weight:900; box-shadow:0 3px 10px rgba(15,23,42,.14); pointer-events:none; white-space:nowrap}
+    .hidden{display:none!important}.note{color:#c7d6eb; line-height:1.55; margin:10px 0 0}.surface .note{color:var(--muted)}
+    .callout{border:1px solid #b8d3ff; background:#eef6ff; border-radius:18px; padding:13px 14px; color:#15324f; line-height:1.5}
+    .symbol-list{display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:10px; margin-top:14px}.symbol-chip{border:1px solid var(--line); border-radius:16px; background:#fff; color:var(--ink); padding:10px 11px; display:flex; gap:9px; align-items:center}.symbol-chip .e{font-size:28px}.symbol-chip .n{font-weight:900}.symbol-chip .id{font-size:11px;color:var(--muted)}
+    .explain{max-width:1040px; line-height:1.6; color:#dce7ff}.explain h2,.explain h3{color:#fff; letter-spacing:-.03em}.explain code{background:rgba(255,255,255,.1); padding:2px 6px; border-radius:8px}.explain pre{background:rgba(2,8,19,.44); border:1px solid var(--line-dark); padding:14px; border-radius:17px; overflow:auto}
+    .pairtester{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:16px; align-items:start}.pair-result{grid-column:1/-1}
+
+    body.game-active{overflow:hidden}
+    body.game-active .app{width:100vw; height:100vh; padding:0; margin:0}
+    body.game-active .hero{display:none}
+    body.game-active main{margin:0; height:100vh}
+    .game-screen{
+      position:fixed; inset:0; z-index:20; padding:8px 14px 12px;
+      background:
+        radial-gradient(circle at 50% -18%,rgba(125,211,252,.35),transparent 34%),
+        radial-gradient(circle at 13% 74%,rgba(37,99,235,.22),transparent 32%),
+        radial-gradient(circle at 86% 77%,rgba(245,158,11,.23),transparent 34%),
+        linear-gradient(135deg,#06101f,#101827 58%,#080d19);
+      display:grid; grid-template-rows:auto 1fr; gap:6px; color:#f8fbff;
+    }
+    .game-hud{
+      display:grid; grid-template-columns:auto minmax(260px,1fr) auto; gap:8px; align-items:center;
+      min-height:42px; border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:5px 7px;
+      background:rgba(3,7,18,.25); box-shadow:0 8px 24px rgba(0,0,0,.16);
+    }
+    .hud-buttons,.hud-options{display:flex; gap:7px; align-items:center; flex-wrap:wrap}
+    .hud-buttons button,.hud-options button,.hud-options select,.hud-options input{
+      min-height:30px; border-radius:999px; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.09); color:#fff; padding:5px 9px;
+    }
+    .hud-options{display:none}
+    .hud-options input{width:60px; color:#111827; background:#fff}.hud-options select{color:#111827; background:#fff}
+    .scoreline{display:grid; grid-template-columns:1fr minmax(170px,1.15fr) 1fr; gap:12px; align-items:center; text-align:center; font-weight:900; letter-spacing:-.02em}
+    .scorepill{border-radius:24px; padding:6px 14px 7px; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.16); white-space:nowrap; position:relative; transition:transform .16s, background .16s, box-shadow .16s; min-height:52px; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 8px 24px rgba(0,0,0,.16)}
+    .scorepill.p1{box-shadow:inset 5px 0 0 var(--blue),0 8px 24px rgba(0,0,0,.16)}.scorepill.p2{box-shadow:inset -5px 0 0 var(--p2),0 8px 24px rgba(0,0,0,.16)}
+    .score-label{font-size:clamp(11px,.9vw,15px); letter-spacing:.08em; opacity:.78}
+    .score-main{display:flex; align-items:baseline; justify-content:center; line-height:.9}
+    .score-num{font-size:clamp(34px,4vw,58px); font-weight:1000; letter-spacing:-.08em; color:#fff; text-shadow:0 4px 18px rgba(0,0,0,.34)}
+    .score-target{font-size:clamp(15px,1.55vw,22px); color:#cfe2ff; margin-left:3px; font-weight:950; opacity:.9}
+    .scorepill.near-win{background:rgba(59,130,246,.24); box-shadow:0 0 0 4px rgba(59,130,246,.26),0 0 34px rgba(59,130,246,.36); animation:nearWinPulse .58s ease-in-out infinite alternate}
+    .scorepill.near-win .score-num{color:#dbeafe; text-shadow:0 0 28px rgba(96,165,250,.76),0 5px 16px rgba(0,0,0,.36)}
+    .scorepill.near-win::after{content:"NEXT POINT WINS"; position:absolute; left:50%; top:100%; transform:translate(-50%,4px); border-radius:999px; padding:3px 10px; color:#eff6ff; font-size:11px; letter-spacing:.09em; background:rgba(37,99,235,.82); border:1px solid rgba(191,219,254,.48); box-shadow:0 8px 22px rgba(0,0,0,.24)}
+    #gameStatus{font-size:clamp(12px,1.05vw,16px); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; color:#dbeafe; opacity:.92}
+    .arena{
+      min-height:0; display:grid; grid-template-rows:minmax(330px,53fr) minmax(300px,45fr); gap:4px;
+      align-items:center; justify-items:center;
+    }
+    .middle-zone{height:100%; display:grid; place-items:center; position:relative}
+    .middle-zone .match-card{--card-size:min(54vw,49vh,560px); animation:cardPop .16s cubic-bezier(.2,.9,.25,1)}
+    .middle-zone .match-card.reveal{animation:cardFlipReveal .26s cubic-bezier(.18,.9,.24,1)}
+    .card-back{display:grid; place-items:center; background:radial-gradient(circle at 33% 24%,#f8fbff,#dbeafe 45%,#93c5fd 78%,#2563eb 100%); border-color:#eaf2ff}
+    .card-back::after{background:repeating-conic-gradient(from 20deg,rgba(255,255,255,.34) 0 12deg,rgba(37,99,235,.13) 12deg 24deg); z-index:2}
+    .card-back .back-mark{position:relative; z-index:3; width:48%; height:48%; border-radius:50%; display:grid; place-items:center; color:#fff; font-size:calc(var(--card-size) * .20); font-weight:950; letter-spacing:-.08em; background:rgba(15,23,42,.22); border:4px solid rgba(255,255,255,.72); box-shadow:inset 0 0 30px rgba(255,255,255,.16),0 10px 24px rgba(15,23,42,.22); transform:rotate(0deg)}
+    .start-overlay{position:absolute; inset:0; display:grid; place-items:center; z-index:40; pointer-events:none}
+    .start-panel{display:grid; place-items:center; gap:12px; pointer-events:auto}
+    #middleStart{min-width:170px; min-height:58px; border:0; border-radius:999px; color:white; font-size:22px; font-weight:950; letter-spacing:.08em; background:linear-gradient(135deg,var(--green),var(--cyan)); box-shadow:0 20px 55px rgba(6,182,212,.32),0 0 0 8px rgba(255,255,255,.10); transform:translateZ(0)}
+    #middleStart:hover{transform:translateY(-2px); filter:brightness(1.06)}
+    .countdown-text{min-height:86px; min-width:86px; display:grid; place-items:center; border-radius:50%; color:#fff; font-size:78px; font-weight:1000; text-shadow:0 8px 26px rgba(0,0,0,.35); background:rgba(3,7,18,.24); border:1px solid rgba(255,255,255,.20); box-shadow:0 20px 60px rgba(0,0,0,.24); animation:countPulse .42s ease-out}
+    .countdown-text.go{font-size:42px; border-radius:999px; padding:0 28px; width:auto}
+    .flying-card{position:fixed!important; margin:0!important; pointer-events:none; z-index:1000; will-change:transform,opacity; backface-visibility:hidden; contain:layout paint; transition:transform .40s cubic-bezier(.14,.84,.18,1), opacity .40s ease-out, filter .40s ease-out; box-shadow:0 26px 70px rgba(0,0,0,.38),0 0 0 8px rgba(255,255,255,.12)!important}
+    .flying-card.p1,.flying-card.p2{outline:7px solid rgba(59,130,246,.92)}
+    .players-row{width:100%; height:100%; min-height:0; display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:center}
+    .player-arena{
+      --player-card-size:min(43vw,38vh,430px);
+      height:100%; min-height:0; border:1px solid rgba(255,255,255,.12); border-radius:26px; display:grid; grid-template-rows:auto 1fr auto; justify-items:center; align-items:center; padding:8px;
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035));
+      box-shadow:0 14px 42px rgba(0,0,0,.18); position:relative; overflow:hidden;
+    }
+    .player-arena.p1{background:linear-gradient(180deg,rgba(37,99,235,.13),rgba(255,255,255,.03)); order:2}
+    .player-arena.p2{background:linear-gradient(180deg,rgba(168,85,247,.15),rgba(255,255,255,.03)); order:1}
+    .player-head,.player-foot{width:100%; display:flex; justify-content:space-between; align-items:center; gap:8px; padding:0 6px; min-height:22px}
+    .player-name{font-weight:950; font-size:clamp(14px,1.2vw,19px); letter-spacing:-.035em}.selected-name{font-weight:900; color:#e5efff; font-size:clamp(11px,.95vw,13px); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:52%; opacity:.82}.keyhint{font-size:clamp(10px,.85vw,12px); color:#c7d6eb; white-space:nowrap; opacity:.72}.cooltext{font-weight:950; color:#fecaca; min-width:70px; text-align:right; font-size:12px}
+    .player-arena .match-card{--card-size:var(--player-card-size); animation:cardPop .17s cubic-bezier(.2,.9,.25,1)}
+    .game-screen .selected-name,.game-screen .keyhint{display:none}
+    .game-screen .player-name{opacity:.72; font-size:clamp(12px,1vw,16px)}
+    .game-screen .player-foot{justify-content:center}
+    .game-screen .player-head{justify-content:center}
+    .player-arena.p2 .match-card{animation-delay:.02s}
+    .game-card-slot{display:grid; place-items:center; min-height:0; position:relative}
+    .card-pile{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; z-index:0; transform:translateY(15px); filter:drop-shadow(0 18px 24px rgba(0,0,0,.18))}
+    .pile-layer{position:absolute; width:var(--player-card-size); height:var(--player-card-size); border-radius:50%; background:radial-gradient(circle at 31% 20%,#ffffff,#fbfdff 54%,#eef4fb 78%,#d9e4f1 100%); border:6px solid rgba(255,255,255,.995); box-shadow:0 1px 0 rgba(148,163,184,.44),0 3px 0 rgba(203,213,225,.42),0 7px 14px rgba(15,23,42,.13),inset 0 -8px 18px rgba(15,23,42,.055),inset 0 0 0 1px rgba(15,23,42,.07); opacity:0; transform:translate3d(0,18px,0) scale(.995); transition:opacity .18s ease, transform .24s cubic-bezier(.16,.88,.24,1), filter .18s ease; will-change:transform,opacity; transform-origin:center center}
+    .pile-layer::before{content:""; position:absolute; inset:9px; border-radius:50%; border:1px solid rgba(148,163,184,.15); border-bottom-color:rgba(71,85,105,.20); opacity:.70}
+    .pile-layer::after{display:none}
+    .game-card-slot > .match-card{position:relative; z-index:2}
+    .game-card-slot > .match-card.preloaded-next-card{position:absolute; z-index:1; opacity:0; pointer-events:none; transform:translate3d(0,0,0) scale(.996); transition:opacity .055s linear, transform .085s cubic-bezier(.16,.88,.24,1); will-change:opacity,transform}
+    .game-card-slot > .match-card.preloaded-next-card.ready{opacity:1; transform:translate3d(0,0,0) scale(1)}
+    .game-card-slot > .match-card.active-player-card{position:relative; z-index:2}
+    .game-card-slot > .match-card.source-card-sent{opacity:.02; transform:scale(.985); transition:opacity .025s linear, transform .025s linear}
+    .empty-player-card{width:var(--player-card-size); height:var(--player-card-size); border-radius:50%; display:grid; place-items:center; opacity:.24; background:radial-gradient(circle,rgba(255,255,255,.13),rgba(255,255,255,.02) 62%,transparent 70%); border:2px dashed rgba(255,255,255,.16)}
+    .game-card-slot.empty .card-pile{display:none}
+    .player-arena.winner{box-shadow:0 0 0 5px rgba(59,130,246,.32),0 0 75px rgba(59,130,246,.48); animation:winnerPanel .55s ease-out infinite alternate}
+    .coolbar{height:6px; width:38%; max-width:200px; background:rgba(255,255,255,.14); border-radius:999px; overflow:hidden; opacity:.78}
+    .coolbar span{display:block; height:100%; width:100%; background:linear-gradient(90deg,var(--red),var(--amber)); border-radius:999px; transform-origin:left center; transform:scaleX(0); will-change:transform}
+    .match-flash{position:absolute; inset:0; pointer-events:none; opacity:0; background:radial-gradient(circle,rgba(59,130,246,.22),transparent 58%)}
+    .player-arena.flash .match-flash{animation:flash .35s ease-out}
+    .feedback-ring{
+      position:absolute; left:var(--fx-x); top:var(--fx-y); width:var(--fx-size); height:var(--fx-size);
+      border-radius:50%; pointer-events:none; z-index:5; transform:translate(-50%,-50%) scale(.24); opacity:.92;
+      border:clamp(5px,1.2vw,12px) solid rgba(59,130,246,.95);
+      background:radial-gradient(circle,rgba(59,130,246,.28),rgba(59,130,246,.13) 42%,transparent 64%);
+      box-shadow:0 0 0 0 rgba(59,130,246,.38),0 0 40px rgba(59,130,246,.26);
+      animation:feedbackPulse .66s cubic-bezier(.12,.82,.18,1) forwards;
+    }
+    .feedback-ring.wrong{
+      border-color:rgba(239,68,68,.96);
+      background:radial-gradient(circle,rgba(239,68,68,.30),rgba(239,68,68,.14) 42%,transparent 64%);
+      box-shadow:0 0 0 0 rgba(239,68,68,.36),0 0 40px rgba(239,68,68,.25);
+    }
+
+    .win-overlay{position:fixed; inset:0; z-index:2000; display:grid; place-items:center; pointer-events:none; background:radial-gradient(circle at 50% 50%,rgba(59,130,246,.20),rgba(3,7,18,.42) 56%,rgba(3,7,18,.78)); animation:winFadeIn .22s ease-out}
+    .win-card{display:grid; gap:10px; justify-items:center; padding:24px 34px; border-radius:32px; color:white; background:linear-gradient(135deg,rgba(37,99,235,.90),rgba(6,182,212,.75)); border:1px solid rgba(191,219,254,.55); box-shadow:0 34px 110px rgba(0,0,0,.48),0 0 0 10px rgba(255,255,255,.08); transform:scale(.86); animation:winPop .52s cubic-bezier(.12,.92,.12,1) forwards}
+    .win-title{font-size:clamp(48px,9vw,118px); line-height:.82; font-weight:1000; letter-spacing:-.08em; text-shadow:0 12px 40px rgba(0,0,0,.34)}
+    .win-sub{font-size:clamp(16px,2.3vw,28px); font-weight:950; color:#e0f2fe}
+    .win-confetti{position:absolute; width:12px; height:26px; border-radius:4px; background:hsl(var(--hue),90%,62%); left:50%; top:50%; opacity:0; transform:translate(-50%,-50%) rotate(var(--r)); animation:confettiBurst 1.05s cubic-bezier(.13,.75,.19,1) forwards}
+    @keyframes cardPop{from{transform:scale(.982)}to{transform:scale(1)}}
+    @keyframes cardFlipReveal{0%{transform:perspective(900px) rotateY(89deg) scale(.98); filter:brightness(1.15)}55%{transform:perspective(900px) rotateY(-8deg) scale(1.018)}100%{transform:perspective(900px) rotateY(0) scale(1); filter:brightness(1)}}
+    @keyframes countPulse{0%{transform:scale(.72); opacity:.3}72%{transform:scale(1.1); opacity:1}100%{transform:scale(1); opacity:1}}
+    @keyframes feedbackPulse{
+      0%{transform:translate(-50%,-50%) scale(.24); opacity:.92}
+      58%{opacity:.72}
+      100%{transform:translate(-50%,-50%) scale(1.92); opacity:0}
+    }
+    @keyframes flash{0%{opacity:1}100%{opacity:0}}
+    @keyframes nearWinPulse{from{transform:scale(1); filter:brightness(1)}to{transform:scale(1.045); filter:brightness(1.18)}}
+    @keyframes winnerPanel{from{transform:scale(1)}to{transform:scale(1.015)}}
+    @keyframes winFadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes winPop{0%{transform:scale(.75) rotate(-2deg); opacity:.25}70%{transform:scale(1.05) rotate(.8deg); opacity:1}100%{transform:scale(1) rotate(0); opacity:1}}
+    @keyframes confettiBurst{0%{opacity:1; transform:translate(-50%,-50%) rotate(var(--r)) scale(.2)}82%{opacity:1}100%{opacity:0; transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) rotate(calc(var(--r) + 520deg)) scale(1)}}
+    .game-screen .symbol{transition:background .045s, outline-color .045s, box-shadow .045s; text-shadow:0 2px 0 rgba(255,255,255,.50),0 1px 4px rgba(15,23,42,.14); will-change:auto}
+    .game-screen .symbol.selected{outline:5px solid var(--blue); background:rgba(37,99,235,.13); box-shadow:0 0 0 7px rgba(37,99,235,.12)}
+    .game-screen .symbol.p2selected{outline:5px solid var(--p2b); background:rgba(236,72,153,.15); box-shadow:0 0 0 7px rgba(236,72,153,.15),0 0 18px rgba(168,85,247,.25)}
+    .game-screen .match-card{box-shadow:0 18px 38px rgba(0,0,0,.30), inset 0 -10px 28px rgba(15,23,42,.08)}
+    .game-screen .symbol-label{display:none}
+
+    @media (max-width:980px){.hero{grid-template-columns:1fr}.navtabs{justify-content:flex-start}.statgrid{grid-template-columns:repeat(2,minmax(130px,1fr))}.pairtester{grid-template-columns:1fr}.game-hud{grid-template-columns:1fr}.hud-options{display:none}.arena{grid-template-rows:minmax(220px,38fr) minmax(430px,58fr)}.players-row{grid-template-columns:1fr}.middle-zone .match-card{--card-size:min(90vw,36vh,440px)}.player-arena{--player-card-size:min(84vw,32vh,390px)}.player-arena.p1{order:2}.player-arena.p2{order:1}}
+    @media (max-width:560px){.app{width:100%; padding:10px 10px 28px}.hero,.panel{border-radius:20px}.surface{border-radius:20px}.statgrid{grid-template-columns:1fr}.cardsgrid{grid-template-columns:1fr}.match-card{--card-size:min(86vw,330px)}.controlgroup{width:100%}.controlgroup > *{flex:1}.tabbtn,.primary,.ghost,.dangerbtn{padding:10px 12px}.game-screen{padding:6px}.scoreline{grid-template-columns:1fr 1fr}.scoreline #gameStatus{grid-column:1/-1; order:3}.scorepill{min-height:48px;padding:5px 10px}.score-num{font-size:34px}.hud-buttons{justify-content:center}.player-head,.player-foot{font-size:12px}.selected-name{max-width:48%}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <section>
+        <h1>One-Symbol Match Arena</h1>
+        <p class="subtitle">A local browser game built from the same one-shared-symbol mathematical idea: browse the generated deck, then race two-player with precise cursor-dot selection.</p>
+        <div class="pillrow">
+          <span class="pill">57 generated symbols</span>
+          <span class="pill">57 full math cards</span>
+          <span class="pill">8 symbols per card</span>
+          <span class="pill">exactly one shared symbol per pair</span>
+          <span class="pill">original emoji-style artwork</span>
+        </div>
+      </section>
+      <nav class="navtabs" aria-label="Main views">
+        <button class="tabbtn active" data-tab="browse">Browse cards</button>
+        <button class="tabbtn" data-tab="game">2-player game</button>
+        <button class="tabbtn" data-tab="how">How it works</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="tab-browse" class="panel tabpane">
+        <div class="surface">
+          <div class="controls">
+            <div class="controlgroup">
+              <label class="small">Deck</label>
+              <select id="deckMode">
+                <option value="full">Full mathematical deck: 57 cards</option>
+                <option value="classic55">Classic-style count: 55 cards</option>
+              </select>
+              <label class="small"><input id="showNames" type="checkbox" /> show names on cards</label>
+            </div>
+            <div class="controlgroup">
+              <button class="ghost" id="visualShuffle">New visual shuffle</button>
+              <button class="primary" id="validateBtn">Validate deck</button>
+            </div>
+          </div>
+          <div class="statgrid" id="stats"></div>
+          <div class="callout" id="validationBox">Deck generated. Press “Validate deck” to verify every card pair.</div>
+          <div class="pairtester" id="pairTester"></div>
+          <h2 style="margin:20px 0 12px">All generated cards</h2>
+          <div class="cardsgrid" id="cardsGrid"></div>
+        </div>
+      </section>
+
+      <section id="tab-game" class="game-screen tabpane hidden">
+        <div class="game-hud">
+          <div class="hud-buttons">
+            <button id="exitGame">Cards</button>
+            <button id="startGame">Start / restart</button>
+          </div>
+          <div class="scoreline">
+            <div class="scorepill p2" id="p2Scorepill"><span class="score-label">P2 · WASD</span><span class="score-main"><span class="score-num" id="p2Score">0</span><span class="score-target">/<span id="p2Target">10</span></span></span></div>
+            <div id="gameStatus">Start a game. WASD + Space vs Arrows + Enter.</div>
+            <div class="scorepill p1" id="p1Scorepill"><span class="score-label">P1 · ARROWS</span><span class="score-main"><span class="score-num" id="p1Score">0</span><span class="score-target">/<span id="p1Target">10</span></span></span></div>
+          </div>
+          <div class="hud-options">
+            <label class="small">Target</label><input id="targetScore" type="number" min="1" max="50" value="10" />
+            <label class="small">Wrong</label>
+            <select id="cooldownMs"><option value="2200">2.2s</option><option value="2800" selected>2.8s</option><option value="3600">3.6s</option></select>
+          </div>
+        </div>
+        <div class="arena">
+          <section class="middle-zone"><div class="game-card-slot" id="middleSlot"></div><div class="start-overlay hidden" id="startOverlay"><div class="start-panel"><button id="middleStart">START</button><div class="countdown-text hidden" id="countdownText"></div></div></div></section>
+          <section class="players-row">
+            <div class="player-arena p1" id="p1Panel">
+              <div class="player-head"><span class="player-name">Player 1 · Arrows</span><span class="selected-name" id="p1Selected">No symbol</span></div>
+              <div class="game-card-slot" id="p1Slot"></div>
+              <div class="player-foot"><span class="keyhint">Arrows · Enter</span><div class="coolbar"><span id="p1Coolbar"></span></div><span class="cooltext" id="p1Cooltext"></span></div>
+              <div class="match-flash"></div>
+            </div>
+            <div class="player-arena p2" id="p2Panel">
+              <div class="player-head"><span class="player-name">Player 2 · WASD</span><span class="selected-name" id="p2Selected">No symbol</span></div>
+              <div class="game-card-slot" id="p2Slot"></div>
+              <div class="player-foot"><span class="keyhint">WASD · Space</span><div class="coolbar"><span id="p2Coolbar"></span></div><span class="cooltext" id="p2Cooltext"></span></div>
+              <div class="match-flash"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="tab-how" class="panel tabpane hidden explain">
+        <h2>How the generator works</h2>
+        <p>This project uses original symbols and layout code, but the mathematical rule is the same kind of rule used by one-shared-symbol games: any two cards have exactly one symbol in common.</p>
+        <p>The full deck uses a finite projective plane of order <code>7</code>. That creates:</p>
+        <pre>7² + 7 + 1 = 57 symbols
+7² + 7 + 1 = 57 cards
+7 + 1 = 8 symbols per card</pre>
+        <p>The browser creates the cards automatically from modular arithmetic. It starts with 49 grid symbols plus 8 “infinity” symbols. Lines across the grid become cards. Two lines always meet in exactly one point, so two cards always share exactly one symbol.</p>
+        <h3>Keyboard controls</h3>
+        <pre>Left player: W/A/S/D moves the dot, Space answers
+Right player: Arrow keys move the dot, Enter answers
+Wrong answers: escalating cooldown for that player only
+No symbol selected: answer key does nothing</pre>
+        <h3>Symbols</h3>
+        <div class="symbol-list" id="symbolList"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    "use strict";
+
+    const ORDER = 7;
+    const BASE_SYMBOLS = [
+      ["☀️","Sun"],["🌙","Moon"],["⭐","Star"],["☁️","Cloud"],["⚡","Lightning"],["❄️","Snowflake"],["🔥","Fire"],["💧","Water Drop"],
+      ["🍀","Clover"],["🌷","Tulip"],["🌲","Pine Tree"],["🌵","Cactus"],["🍄","Mushroom"],["🍎","Apple"],["🍌","Banana"],["🍒","Cherries"],
+      ["🍋","Lemon"],["🍓","Strawberry"],["🍇","Grapes"],["🥕","Carrot"],["🍕","Pizza"],["🍔","Burger"],["🍩","Donut"],["🍦","Ice Cream"],
+      ["☕","Coffee"],["🎈","Balloon"],["🎁","Gift"],["👑","Crown"],["💎","Diamond"],["🔑","Key"],["🔒","Lock"],["🔔","Bell"],
+      ["⏰","Clock"],["🧭","Compass"],["⚓","Anchor"],["🚀","Rocket"],["✈️","Airplane"],["🚗","Car"],["🚂","Train"],["🚲","Bicycle"],
+      ["⛵","Sailboat"],["🏠","House"],["🏰","Castle"],["⛺","Tent"],["📷","Camera"],["🎸","Guitar"],["🥁","Drum"],["⚽","Soccer Ball"],
+      ["🏀","Basketball"],["♟️","Chess Pawn"],["🤖","Robot"],["👽","Alien"],["👻","Ghost"],["🕷️","Spider"],["🦋","Butterfly"],["🐟","Fish"],["🐢","Turtle"]
+    ];
+    const symbols = BASE_SYMBOLS.map(([emoji,name], id) => ({ id, emoji, name }));
+    let layoutSalt = Number(localStorage.getItem("oneSymbol.layoutSalt") || "43019");
+    let deckMode = "full";
+    let showNames = false;
+    const layoutCache = new Map();
+
+    function pointId(x,y){ return y * ORDER + x; }
+    function infinityId(slope){ return ORDER * ORDER + slope; }
+    function verticalInfinityId(){ return ORDER * ORDER + ORDER; }
+    function generateFullDeck(){
+      const cards = [];
+      let id = 0;
+      for(let m = 0; m < ORDER; m++){
+        for(let b = 0; b < ORDER; b++){
+          const ids = [];
+          for(let x = 0; x < ORDER; x++) ids.push(pointId(x, (m * x + b) % ORDER));
+          ids.push(infinityId(m));
+          cards.push({ id:id++, family:`slope ${m}`, symbols:ids });
+        }
+      }
+      for(let a = 0; a < ORDER; a++){
+        const ids = [];
+        for(let y = 0; y < ORDER; y++) ids.push(pointId(a, y));
+        ids.push(verticalInfinityId());
+        cards.push({ id:id++, family:`vertical ${a}`, symbols:ids });
+      }
+      const infinityLine = [];
+      for(let m = 0; m < ORDER; m++) infinityLine.push(infinityId(m));
+      infinityLine.push(verticalInfinityId());
+      cards.push({ id:id++, family:"infinity", symbols:infinityLine });
+      return cards;
+    }
+    const fullDeck = generateFullDeck();
+    function activeDeck(){ return deckMode === "classic55" ? fullDeck.slice(0,55) : fullDeck; }
+
+    function mulberry32(seed){
+      return function(){
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    function shuffle(arr, seed = Date.now()){
+      const out = arr.slice();
+      const rnd = mulberry32(seed >>> 0);
+      for(let i = out.length - 1; i > 0; i--){
+        const j = Math.floor(rnd() * (i + 1));
+        [out[i], out[j]] = [out[j], out[i]];
+      }
+      return out;
+    }
+    function sharedSymbolIds(a,b){
+      const set = new Set(a.symbols);
+      return b.symbols.filter(id => set.has(id));
+    }
+
+    const baseSlots = [
+      {x:50,y:20},{x:24,y:35},{x:76,y:35},{x:35,y:53},
+      {x:65,y:53},{x:25,y:72},{x:50,y:78},{x:75,y:72}
+    ];
+    function layoutForCard(card){
+      const key = `${card.id}:${layoutSalt}`;
+      const cached = layoutCache.get(key);
+      if(cached) return cached;
+      const rnd = mulberry32((card.id * 1000003 + layoutSalt) >>> 0);
+      const ids = shuffle(card.symbols, (card.id * 9176 + layoutSalt * 13) >>> 0);
+      // Varied tiers, deliberately smaller than the previous version. Sizes are percentages
+      // of the card diameter, so a middle card can be huge without every icon colliding.
+      const tiers = shuffle([23.5,21.2,19.4,18.0,16.8,15.7,14.8,13.8], (card.id * 3571 + layoutSalt * 97) >>> 0);
+      const layout = [];
+      const center = { x:50, y:50 };
+      for(let i = 0; i < ids.length; i++){
+        const symbolId = ids[i];
+        const slot = baseSlots[i];
+        const baseSize = tiers[i];
+        let best = null;
+        let bestPenalty = Infinity;
+        for(let attempt = 0; attempt < 72; attempt++){
+          const wide = attempt > 20 ? 15 : 9.5;
+          const shrink = attempt > 46 ? .90 : attempt > 30 ? .95 : 1;
+          const size = Math.max(12.8, Math.min(24.5, (baseSize + (rnd() - .5) * 2.7) * shrink));
+          let x = slot.x + (rnd() - .5) * wide;
+          let y = slot.y + (rnd() - .5) * wide;
+          const radius = size * .48;
+          const dx0 = x - center.x;
+          const dy0 = y - center.y;
+          const dist0 = Math.hypot(dx0, dy0);
+          const maxDist = 43.5 - radius;
+          if(dist0 > maxDist){
+            const k = maxDist / Math.max(1, dist0);
+            x = center.x + dx0 * k;
+            y = center.y + dy0 * k;
+          }
+          x = Math.max(11 + radius * .35, Math.min(89 - radius * .35, x));
+          y = Math.max(11 + radius * .35, Math.min(89 - radius * .35, y));
+          let penalty = Math.max(0, Math.hypot(x - 50, y - 50) + radius - 44) * 16;
+          for(const prev of layout){
+            const d = Math.hypot(x - prev.x, y - prev.y);
+            const minD = radius + prev.hitRadius + 2.6;
+            if(d < minD) penalty += (minD - d) * (minD - d) * 6;
+          }
+          penalty += Math.hypot(x - slot.x, y - slot.y) * .18;
+          if(penalty < bestPenalty){
+            bestPenalty = penalty;
+            best = { x, y, size, hitRadius:radius };
+            if(penalty < .2) break;
+          }
+        }
+        let { x, y, size, hitRadius } = best;
+        // Last-resort shrink for rare unlucky layouts. This preserves variation while
+        // stopping visible pileups.
+        for(let tries = 0; tries < 10; tries++){
+          let overlaps = false;
+          for(const prev of layout){
+            const d = Math.hypot(x - prev.x, y - prev.y);
+            if(d < hitRadius + prev.hitRadius + 1.8){ overlaps = true; break; }
+          }
+          if(!overlaps) break;
+          size *= .94;
+          hitRadius = size * .48;
+        }
+        const rot = Math.round((rnd() - .5) * 82);
+        const scaleX = rnd() < .10 ? -1 : 1;
+        layout.push({ symbolId, x, y, size, rot, scaleX, hitRadius });
+      }
+      layoutCache.set(key, layout);
+      return layout;
+    }
+
+    function createCardElement(card, opts = {}){
+      const el = document.createElement("div");
+      el.className = `match-card ${opts.className || ""}`.trim();
+      el.setAttribute("aria-label", `Card ${card.id + 1}`);
+      el._symbolEls = new Map();
+      for(const item of layoutForCard(card)){
+        const s = symbols[item.symbolId];
+        const symbolEl = document.createElement("div");
+        symbolEl.className = "symbol";
+        if(opts.selectedSymbolId === item.symbolId) symbolEl.classList.add(opts.p2 ? "p2selected" : "selected");
+        if(opts.hintSymbolId === item.symbolId) symbolEl.classList.add("sharedhint");
+        symbolEl.style.left = item.x + "%";
+        symbolEl.style.top = item.y + "%";
+        symbolEl.style.fontSize = `calc(var(--card-size) * ${item.size / 100})`;
+        symbolEl.title = s.name;
+        symbolEl.dataset.symbolId = item.symbolId;
+        symbolEl.innerHTML = `<span class="emoji" style="transform:rotate(${item.rot}deg) scaleX(${item.scaleX})">${s.emoji}</span>`;
+        el._symbolEls.set(item.symbolId, symbolEl);
+        el.appendChild(symbolEl);
+        if(opts.showNames || showNames){
+          const label = document.createElement("div");
+          label.className = "symbol-label";
+          label.textContent = s.name;
+          label.style.left = item.x + "%";
+          label.style.top = `calc(${item.y}% + min(8vw, 20px))`;
+          el.appendChild(label);
+        }
+      }
+      if(opts.cursor){
+        const dot = document.createElement("div");
+        dot.className = `cursor-dot ${opts.p2 ? "p2" : ""} idle`.trim();
+        dot.dataset.x = opts.cursor.x;
+        dot.dataset.y = opts.cursor.y;
+        el._cursorDot = dot;
+        el.appendChild(dot);
+      }
+      return el;
+    }
+
+    function validateDeck(cards){
+      const problems = [];
+      const symbolCounts = new Map();
+      for(const card of cards){
+        if(new Set(card.symbols).size !== card.symbols.length) problems.push(`Card ${card.id + 1} repeats a symbol.`);
+        if(card.symbols.length !== ORDER + 1) problems.push(`Card ${card.id + 1} has ${card.symbols.length} symbols.`);
+        for(const id of card.symbols) symbolCounts.set(id, (symbolCounts.get(id) || 0) + 1);
+      }
+      for(let i = 0; i < cards.length; i++){
+        for(let j = i + 1; j < cards.length; j++){
+          const shared = sharedSymbolIds(cards[i], cards[j]);
+          if(shared.length !== 1) problems.push(`Cards ${cards[i].id + 1} and ${cards[j].id + 1} share ${shared.length} symbols.`);
+          if(problems.length > 20) break;
+        }
+        if(problems.length > 20) break;
+      }
+      return { ok:problems.length === 0, problems, symbolCounts };
+    }
+    function renderStats(){
+      const deck = activeDeck();
+      const result = validateDeck(deck);
+      const countValues = Array.from(result.symbolCounts.values());
+      const minCount = Math.min(...countValues);
+      const maxCount = Math.max(...countValues);
+      const stats = [[deck.length,"cards in current deck"],[symbols.length,"recognizable symbols"],[ORDER + 1,"symbols on each card"],[`${minCount}–${maxCount}`,"uses per symbol"]];
+      document.getElementById("stats").innerHTML = stats.map(([value,label]) => `<div class="stat"><div class="value">${value}</div><div class="label">${label}</div></div>`).join("");
+    }
+    function renderCards(){
+      const grid = document.getElementById("cardsGrid");
+      grid.innerHTML = "";
+      const frag = document.createDocumentFragment();
+      for(const card of activeDeck()){
+        const wrap = document.createElement("div");
+        wrap.className = "cardwrap";
+        wrap.innerHTML = `<div class="cardmeta"><span class="cardindex">Card ${card.id + 1}</span><span>${card.family}</span></div>`;
+        wrap.appendChild(createCardElement(card));
+        frag.appendChild(wrap);
+      }
+      grid.appendChild(frag);
+      renderStats();
+      renderPairTester();
+    }
+    function renderPairTester(){
+      const deck = activeDeck();
+      const box = document.getElementById("pairTester");
+      const a = deck[Math.floor((layoutSalt % deck.length + deck.length) % deck.length)];
+      const b = deck[Math.floor(((layoutSalt * 7 + 11) % deck.length + deck.length) % deck.length)];
+      const b2 = b.id === a.id ? deck[(deck.indexOf(b) + 1) % deck.length] : b;
+      const shared = sharedSymbolIds(a,b2)[0];
+      box.innerHTML = "";
+      const left = document.createElement("div");
+      left.className = "cardwrap";
+      left.innerHTML = `<div class="cardmeta"><span class="cardindex">Example A: card ${a.id + 1}</span><span></span></div>`;
+      left.appendChild(createCardElement(a,{ hintSymbolId:shared }));
+      const right = document.createElement("div");
+      right.className = "cardwrap";
+      right.innerHTML = `<div class="cardmeta"><span class="cardindex">Example B: card ${b2.id + 1}</span><span></span></div>`;
+      right.appendChild(createCardElement(b2,{ hintSymbolId:shared }));
+      const res = document.createElement("div");
+      res.className = "callout pair-result";
+      res.innerHTML = `Example pair shared symbol: <strong>${symbols[shared].emoji} ${symbols[shared].name}</strong>. The green outline shows the one legal match.`;
+      box.append(left,right,res);
+    }
+    function renderSymbols(){
+      document.getElementById("symbolList").innerHTML = symbols.map(s => `<div class="symbol-chip"><span class="e">${s.emoji}</span><span><span class="n">${s.name}</span><br><span class="id">symbol ${s.id + 1}</span></span></div>`).join("");
+    }
+    function setTab(name){
+      document.querySelectorAll(".tabbtn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
+      document.querySelectorAll(".tabpane").forEach(p => p.classList.add("hidden"));
+      document.getElementById(`tab-${name}`).classList.remove("hidden");
+      document.body.classList.toggle("game-active", name === "game");
+      if(name === "game" && !game.middle) setupGame(false);
+    }
+
+    function makePlayer(){
+      return { score:0, card:null, cursor:{x:50,y:50}, selectedSymbolId:null, cooldownUntil:0, cooldownTotal:0, wrongStreak:0, cardEl:null, cardPx:0, lastSelected:null, panel:null, selectedText:null, coolText:null, coolBar:null, nextCardEl:null, nextPreparedCard:null, preloadTimer:null };
+    }
+    let countdownTimer = null;
+    const game = {
+      running:false, deck:[], middle:null, target:10, ended:false, counting:false, revealed:false, scoringUntil:0,
+      p1:makePlayer(), p2:makePlayer(),
+      keys:{p1:{left:false,right:false,up:false,down:false}, p2:{left:false,right:false,up:false,down:false}}
+    };
+    game.p1.panel = document.getElementById("p1Panel");
+    game.p2.panel = document.getElementById("p2Panel");
+    game.p1.selectedText = document.getElementById("p1Selected");
+    game.p2.selectedText = document.getElementById("p2Selected");
+    game.p1.coolText = document.getElementById("p1Cooltext");
+    game.p2.coolText = document.getElementById("p2Cooltext");
+    game.p1.coolBar = document.getElementById("p1Coolbar");
+    game.p2.coolBar = document.getElementById("p2Coolbar");
+
+    function now(){ return performance.now(); }
+    function playerLocked(player){ return now() < player.cooldownUntil; }
+    function setStatus(text){ document.getElementById("gameStatus").textContent = text; }
+    function updateScores(){
+      document.getElementById("p1Score").textContent = game.p1.score;
+      document.getElementById("p2Score").textContent = game.p2.score;
+      const p1Target = document.getElementById("p1Target");
+      const p2Target = document.getElementById("p2Target");
+      if(p1Target) p1Target.textContent = game.target;
+      if(p2Target) p2Target.textContent = game.target;
+      const p1Near = game.running && !game.ended && game.p1.score >= game.target - 1;
+      const p2Near = game.running && !game.ended && game.p2.score >= game.target - 1;
+      document.getElementById("p1Scorepill").classList.toggle("near-win", p1Near);
+      document.getElementById("p2Scorepill").classList.toggle("near-win", p2Near);
+      updatePiles();
+    }
+
+    function symbolAtCursor(card, cursor){
+      if(!card) return null;
+      let best = null;
+      let bestScore = Infinity;
+      for(const item of layoutForCard(card)){
+        const dx = cursor.x - item.x;
+        const dy = cursor.y - item.y;
+        const dist2 = dx * dx + dy * dy;
+        const radius = Math.max(11.5, item.size * 0.58 + 5.2);
+        if(dist2 <= radius * radius && dist2 < bestScore){
+          bestScore = dist2;
+          best = item.symbolId;
+        }
+      }
+      return best;
+    }
+    function updateVisualSelection(which){
+      const player = game[which];
+      if(!player.cardEl) return;
+      const oldId = player.lastSelected;
+      const newId = player.selectedSymbolId;
+      if(oldId === newId) return;
+      if(oldId != null){
+        const oldEl = player.cardEl._symbolEls.get(oldId);
+        if(oldEl) oldEl.classList.remove("selected","p2selected");
+      }
+      if(newId != null){
+        const newEl = player.cardEl._symbolEls.get(newId);
+        if(newEl) newEl.classList.add(which === "p2" ? "p2selected" : "selected");
+      }
+      player.lastSelected = newId;
+      const dot = player.cardEl._cursorDot;
+      if(dot) dot.classList.toggle("idle", newId == null);
+      player.selectedText.textContent = newId == null ? "No symbol" : `${symbols[newId].emoji} ${symbols[newId].name}`;
+    }
+    function updateSelection(which){
+      const player = game[which];
+      player.selectedSymbolId = symbolAtCursor(player.card, player.cursor);
+      updateVisualSelection(which);
+    }
+    function updateDot(which){
+      const player = game[which];
+      if(!player.cardEl || !player.cardEl._cursorDot) return;
+      if(!player.cardPx) player.cardPx = player.cardEl.clientWidth || 400;
+      const dot = player.cardEl._cursorDot;
+      dot.style.setProperty("--dot-x", (player.cursor.x * player.cardPx / 100).toFixed(2));
+      dot.style.setProperty("--dot-y", (player.cursor.y * player.cardPx / 100).toFixed(2));
+    }
+    function mountCard(slotId, card, opts = {}){
+      const slot = document.getElementById(slotId);
+      slot.innerHTML = "";
+      const el = createCardElement(card, opts);
+      slot.appendChild(el);
+      return el;
+    }
+    function showStartOverlay(mode = "button", text = ""){
+      const overlay = document.getElementById("startOverlay");
+      const btn = document.getElementById("middleStart");
+      const count = document.getElementById("countdownText");
+      overlay.classList.remove("hidden");
+      btn.classList.toggle("hidden", mode !== "button");
+      count.classList.toggle("hidden", mode !== "count");
+      if(mode === "count"){
+        count.textContent = text;
+        count.classList.toggle("go", String(text).toUpperCase() === "GO!");
+        count.style.animation = "none";
+        void count.offsetWidth;
+        count.style.animation = "";
+      }
+    }
+    function hideStartOverlay(){ document.getElementById("startOverlay").classList.add("hidden"); }
+    function mountMiddleCard(faceDown = false, reveal = false){
+      const slot = document.getElementById("middleSlot");
+      slot.innerHTML = "";
+      if(faceDown || !game.middle){
+        const back = document.createElement("div");
+        back.className = "match-card card-back";
+        back.innerHTML = '<div class="back-mark">▶</div>'; 
+        slot.appendChild(back);
+        return back;
+      }
+      return slot.appendChild(createCardElement(game.middle,{ className:`middle-card ${reveal ? "reveal" : ""}` }));
+    }
+    function makePileElement(which){
+      const pile = document.createElement("div");
+      pile.className = "card-pile";
+      // One real visual layer per card behind the active top card. The individual
+      // circles create natural edges; no artificial side ruler/counting marks.
+      const total = Math.max(0, Math.min(49, game.target - 1));
+      for(let i = 0; i < total; i++){
+        const layer = document.createElement("div");
+        layer.className = "pile-layer";
+        layer.dataset.layer = String(i);
+        layer.style.zIndex = String(total - i);
+        pile.appendChild(layer);
+      }
+      return pile;
+    }
+    function updatePile(which){
+      const player = game[which];
+      const slot = document.getElementById(which === "p1" ? "p1Slot" : "p2Slot");
+      const pile = slot.querySelector(".card-pile");
+      if(!pile) return;
+      // Layers are exact cards behind the current visible top card. One card left
+      // means zero under-cards; after the scoring card is sent, the slot is empty.
+      const activeCardsLeft = Math.max(0, game.target - player.score);
+      const behindCards = Math.max(0, activeCardsLeft - (player.card ? 1 : 0));
+      const visible = Math.min(pile.children.length, behindCards);
+      const side = which === "p1" ? 1 : -1;
+      pile.querySelectorAll(".pile-layer").forEach((layer, idx) => {
+        const show = idx < visible;
+        const depth = idx + 1;
+        if(show){
+          const dx = side * (depth * .34 + Math.sin(depth * 1.37) * .16);
+          const dy = depth * 2.55;
+          const rot = side * (Math.sin(depth * .72) * .22 + depth * .025);
+          const scale = 1 - Math.min(.026, depth * .00105);
+          const opacity = Math.max(.50, .985 - depth * .010);
+          layer.style.opacity = opacity.toFixed(3);
+          layer.style.transform = `translate3d(${dx.toFixed(2)}px,${dy.toFixed(2)}px,0) rotate(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
+          layer.style.filter = `brightness(${Math.max(.90, 1 - depth * .0042).toFixed(3)})`;
+        } else {
+          layer.style.opacity = "0";
+          layer.style.transform = `translate3d(0,${(12 + idx * .45).toFixed(1)}px,0) scale(.995)`;
+          layer.style.filter = "brightness(.99)";
+        }
+      });
+    }
+    function updatePiles(){ updatePile("p1"); updatePile("p2"); }
+    function nextDeckCardForPreload(which){
+      const player = game[which];
+      if(!player.card || game.ended) return null;
+      const cardsLeftAfterCurrent = Math.max(0, game.target - player.score - 1);
+      if(cardsLeftAfterCurrent <= 0 || game.deck.length <= 0) return null;
+      return game.deck[game.deck.length - 1] || null;
+    }
+    function preparePreloadedCard(which){
+      const player = game[which];
+      const slot = document.getElementById(which === "p1" ? "p1Slot" : "p2Slot");
+      if(!slot) return;
+      const nextCard = nextDeckCardForPreload(which);
+      if(player.nextCardEl){
+        player.nextCardEl.remove();
+        player.nextCardEl = null;
+        player.nextPreparedCard = null;
+      }
+      if(!nextCard) return;
+      const preloadCursor = { x:50, y:50 };
+      const el = createCardElement(nextCard, { cursor:preloadCursor, p2:which === "p2", className:"preloaded-next-card" });
+      el.dataset.preparedCardId = String(nextCard.id);
+      slot.appendChild(el);
+      player.nextCardEl = el;
+      player.nextPreparedCard = nextCard;
+      const dot = el._cursorDot;
+      if(dot){
+        const px = el.clientWidth || player.cardPx || 400;
+        dot.style.setProperty("--dot-x", (preloadCursor.x * px / 100).toFixed(2));
+        dot.style.setProperty("--dot-y", (preloadCursor.y * px / 100).toFixed(2));
+      }
+    }
+    function schedulePreloadRefresh(which, delay = 80){
+      const player = game[which];
+      if(player.preloadTimer) clearTimeout(player.preloadTimer);
+      const run = () => { player.preloadTimer = null; preparePreloadedCard(which); };
+      if("requestIdleCallback" in window){
+        player.preloadTimer = setTimeout(() => requestIdleCallback(run, { timeout:220 }), delay);
+      } else {
+        player.preloadTimer = setTimeout(run, delay);
+      }
+    }
+    function promotePreloadedCard(which, oldEl, nextCard){
+      const player = game[which];
+      const slot = document.getElementById(which === "p1" ? "p1Slot" : "p2Slot");
+      slot.classList.toggle("empty", !nextCard);
+      player.lastSelected = null;
+      player.selectedSymbolId = null;
+      player.cursor = { x:50, y:50 };
+      if(oldEl) oldEl.remove();
+      if(!nextCard){
+        if(player.nextCardEl){ player.nextCardEl.remove(); player.nextCardEl = null; }
+        player.nextPreparedCard = null;
+        player.cardEl = null;
+        const empty = document.createElement("div");
+        empty.className = "empty-player-card";
+        slot.appendChild(empty);
+        player.selectedText.textContent = "";
+        updatePile(which);
+        return;
+      }
+      let el = player.nextCardEl && player.nextPreparedCard === nextCard ? player.nextCardEl : null;
+      if(!el){
+        if(player.nextCardEl) player.nextCardEl.remove();
+        el = createCardElement(nextCard, { cursor:player.cursor, p2:which === "p2", className:"active-player-card" });
+        slot.appendChild(el);
+      }
+      el.classList.remove("preloaded-next-card");
+      el.classList.add("active-player-card", "ready");
+      player.nextCardEl = null;
+      player.nextPreparedCard = null;
+      player.cardEl = el;
+      player.cardPx = el.clientWidth || 400;
+      updatePile(which);
+      updateDot(which);
+      updateSelection(which);
+    }
+    function mountPlayerCard(which){
+      const player = game[which];
+      const slotId = which === "p1" ? "p1Slot" : "p2Slot";
+      const slot = document.getElementById(slotId);
+      if(player.preloadTimer){ clearTimeout(player.preloadTimer); player.preloadTimer = null; }
+      slot.innerHTML = "";
+      slot.classList.toggle("empty", !player.card);
+      slot.appendChild(makePileElement(which));
+      player.lastSelected = null;
+      player.selectedSymbolId = null;
+      player.cardEl = null;
+      player.nextCardEl = null;
+      player.nextPreparedCard = null;
+      if(!player.card){
+        const empty = document.createElement("div");
+        empty.className = "empty-player-card";
+        slot.appendChild(empty);
+        updatePile(which);
+        player.selectedText.textContent = "";
+        return;
+      }
+      player.cardEl = createCardElement(player.card, { cursor:player.cursor, p2:which === "p2", className:"active-player-card" });
+      slot.appendChild(player.cardEl);
+      player.cardPx = player.cardEl.clientWidth || 400;
+      preparePreloadedCard(which);
+      updatePile(which);
+      updateDot(which);
+      updateSelection(which);
+    }
+    function clearCountdown(){
+      if(countdownTimer){ clearTimeout(countdownTimer); countdownTimer = null; }
+      game.counting = false;
+    }
+    function setupGame(switchTab = true){
+      clearCountdown();
+      game.target = Math.max(1, Math.min(50, Number(document.getElementById("targetScore").value) || 10));
+      const seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
+      game.deck = shuffle(activeDeck(), seed);
+      game.middle = game.deck.pop();
+      const oldP1 = game.p1, oldP2 = game.p2;
+      game.p1 = Object.assign(makePlayer(), { panel:oldP1.panel, selectedText:oldP1.selectedText, coolText:oldP1.coolText, coolBar:oldP1.coolBar });
+      game.p2 = Object.assign(makePlayer(), { panel:oldP2.panel, selectedText:oldP2.selectedText, coolText:oldP2.coolText, coolBar:oldP2.coolBar });
+      game.p1.card = game.deck.pop();
+      game.p2.card = game.deck.pop();
+      game.running = false;
+      game.counting = false;
+      game.revealed = false;
+      game.ended = false;
+      game.scoringUntil = 0;
+      game.keys.p1 = {left:false,right:false,up:false,down:false};
+      game.keys.p2 = {left:false,right:false,up:false,down:false};
+      game.p1.panel.classList.remove("winner");
+      game.p2.panel.classList.remove("winner");
+      document.querySelectorAll(".win-overlay").forEach(el => el.remove());
+      updateScores();
+      mountMiddleCard(true);
+      mountPlayerCard("p1");
+      mountPlayerCard("p2");
+      updateCooldownUi("p1");
+      updateCooldownUi("p2");
+      showStartOverlay("button");
+      setStatus("Press START on the middle card. WASD left, arrows right.");
+      if(switchTab) setTab("game");
+    }
+    function beginCountdown(){
+      if(!game.middle || game.counting || game.running || game.ended) return;
+      game.counting = true;
+      game.keys.p1 = {left:false,right:false,up:false,down:false};
+      game.keys.p2 = {left:false,right:false,up:false,down:false};
+      const steps = ["3","2","1","GO!"];
+      let i = 0;
+      const advance = () => {
+        showStartOverlay("count", steps[i]);
+        setStatus(i < 3 ? `Starting in ${steps[i]}…` : "Go! Shared symbol, then answer.");
+        i += 1;
+        if(i < steps.length){
+          countdownTimer = setTimeout(advance, 520);
+        } else {
+          countdownTimer = setTimeout(() => {
+            countdownTimer = null;
+            game.counting = false;
+            game.running = true;
+            game.revealed = true;
+            updateScores();
+            hideStartOverlay();
+            mountMiddleCard(false, true);
+            setStatus("Go! Shared symbol, then answer. WASD left · arrows right.");
+          }, 260);
+        }
+      };
+      advance();
+    }
+    function cooldownForWrong(player){
+      const base = Number(document.getElementById("cooldownMs").value) || 2800;
+      const scaled = base * Math.pow(1.75, Math.max(0, player.wrongStreak - 1));
+      return Math.min(11000, Math.round(scaled));
+    }
+
+    let audioCtx = null;
+    function ensureAudio(){
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!Ctx) return null;
+      if(!audioCtx) audioCtx = new Ctx();
+      if(audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+      return audioCtx;
+    }
+    function tone(freq, start, duration, type = "sine", volume = .075){
+      const ctx = ensureAudio();
+      if(!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(volume, start + .012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + duration + .02);
+    }
+    function playSound(kind){
+      const ctx = ensureAudio();
+      if(!ctx) return;
+      const t = ctx.currentTime + .005;
+      if(kind === "correct"){
+        tone(523.25, t, .085, "triangle", .060);
+        tone(659.25, t + .064, .095, "triangle", .065);
+        tone(880.00, t + .132, .128, "sine", .070);
+      } else if(kind === "win"){
+        tone(523.25, t, .10, "triangle", .065);
+        tone(659.25, t + .08, .11, "triangle", .070);
+        tone(783.99, t + .16, .12, "triangle", .072);
+        tone(1046.50, t + .25, .24, "sine", .080);
+      } else {
+        tone(180, t, .16, "sawtooth", .045);
+        tone(122, t + .075, .22, "square", .030);
+      }
+    }
+    function pulseFeedback(which, kind){
+      const player = game[which];
+      if(!player || !player.panel || !player.cardEl) return;
+      const panelRect = player.panel.getBoundingClientRect();
+      const cardRect = player.cardEl.getBoundingClientRect();
+      if(!panelRect.width || !cardRect.width) return;
+      const ring = document.createElement("div");
+      ring.className = `feedback-ring ${kind === "wrong" ? "wrong" : "correct"}`;
+      const cx = cardRect.left + cardRect.width / 2 - panelRect.left;
+      const cy = cardRect.top + cardRect.height / 2 - panelRect.top;
+      const size = Math.max(cardRect.width, cardRect.height) * 1.02;
+      ring.style.setProperty("--fx-x", `${cx}px`);
+      ring.style.setProperty("--fx-y", `${cy}px`);
+      ring.style.setProperty("--fx-size", `${size}px`);
+      player.panel.appendChild(ring);
+      const remove = () => ring.remove();
+      ring.addEventListener("animationend", remove, { once:true });
+      setTimeout(remove, 900);
+    }
+
+    function animateScoreFlight(which, fromEl){
+      if(!fromEl) return 0;
+      const middleEl = document.querySelector("#middleSlot .match-card");
+      const destEl = middleEl || document.getElementById("middleSlot");
+      const from = fromEl.getBoundingClientRect();
+      const to = destEl.getBoundingClientRect();
+      if(!from.width || !to.width) return 0;
+      const clone = fromEl.cloneNode(true);
+      clone.querySelectorAll(".cursor-dot").forEach(node => node.remove());
+      clone.classList.add("flying-card", which);
+      clone.style.width = `${from.width}px`;
+      clone.style.height = `${from.height}px`;
+      clone.style.left = `${from.left}px`;
+      clone.style.top = `${from.top}px`;
+      clone.style.setProperty("--card-size", `${from.width}px`);
+      clone.style.transform = "translate3d(0,0,0) scale(1)";
+      clone.style.transition = "none";
+      document.body.appendChild(clone);
+      // Hide the original right away; the clone is already in exactly the same place,
+      // so the press feels instant while slower DOM updates wait for the next paint.
+      fromEl.classList.add("source-card-sent");
+      const dx = (to.left + to.width / 2) - (from.left + from.width / 2);
+      const dy = (to.top + to.height / 2) - (from.top + from.height / 2);
+      const scale = to.width / from.width;
+      const duration = 410;
+      const cleanup = () => clone.remove();
+      if(clone.animate){
+        // Start the motion in the next animation frame, before card remounting work.
+        requestAnimationFrame(() => {
+          const anim = clone.animate([
+            { transform:"translate3d(0,0,0) scale(1)", opacity:1, filter:"brightness(1.02)" },
+            { transform:`translate3d(${dx * .30}px, ${dy * .18}px, 0) scale(1.055)`, opacity:1, filter:"brightness(1.12)", offset:.20 },
+            { transform:`translate3d(${dx * .78}px, ${dy * .78}px, 0) scale(${1 + (scale - 1) * .78})`, opacity:1, filter:"brightness(1.08)", offset:.74 },
+            { transform:`translate3d(${dx}px, ${dy}px, 0) scale(${scale})`, opacity:.96, filter:"brightness(1.04)" }
+          ], { duration, easing:"cubic-bezier(.14,.84,.18,1)", fill:"forwards" });
+          anim.finished.then(cleanup).catch(cleanup);
+        });
+      } else {
+        clone.style.transition = `transform ${duration}ms cubic-bezier(.14,.84,.18,1), opacity ${duration}ms ease, filter ${duration}ms ease`;
+        requestAnimationFrame(() => {
+          clone.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${scale})`;
+          clone.style.opacity = "0.96";
+          clone.style.filter = "brightness(1.04)";
+        });
+        clone.addEventListener("transitionend", cleanup, { once:true });
+      }
+      setTimeout(cleanup, duration + 260);
+      return duration;
+    }
+    function showWin(which){
+      const playerName = which === "p1" ? "Player 1" : "Player 2";
+      game.p1.panel.classList.toggle("winner", which === "p1");
+      game.p2.panel.classList.toggle("winner", which === "p2");
+      playSound("win");
+      const overlay = document.createElement("div");
+      overlay.className = "win-overlay";
+      overlay.innerHTML = `<div class="win-card"><div class="win-title">${playerName} WINS!</div><div class="win-sub">Final score ${game.p1.score}–${game.p2.score}</div></div>`;
+      for(let i = 0; i < 44; i++){
+        const bit = document.createElement("div");
+        bit.className = "win-confetti";
+        const angle = (i / 44) * Math.PI * 2;
+        const dist = 180 + (i % 7) * 26;
+        bit.style.setProperty("--x", `${Math.cos(angle) * dist}px`);
+        bit.style.setProperty("--y", `${Math.sin(angle) * dist}px`);
+        bit.style.setProperty("--r", `${(i * 47) % 360}deg`);
+        bit.style.setProperty("--hue", String((i * 41) % 360));
+        bit.style.animationDelay = `${(i % 8) * 18}ms`;
+        overlay.appendChild(bit);
+      }
+      document.body.appendChild(overlay);
+      setTimeout(() => overlay.remove(), 2300);
+    }
+    function answer(which){
+      if(!game.running || game.ended) return;
+      if(now() < game.scoringUntil) return;
+      const player = game[which];
+      updateSelection(which);
+      if(playerLocked(player)) return;
+      if(player.selectedSymbolId == null) return;
+      const shared = sharedSymbolIds(player.card, game.middle)[0];
+      const playerName = which === "p1" ? "Player 1" : "Player 2";
+      if(player.selectedSymbolId === shared){
+        const scoringCardEl = player.cardEl;
+        const scoringCard = player.card;
+        const nextScore = player.score + 1;
+        const willWin = game.deck.length === 0 || nextScore >= game.target;
+        const nextCard = willWin ? null : game.deck.pop();
+        // Start the important visual instantly. The replacement card has already
+        // been rendered invisibly behind the active card, so it can be promoted
+        // immediately instead of constructed during the scoring animation.
+        const flightMs = animateScoreFlight(which, scoringCardEl) || 410;
+        playSound("correct");
+        game.scoringUntil = now() + Math.max(470, flightMs + 100);
+        setStatus(`${playerName} scored: ${symbols[shared].emoji} ${symbols[shared].name}`);
+        player.score = nextScore;
+        player.wrongStreak = 0;
+        player.cooldownUntil = 0;
+        player.cooldownTotal = 0;
+        game.middle = scoringCard;
+        if(willWin){
+          game.running = false;
+          game.ended = true;
+          player.card = null;
+          promotePreloadedCard(which, scoringCardEl, null);
+          updateScores();
+          hideStartOverlay();
+          setStatus(`${playerName} wins! Final score ${game.p1.score}–${game.p2.score}.`);
+          setTimeout(() => showWin(which), Math.max(360, flightMs + 120));
+        } else {
+          player.card = nextCard;
+          promotePreloadedCard(which, scoringCardEl, nextCard);
+          updateScores();
+          schedulePreloadRefresh(which, 95);
+          schedulePreloadRefresh(which === "p1" ? "p2" : "p1", 120);
+        }
+        requestAnimationFrame(() => setTimeout(() => pulseFeedback(which, "correct"), 28));
+        setTimeout(() => mountMiddleCard(false, false), Math.max(180, flightMs - 55));
+      } else {
+        player.wrongStreak += 1;
+        const ms = cooldownForWrong(player);
+        player.cooldownUntil = now() + ms;
+        player.cooldownTotal = ms;
+        pulseFeedback(which, "wrong");
+        playSound("wrong");
+        setStatus(`${playerName} missed. Cooldown ${(ms/1000).toFixed(1)}s.`);
+        updateCooldownUi(which);
+      }
+    }
+    function updateCooldownUi(which){
+      const player = game[which];
+      const remaining = Math.max(0, player.cooldownUntil - now());
+      if(remaining > 0){
+        const pct = remaining / Math.max(1, player.cooldownTotal);
+        player.coolText.textContent = `${(remaining/1000).toFixed(1)}s`;
+        player.coolBar.style.transform = `scaleX(${pct})`;
+      } else {
+        player.coolText.textContent = player.wrongStreak ? "ready" : "";
+        player.coolBar.style.transform = "scaleX(0)";
+      }
+    }
+    function movePlayerCursor(which, dt){
+      if(!game.running || game.ended) return;
+      const player = game[which];
+      const keys = game.keys[which];
+      let dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+      let dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+      if(dx === 0 && dy === 0) return;
+      const len = Math.hypot(dx,dy) || 1;
+      dx /= len; dy /= len;
+      const speed = 132; // card-percent per second; tuned for fast keyboard play.
+      player.cursor.x = Math.max(6, Math.min(94, player.cursor.x + dx * speed * dt));
+      player.cursor.y = Math.max(6, Math.min(94, player.cursor.y + dy * speed * dt));
+      updateDot(which);
+      updateSelection(which);
+    }
+
+    document.querySelectorAll(".tabbtn").forEach(btn => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
+    document.getElementById("exitGame").addEventListener("click", () => setTab("browse"));
+    document.getElementById("deckMode").addEventListener("change", e => { deckMode = e.target.value; renderCards(); if(game.middle) setupGame(false); });
+    document.getElementById("showNames").addEventListener("change", e => { showNames = e.target.checked; renderCards(); if(game.middle){ mountMiddleCard(!game.revealed); mountPlayerCard("p1"); mountPlayerCard("p2"); } });
+    document.getElementById("visualShuffle").addEventListener("click", () => { layoutSalt = (layoutSalt * 1664525 + 1013904223) >>> 0; localStorage.setItem("oneSymbol.layoutSalt", String(layoutSalt)); layoutCache.clear(); renderCards(); if(game.middle){ mountMiddleCard(!game.revealed); mountPlayerCard("p1"); mountPlayerCard("p2"); } });
+    document.getElementById("validateBtn").addEventListener("click", () => {
+      const deck = activeDeck();
+      const result = validateDeck(deck);
+      const pairs = deck.length * (deck.length - 1) / 2;
+      const box = document.getElementById("validationBox");
+      if(result.ok) box.innerHTML = `<strong style="color:#16a34a">Valid.</strong> Checked ${pairs.toLocaleString()} card pairs: every pair shares exactly one symbol.`;
+      else box.innerHTML = `<strong style="color:#ef4444">Problems found.</strong><br>${result.problems.slice(0,8).join("<br>")}`;
+    });
+    document.getElementById("startGame").addEventListener("click", () => setupGame(false));
+    document.getElementById("middleStart").addEventListener("click", beginCountdown);
+
+    function setKey(which, dir, value){ game.keys[which][dir] = value; }
+    window.addEventListener("keydown", e => {
+      const inGame = !document.getElementById("tab-game").classList.contains("hidden");
+      if(!inGame) return;
+      const key = e.key.toLowerCase();
+      const handled = ["arrowleft","arrowright","arrowup","arrowdown","enter","w","a","s","d"," "].includes(key) || e.code === "Space";
+      if(handled) e.preventDefault();
+      if(key === "arrowleft") setKey("p1","left",true);
+      else if(key === "arrowright") setKey("p1","right",true);
+      else if(key === "arrowup") setKey("p1","up",true);
+      else if(key === "arrowdown") setKey("p1","down",true);
+      else if(key === "enter" && !e.repeat) answer("p1");
+      else if(key === "a") setKey("p2","left",true);
+      else if(key === "d") setKey("p2","right",true);
+      else if(key === "w") setKey("p2","up",true);
+      else if(key === "s") setKey("p2","down",true);
+      else if(e.code === "Space" && !e.repeat) answer("p2");
+    }, { passive:false });
+    window.addEventListener("keyup", e => {
+      const key = e.key.toLowerCase();
+      if(key === "arrowleft") setKey("p1","left",false);
+      else if(key === "arrowright") setKey("p1","right",false);
+      else if(key === "arrowup") setKey("p1","up",false);
+      else if(key === "arrowdown") setKey("p1","down",false);
+      else if(key === "a") setKey("p2","left",false);
+      else if(key === "d") setKey("p2","right",false);
+      else if(key === "w") setKey("p2","up",false);
+      else if(key === "s") setKey("p2","down",false);
+    });
+
+
+    window.addEventListener("resize", () => {
+      for(const which of ["p1","p2"]){
+        const player = game[which];
+        if(player.cardEl){
+          player.cardPx = player.cardEl.clientWidth || player.cardPx || 400;
+          updateDot(which);
+        }
+      }
+    });
+
+    let lastTick = performance.now();
+    function tick(t){
+      const dt = Math.min(.05, Math.max(0, (t - lastTick) / 1000));
+      lastTick = t;
+      const inGame = !document.getElementById("tab-game").classList.contains("hidden");
+      if(inGame && game.running){
+        movePlayerCursor("p1", dt);
+        movePlayerCursor("p2", dt);
+        updateCooldownUi("p1");
+        updateCooldownUi("p2");
+      }
+      requestAnimationFrame(tick);
+    }
+
+    renderCards();
+    renderSymbols();
+    requestAnimationFrame(tick);
+  </script>
+</body>
+</html>
