@@ -58,6 +58,8 @@
     main{margin-top:18px}
     .panel{border:1px solid rgba(255,255,255,.12); border-radius:28px; background:rgba(255,255,255,.07); box-shadow:var(--shadow); padding:18px}
     .surface{background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:24px; padding:16px; box-shadow:0 14px 45px rgba(15,23,42,.16)}
+    #tab-instructions{min-height:calc(100vh - 270px)}
+    #tab-instructions .surface{min-height:calc(100vh - 315px); background:rgba(15,23,42,.66); color:#eaf2ff; border-color:rgba(255,255,255,.12)}
     .controls{display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:16px}
     .controlgroup{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
     label.small{font-size:13px; color:#d1dbea}.surface label.small{color:var(--muted)}
@@ -147,14 +149,13 @@
     .middle-zone .match-card.reveal{animation:cardFlipReveal .26s cubic-bezier(.18,.9,.24,1)}
     .card-back{display:grid; place-items:center; background:radial-gradient(circle at 33% 24%,#f8fbff,#dbeafe 45%,#93c5fd 78%,#2563eb 100%); border-color:#eaf2ff}
     .card-back::after{background:repeating-conic-gradient(from 20deg,rgba(255,255,255,.34) 0 12deg,rgba(37,99,235,.13) 12deg 24deg); z-index:2}
-    .card-back .back-mark{position:relative; z-index:3; width:48%; height:48%; border-radius:50%; display:grid; place-items:center; color:#fff; font-size:calc(var(--card-size) * .20); font-weight:950; letter-spacing:-.08em; background:rgba(15,23,42,.22); border:4px solid rgba(255,255,255,.72); box-shadow:inset 0 0 30px rgba(255,255,255,.16),0 10px 24px rgba(15,23,42,.22); transform:rotate(0deg)}
-    .start-overlay{position:absolute; inset:0; display:grid; place-items:center; z-index:40; pointer-events:none}
-    .start-panel{display:grid; place-items:center; gap:12px; pointer-events:auto}
-    #middleStart{min-width:170px; min-height:58px; border:0; border-radius:999px; color:white; font-size:22px; font-weight:950; letter-spacing:.08em; background:linear-gradient(135deg,var(--green),var(--cyan)); box-shadow:0 20px 55px rgba(6,182,212,.32),0 0 0 8px rgba(255,255,255,.10); transform:translateZ(0)}
-    #middleStart:hover{transform:translateY(-2px); filter:brightness(1.06)}
-    .start-panel.play-again #middleStart{min-width:min(430px,66vw); min-height:clamp(70px,10vw,110px); padding:0 34px; font-size:clamp(24px,4.4vw,46px); letter-spacing:.035em; background:linear-gradient(135deg,rgba(34,197,94,.98),rgba(6,182,212,.92)); box-shadow:0 28px 80px rgba(6,182,212,.38),0 0 0 10px rgba(255,255,255,.13); animation:playAgainAlive 1.45s ease-in-out infinite alternate}
-    .countdown-text{min-height:86px; min-width:86px; display:grid; place-items:center; border-radius:50%; color:#fff; font-size:78px; font-weight:1000; text-shadow:0 8px 26px rgba(0,0,0,.35); background:rgba(3,7,18,.24); border:1px solid rgba(255,255,255,.20); box-shadow:0 20px 60px rgba(0,0,0,.24); animation:countPulse .42s ease-out}
-    .countdown-text.go{font-size:42px; border-radius:999px; padding:0 28px; width:auto}
+    .start-overlay{position:fixed; left:var(--start-x,50vw); top:var(--start-y,50vh); z-index:40; pointer-events:none}
+    .start-panel{display:grid; place-items:center; gap:12px; pointer-events:auto; transform:translate(-50%,-50%)}
+    #middleStart{width:clamp(112px,10.5vw,210px); height:clamp(112px,10.5vw,210px); padding:0; border:0; border-radius:50%; color:white; font-size:clamp(19px,2vw,34px); font-weight:1000; letter-spacing:.04em; background:radial-gradient(circle at 32% 22%,rgba(255,255,255,.22),transparent 34%),linear-gradient(135deg,var(--green),var(--cyan)); box-shadow:0 28px 70px rgba(6,182,212,.34),0 0 0 clamp(8px,.9vw,14px) rgba(255,255,255,.14),inset 0 -10px 18px rgba(15,23,42,.12); transform:translateZ(0); display:grid; place-items:center; text-align:center; line-height:1}
+    #middleStart:hover{transform:translateY(-3px) scale(1.015); filter:brightness(1.06)}
+    .play-countdown{position:fixed; left:var(--countdown-x,50vw); top:var(--countdown-y,58vh); z-index:60; min-width:clamp(150px,16vw,310px); min-height:clamp(150px,16vw,310px); display:grid; place-items:center; pointer-events:none; transform:translate(-50%,-50%) scale(.96); opacity:0; color:#fff; font-size:clamp(110px,17vw,270px); font-weight:1000; letter-spacing:-.06em; text-shadow:0 12px 34px rgba(0,0,0,.42),0 0 42px rgba(59,130,246,.42); transition:opacity .16s ease, transform .16s ease; line-height:.86}
+    .play-countdown.show{opacity:1; transform:translate(-50%,-50%) scale(1); animation:countPulse .42s ease-out}
+    .play-countdown.go{font-size:clamp(70px,10vw,150px); letter-spacing:.02em}
     .flying-card{position:fixed!important; margin:0!important; pointer-events:none; z-index:1000; will-change:transform,opacity; backface-visibility:hidden; contain:layout paint; transition:transform .40s cubic-bezier(.14,.84,.18,1), opacity .40s ease-out; box-shadow:0 26px 70px rgba(0,0,0,.38),0 0 0 8px rgba(255,255,255,.12)!important}
     .flying-card.p1,.flying-card.p2{outline:7px solid rgba(59,130,246,.92)}
     .flying-card .cursor-dot{display:none}
@@ -184,20 +185,26 @@
     .player-arena.p2 .match-card{animation-delay:.02s}
     .game-screen .player-foot.cooling .cooltext{display:block; min-width:0; text-align:center; font-size:12px; line-height:1}
     .game-card-slot{display:grid; place-items:center; min-height:0; position:relative}
-    .play-guide{position:absolute; left:clamp(18px,2vw,34px); top:clamp(104px,12vh,138px); width:min(340px,24vw); z-index:30; display:grid; grid-template-columns:1fr; gap:8px; pointer-events:none; transition:opacity .22s ease, transform .22s ease}
-    .play-guide.hidden-guide{opacity:0; transform:translateY(10px); pointer-events:none}
-    .guide-card{min-height:74px; border:1px solid rgba(255,255,255,.14); border-radius:18px; background:rgba(3,7,18,.34); box-shadow:0 16px 42px rgba(0,0,0,.20); padding:8px 10px; display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:center}
-    .guide-title{font-weight:1000; letter-spacing:-.035em; font-size:clamp(13px,1.05vw,16px); color:#fff}.guide-copy{font-size:clamp(11px,.9vw,13px); color:#cfe2ff; line-height:1.25; margin-top:2px}
-    .guide-visual{display:flex; align-items:center; gap:7px; min-width:80px}.guide-mini{--card-size:54px; border-width:3px; box-shadow:0 8px 18px rgba(0,0,0,.20), inset 0 -5px 12px rgba(15,23,42,.08)}.guide-mini .symbol{display:none}.guide-mini .symbol:nth-of-type(1),.guide-mini .symbol:nth-of-type(2),.guide-mini .symbol:nth-of-type(3){display:grid}.guide-mini::before{inset:4px}.guide-mini .cursor-dot{display:none}
-    .guide-keys{display:flex; gap:4px; align-items:center; flex-wrap:wrap}.guide-key{min-width:24px; min-height:24px; display:grid; place-items:center; border-radius:7px; color:#0f172a; background:#f8fbff; border:1px solid rgba(148,163,184,.45); font-weight:1000; font-size:12px; box-shadow:0 4px 10px rgba(0,0,0,.16)}.guide-key.wide{min-width:54px}.guide-dot{width:20px; height:20px; border-radius:50%; background:var(--blue); border:3px solid white; box-shadow:0 0 0 5px rgba(37,99,235,.20)}.guide-dot.p2{background:var(--p2)}
-    .game-screen.playing .play-guide,.game-screen.resetting .play-guide{display:none; opacity:0; transform:translateY(10px); pointer-events:none}
-    .player-arena.reset-fade .game-card-slot{opacity:.22; transform:scale(.975); transition:opacity .45s ease, transform .45s cubic-bezier(.16,.84,.18,1)}
+    .instructions-hero{display:flex; align-items:end; justify-content:space-between; gap:18px; margin-bottom:18px}
+    .instructions-hero h2{margin:0; font-size:clamp(38px,5.2vw,82px); line-height:.9; letter-spacing:-.075em}
+    .instructions-hero p{margin:10px 0 0; max-width:760px; color:#cfe2ff; font-size:clamp(16px,1.35vw,22px); line-height:1.3}
+    .instructions-grid{display:grid; grid-template-columns:1.18fr 1fr .92fr; gap:16px; align-items:stretch}
+    .guide-card{border:1px solid rgba(255,255,255,.14); border-radius:24px; background:rgba(3,7,18,.34); box-shadow:0 16px 42px rgba(0,0,0,.20); padding:clamp(16px,2vw,26px); display:grid; gap:16px; align-content:start}
+    #tab-instructions .guide-card{background:linear-gradient(145deg,rgba(15,23,42,.52),rgba(3,7,18,.36)); border-color:rgba(255,255,255,.13)}
+    .guide-card.primary{grid-row:auto}.guide-step{font-size:13px; font-weight:1000; letter-spacing:.16em; text-transform:uppercase; color:#8bdcff}.guide-title{font-weight:1000; letter-spacing:-.055em; font-size:clamp(24px,2.3vw,42px); color:#fff}.guide-copy{font-size:clamp(15px,1.25vw,20px); color:#cfe2ff; line-height:1.3; margin-top:2px}
+    .guide-visual{display:flex; align-items:center; gap:clamp(12px,1.4vw,22px); min-width:80px}.guide-match-visual{justify-content:center; gap:clamp(14px,1.4vw,24px)}.guide-example-card{--card-size:clamp(136px,11.5vw,230px); border-width:6px; box-shadow:0 22px 52px rgba(0,0,0,.28), inset 0 -8px 18px rgba(15,23,42,.07)}.guide-control-card{--card-size:clamp(104px,8vw,154px); border-width:5px}.guide-example-card .symbol-label,.guide-control-card .symbol-label{display:none}.guide-example-card .cursor-dot,.guide-example-card .symbol:not(.sharedhint){display:none}.guide-control-card .symbol{display:none}.guide-control-card .symbol:nth-of-type(1),.guide-control-card .symbol:nth-of-type(2),.guide-control-card .symbol:nth-of-type(3){display:grid}.guide-control-card .cursor-dot{display:block}
+    .guide-versus{font-size:clamp(18px,2vw,30px); font-weight:1000; color:#dbeafe; opacity:.72}.guide-players{display:grid; grid-template-columns:1fr 1fr; gap:12px}.guide-player{display:grid; gap:12px; align-items:center; justify-items:center; padding:14px; border-radius:18px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.10)}.guide-player.left{box-shadow:inset 4px 0 0 var(--p2b)}.guide-player.right{box-shadow:inset 4px 0 0 var(--blue)}
+    .guide-keys{display:flex; gap:7px; align-items:center; justify-content:center; flex-wrap:wrap}.guide-key{min-width:clamp(38px,3.2vw,54px); min-height:clamp(34px,2.8vw,48px); display:grid; place-items:center; border-radius:10px; color:#0f172a; background:#f8fbff; border:1px solid rgba(148,163,184,.45); font-weight:1000; font-size:clamp(14px,1.1vw,18px); box-shadow:0 8px 18px rgba(0,0,0,.20)}.guide-key.wide{min-width:clamp(88px,7vw,132px)}.guide-dot{width:34px; height:34px; border-radius:50%; background:var(--blue); border:5px solid white; box-shadow:0 0 0 8px rgba(37,99,235,.20)}.guide-dot.p2{background:var(--p2)}
+    .answer-demo{display:grid; gap:14px}.answer-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 14px; border-radius:16px; background:rgba(255,255,255,.06); font-size:clamp(15px,1.15vw,18px); color:#dbeafe}.answer-mark{width:36px; height:36px; border-radius:50%; display:grid; place-items:center; font-weight:1000}.answer-mark.ok{background:rgba(34,197,94,.22); color:#bbf7d0}.answer-mark.bad{background:rgba(239,68,68,.22); color:#fecaca}.cooldown-demo{display:grid; gap:10px; padding:16px; border-radius:18px; background:rgba(239,68,68,.10); border:1px solid rgba(248,113,113,.20)}.cooldown-demo .coolbar{width:100%; max-width:none; opacity:1}.instructions-actions{display:flex; justify-content:flex-end; margin-top:18px}
+    .player-arena.reset-fade .game-card-slot{opacity:.18; transform:scale(.975); transition:opacity .55s ease, transform .55s cubic-bezier(.16,.84,.18,1)}
+    .player-arena.refilling .game-card-slot{animation:refillSettle .74s cubic-bezier(.14,.84,.18,1)}
     .player-arena.deal-in .active-player-card{animation:dealIn .34s cubic-bezier(.14,.84,.18,1)}
     .card-pile{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; z-index:0; transform:translateY(clamp(3px,.7vh,8px))}
+    .card-pile::before{content:""; position:absolute; width:calc(var(--player-card-size) * .84); height:calc(var(--player-card-size) * .12); left:50%; top:calc(50% + var(--player-card-size) * .42); transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(ellipse at center,rgba(0,0,0,.26),rgba(0,0,0,.13) 45%,transparent 72%); opacity:.72}
     .player-arena.cooling .card-pile{transform:translateY(clamp(-4px,-.45vh,-2px)) scaleY(.68); transform-origin:center top}
-    .pile-layer{position:absolute; width:var(--player-card-size); height:var(--player-card-size); border-radius:50%; background:radial-gradient(circle at 36% 24%,#ffffff,#fbfdff 50%,#f1f6fb 78%,#dce7f0 100%); border:clamp(3px,.75vw,5px) solid rgba(255,255,255,.98); box-shadow:0 1px 0 rgba(148,163,184,.38),0 3px 0 rgba(226,232,240,.35),0 8px 13px rgba(15,23,42,.09),inset 0 -8px 15px rgba(15,23,42,.055),inset 0 0 0 1px rgba(15,23,42,.06); opacity:0; transform:translate3d(0,14px,0) scale(.995); transition:opacity .18s ease, transform .24s cubic-bezier(.16,.88,.24,1); will-change:transform,opacity; transform-origin:center center}
-    .pile-layer::before{content:""; position:absolute; inset:8px; border-radius:50%; border:1px solid rgba(148,163,184,.15); border-bottom-color:rgba(71,85,105,.22); opacity:.72}
-    .pile-layer::after{content:""; position:absolute; left:16%; right:16%; bottom:-2%; height:7%; border-radius:50%; background:radial-gradient(ellipse at 50% 0%,rgba(226,232,240,.52),rgba(203,213,225,.22) 42%,rgba(15,23,42,.10) 76%,transparent 77%); opacity:.20; transform:scaleY(.42); transform-origin:top center; box-shadow:0 7px 14px rgba(15,23,42,.13)}
+    .pile-layer{--paper-shade:0%; position:absolute; width:var(--player-card-size); height:var(--player-card-size); border-radius:50%; overflow:hidden; background:radial-gradient(circle at 36% 23%,hsl(210 100% calc(99% - var(--paper-shade))),hsl(210 70% calc(98% - var(--paper-shade))) 50%,hsl(211 48% calc(94% - var(--paper-shade))) 82%,hsl(212 34% calc(86% - var(--paper-shade))) 100%); border:clamp(3px,.72vw,5px) solid rgba(255,255,255,.99); box-shadow:0 1px 0 rgba(255,255,255,.86),0 5px 11px rgba(15,23,42,.055),inset -12px -16px 26px rgba(15,23,42,.052),inset 0 0 0 1px rgba(15,23,42,.052); opacity:0; transform:translate3d(0,14px,0) scale(.995); transition:opacity .18s ease, transform .24s cubic-bezier(.16,.88,.24,1); will-change:transform,opacity; transform-origin:center center}
+    .pile-layer::before{content:""; position:absolute; inset:clamp(7px,1.2vw,12px); border-radius:50%; background:conic-gradient(from 230deg,rgba(148,163,184,.18),transparent 18%,transparent 72%,rgba(255,255,255,.30) 86%,rgba(148,163,184,.12)); border:1px solid rgba(148,163,184,.13); opacity:.68}
+    .player-arena.refilling .pile-layer{transition:opacity .22s ease, transform .42s cubic-bezier(.12,.88,.16,1)}
     .game-card-slot > .match-card{position:relative; z-index:2}
     .game-card-slot > .match-card.preloaded-next-card{position:absolute; z-index:1; opacity:0; pointer-events:none; transform:translate3d(0,0,0) scale(.996); transition:opacity .055s linear, transform .085s cubic-bezier(.16,.88,.24,1); will-change:opacity,transform}
     .game-card-slot > .match-card.preloaded-next-card.ready{opacity:1; transform:translate3d(0,0,0) scale(1)}
@@ -224,10 +231,10 @@
       box-shadow:0 0 0 0 rgba(239,68,68,.36),0 0 40px rgba(239,68,68,.25);
     }
 
-    .win-overlay{position:fixed; inset:0; z-index:2000; display:grid; place-items:center; pointer-events:none; background:radial-gradient(circle at 50% 50%,rgba(59,130,246,.20),rgba(3,7,18,.42) 56%,rgba(3,7,18,.78)); animation:winFadeIn .22s ease-out; transition:background .85s ease, opacity .85s ease, transform .85s ease}
-    .win-overlay.leaving{opacity:0; transform:scale(1.035); background:radial-gradient(circle at 50% 50%,rgba(59,130,246,.06),rgba(3,7,18,.08) 58%,rgba(3,7,18,.18))}
+    .win-overlay{position:fixed; inset:0; z-index:2000; display:grid; place-items:center; pointer-events:none; background:radial-gradient(circle at 50% 50%,rgba(59,130,246,.20),rgba(3,7,18,.42) 56%,rgba(3,7,18,.78)); animation:winFadeIn .22s ease-out; transition:background 1.05s ease, opacity 1.05s ease, transform 1.05s ease}
+    .win-overlay.leaving{opacity:0; transform:scale(1.012); background:radial-gradient(circle at 50% 50%,rgba(59,130,246,.04),rgba(3,7,18,.05) 58%,rgba(3,7,18,.12))}
     .win-card{appearance:none; font-family:inherit; display:grid; gap:10px; justify-items:center; padding:24px 34px 26px; border-radius:32px; color:white; background:linear-gradient(135deg,rgba(37,99,235,.90),rgba(6,182,212,.75)); border:1px solid rgba(191,219,254,.55); box-shadow:0 34px 110px rgba(0,0,0,.48),0 0 0 10px rgba(255,255,255,.08); transform:scale(.86); animation:winPop .52s cubic-bezier(.12,.92,.12,1) forwards; pointer-events:none; cursor:default; transition:transform .85s cubic-bezier(.16,.84,.18,1), opacity .85s ease, filter .85s ease}
-    .win-overlay.leaving .win-card{transform:scale(.92); opacity:0; filter:blur(2px)}
+    .win-overlay.leaving .win-card{transform:scale(.96) translateY(-10px); opacity:0; filter:blur(1px)}
     .win-title{font-size:clamp(48px,9vw,118px); line-height:.82; font-weight:1000; letter-spacing:-.08em; text-shadow:0 12px 40px rgba(0,0,0,.34)}
     .win-sub{font-size:clamp(16px,2.3vw,28px); font-weight:950; color:#e0f2fe; transition:font-size .72s ease, opacity .72s ease, transform .72s ease}
     .win-action{display:none; font-weight:1000; letter-spacing:.02em}
@@ -236,7 +243,7 @@
     @keyframes cardPop{from{transform:scale(.982)}to{transform:scale(1)}}
     @keyframes dealIn{0%{transform:translate3d(0,-22px,0) scale(.94); opacity:.25}68%{transform:translate3d(0,3px,0) scale(1.018); opacity:1}100%{transform:translate3d(0,0,0) scale(1); opacity:1}}
     @keyframes cardFlipReveal{0%{transform:perspective(900px) rotateY(89deg) scale(.98); filter:brightness(1.15)}55%{transform:perspective(900px) rotateY(-8deg) scale(1.018)}100%{transform:perspective(900px) rotateY(0) scale(1); filter:brightness(1)}}
-    @keyframes countPulse{0%{transform:scale(.72); opacity:.3}72%{transform:scale(1.1); opacity:1}100%{transform:scale(1); opacity:1}}
+    @keyframes countPulse{0%{transform:translate(-50%,-50%) scale(.72); opacity:.3}72%{transform:translate(-50%,-50%) scale(1.1); opacity:1}100%{transform:translate(-50%,-50%) scale(1); opacity:1}}
     @keyframes feedbackPulse{
       0%{transform:translate(-50%,-50%) scale(.24); opacity:.92}
       58%{opacity:.72}
@@ -246,7 +253,7 @@
     @keyframes nearWinPulse{from{transform:scale(1); filter:brightness(1)}to{transform:scale(1.045); filter:brightness(1.18)}}
     @keyframes winFadeIn{from{opacity:0}to{opacity:1}}
     @keyframes winPop{0%{transform:scale(.75) rotate(-2deg); opacity:.25}70%{transform:scale(1.05) rotate(.8deg); opacity:1}100%{transform:scale(1) rotate(0); opacity:1}}
-    @keyframes playAgainAlive{from{filter:brightness(1); transform:scale(1)}to{filter:brightness(1.08); transform:scale(1.018)}}
+    @keyframes refillSettle{0%{opacity:.22; transform:translateY(-18px) scale(.985)}58%{opacity:1; transform:translateY(2px) scale(1.012)}100%{opacity:1; transform:translateY(0) scale(1)}}
     @keyframes confettiBurst{0%{opacity:1; transform:translate(-50%,-50%) rotate(var(--r)) scale(.2)}82%{opacity:1}100%{opacity:0; transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) rotate(calc(var(--r) + 520deg)) scale(1)}}
     .game-screen .symbol{transition:background .045s, outline-color .045s, box-shadow .045s; text-shadow:0 2px 0 rgba(255,255,255,.50),0 1px 4px rgba(15,23,42,.14); will-change:auto}
     .game-screen .symbol.selected{outline:5px solid var(--blue); background:rgba(37,99,235,.13); box-shadow:0 0 0 7px rgba(37,99,235,.12)}
@@ -254,11 +261,10 @@
     .game-screen .match-card{box-shadow:0 18px 38px rgba(0,0,0,.30), inset 0 -10px 28px rgba(15,23,42,.08)}
     .game-screen .symbol-label{display:none}
 
-    @media (max-width:1100px){.play-guide{display:none}}
-    @media (max-width:980px){.hero{grid-template-columns:1fr}.navtabs{justify-content:flex-start}.statgrid{grid-template-columns:repeat(2,minmax(130px,1fr))}.pairtester{grid-template-columns:1fr}.game-hud{grid-template-columns:1fr}.hud-options{display:none}.guide-card{min-height:54px; grid-template-columns:auto 1fr; padding:7px 9px}.guide-card:nth-child(2),.guide-card:nth-child(3){display:none}.guide-mini{--card-size:42px}.arena{grid-template-rows:minmax(0,38fr) minmax(0,62fr)}.players-row{grid-template-columns:1fr; gap:0; transform:translateY(clamp(-18px,-2vh,-8px))}.middle-zone .match-card{--card-size:min(92vw,40vh,510px)}.player-arena{--player-card-size:min(88vw,31vh,430px); padding-bottom:clamp(62px,7vh,82px)}.player-arena.p1{order:2}.player-arena.p2{order:1}.game-screen .player-arena.p1 .player-head,.game-screen .player-arena.p2 .player-head{left:16px; right:auto}.game-screen .player-foot{bottom:-22px}}
+    @media (max-width:980px){.hero{grid-template-columns:1fr}.navtabs{justify-content:flex-start}.statgrid{grid-template-columns:repeat(2,minmax(130px,1fr))}.pairtester{grid-template-columns:1fr}.instructions-hero{display:grid; align-items:start}.instructions-grid{grid-template-columns:1fr}.guide-card.primary{grid-row:auto}.guide-players{grid-template-columns:1fr 1fr}.game-hud{grid-template-columns:1fr}.hud-options{display:none}.arena{grid-template-rows:minmax(0,38fr) minmax(0,62fr)}.players-row{grid-template-columns:1fr; gap:0; transform:translateY(clamp(-18px,-2vh,-8px))}.middle-zone .match-card{--card-size:min(92vw,40vh,510px)}.player-arena{--player-card-size:min(88vw,31vh,430px); padding-bottom:clamp(62px,7vh,82px)}.player-arena.p1{order:2}.player-arena.p2{order:1}.game-screen .player-arena.p1 .player-head,.game-screen .player-arena.p2 .player-head{left:16px; right:auto}.game-screen .player-foot{bottom:-22px}.play-countdown{font-size:clamp(82px,24vw,180px)}.play-countdown.go{font-size:clamp(48px,16vw,112px)}}
     @media (min-width:981px) and (max-height:800px){.middle-zone .match-card{--card-size:min(62vw,calc((100vh - 104px) * .565),600px)}.player-arena{--player-card-size:min(48vw,39.8vh,510px); padding-bottom:54px}.game-screen .player-foot{bottom:-46px}}
-    @media (max-width:980px) and (max-height:760px){.middle-zone .match-card{--card-size:min(86vw,40vh,440px)}.player-arena{--player-card-size:min(82vw,28vh,400px); padding-bottom:58px}.game-screen .player-foot{bottom:-18px}}
-    @media (max-width:560px){.app{width:100%; padding:10px 10px 28px}.hero,.panel{border-radius:20px}.surface{border-radius:20px}.statgrid{grid-template-columns:1fr}.cardsgrid{grid-template-columns:1fr}.match-card{--card-size:min(86vw,330px)}.controlgroup{width:100%}.controlgroup > *{flex:1}.tabbtn,.primary,.ghost,.dangerbtn{padding:10px 12px}.game-screen{padding:6px}.scoreline{grid-template-columns:1fr 1fr}.scoreline #gameStatus{grid-column:1/-1; order:3}.scorepill{min-height:46px;padding:5px 9px}.score-num{font-size:32px}.hud-buttons{justify-content:center}.player-head,.player-foot{font-size:12px}.selected-name{max-width:48%}.play-guide{display:none}.arena{grid-template-rows:minmax(0,34fr) minmax(0,66fr); gap:0}.middle-zone{padding-bottom:0}.middle-zone .match-card{--card-size:min(84vw,28.5vh,318px)}.player-arena{--player-card-size:min(84vw,20vh,238px); padding-bottom:62px}.players-row{gap:0; transform:translateY(4px)}.game-screen .player-head{bottom:4px; min-height:24px; padding:4px 9px}.game-screen .player-foot{bottom:30px}.coolbar{height:5px; width:min(calc(var(--player-card-size) * .48),150px)}.game-screen .player-foot.cooling .cooltext{font-size:11px}.win-title{font-size:clamp(34px,12vw,54px)}.win-card{min-width:min(330px,88vw)}}
+    @media (max-width:980px) and (max-height:760px){.middle-zone .match-card{--card-size:min(86vw,40vh,440px)}.player-arena{--player-card-size:min(82vw,28vh,400px); padding-bottom:58px}.game-screen .player-foot{bottom:-10px}}
+    @media (max-width:560px){.app{width:100%; padding:10px 10px 28px}.hero,.panel{border-radius:20px}.surface{border-radius:20px}.statgrid{grid-template-columns:1fr}.cardsgrid{grid-template-columns:1fr}.match-card{--card-size:min(86vw,330px)}.controlgroup{width:100%}.controlgroup > *{flex:1}.tabbtn,.primary,.ghost,.dangerbtn{padding:10px 12px}.game-screen{padding:6px}.scoreline{grid-template-columns:1fr 1fr}.scoreline #gameStatus{grid-column:1/-1; order:3}.scorepill{min-height:46px;padding:5px 9px}.score-num{font-size:32px}.hud-buttons{justify-content:center}.player-head,.player-foot{font-size:12px}.selected-name{max-width:48%}.guide-players{grid-template-columns:1fr}.guide-match-visual{flex-wrap:wrap}.guide-example-card{--card-size:min(38vw,170px)}.arena{grid-template-rows:minmax(0,34fr) minmax(0,66fr); gap:0}.middle-zone{padding-bottom:0}.middle-zone .match-card{--card-size:min(84vw,28.5vh,318px)}.player-arena{--player-card-size:min(84vw,20vh,238px); padding-bottom:62px}.players-row{gap:0; transform:translateY(4px)}.game-screen .player-head{bottom:4px; min-height:24px; padding:4px 9px}.game-screen .player-foot{bottom:30px}.coolbar{height:5px; width:min(calc(var(--player-card-size) * .48),150px)}.game-screen .player-foot.cooling .cooltext{font-size:11px}.win-title{font-size:clamp(34px,12vw,54px)}.win-card{min-width:min(330px,88vw)}#middleStart{width:clamp(82px,22vw,126px); height:clamp(82px,22vw,126px); font-size:clamp(15px,5vw,22px)}}
     @media (max-height:760px) and (max-width:560px){.game-screen{padding:4px}.scorepill{min-height:42px}.score-num{font-size:28px}.arena{grid-template-rows:minmax(0,32fr) minmax(0,68fr)}.middle-zone .match-card{--card-size:min(80vw,25vh,244px)}.player-arena{--player-card-size:min(80vw,18vh,180px); padding-bottom:52px}.players-row{transform:translateY(4px)}.game-screen .player-head{bottom:6px}.game-screen .player-foot{bottom:28px}}
   </style>
 </head>
@@ -278,6 +284,7 @@
       </section>
       <nav class="navtabs" aria-label="Main views">
         <button class="tabbtn active" data-tab="game">Play</button>
+        <button class="tabbtn" data-tab="instructions">Instructions</button>
         <button class="tabbtn" data-tab="browse">Cards</button>
         <button class="tabbtn" data-tab="how">How it works</button>
       </nav>
@@ -313,6 +320,7 @@
         <div class="game-hud">
           <div class="hud-buttons">
             <button id="exitGame">Cards</button>
+            <button id="showInstructions">Instructions</button>
             <button id="startGame">Start / restart</button>
           </div>
           <div class="scoreline">
@@ -327,7 +335,7 @@
           </div>
         </div>
         <div class="arena">
-          <section class="middle-zone"><div class="game-card-slot" id="middleSlot"></div><div class="start-overlay hidden" id="startOverlay"><div class="start-panel"><button id="middleStart">START</button><div class="countdown-text hidden" id="countdownText"></div></div></div></section>
+          <section class="middle-zone"><div class="game-card-slot" id="middleSlot"></div><div class="start-overlay hidden" id="startOverlay"><div class="start-panel"><button id="middleStart">START</button></div></div></section>
           <section class="players-row">
             <div class="player-arena p1" id="p1Panel">
               <div class="player-head"><span class="player-name">Player 1 · Arrows</span><span class="selected-name" id="p1Selected">No symbol</span></div>
@@ -343,20 +351,47 @@
             </div>
           </section>
         </div>
-        <aside class="play-guide" id="playGuide" aria-label="Quick play instructions">
-          <div class="guide-card">
-            <div class="guide-visual" id="guideMatch"></div>
-            <div><div class="guide-title">Find the shared object</div><div class="guide-copy">One object appears on your card and the middle card.</div></div>
+        <div class="play-countdown hidden" id="playCountdown" aria-live="polite"></div>
+      </section>
+
+      <section id="tab-instructions" class="panel tabpane hidden">
+        <div class="surface">
+          <div class="instructions-hero">
+            <div>
+              <h2>How to play</h2>
+              <p>Find the one shared object, move your dot onto it, then press your answer key.</p>
+            </div>
+            <button class="primary" id="backToPlayTop">Back to Play</button>
           </div>
-          <div class="guide-card">
-            <div class="guide-visual"><span class="guide-key">W</span><span class="guide-key">A</span><span class="guide-key">S</span><span class="guide-key">D</span><span class="guide-dot p2"></span><span class="guide-dot"></span></div>
-            <div><div class="guide-title">Move your dot</div><div class="guide-copy">WASD controls Player 2. Arrows control Player 1.</div></div>
+          <div class="instructions-grid" id="instructionsGuide" aria-label="Quick play instructions">
+            <div class="guide-card primary">
+              <div><div class="guide-step">Step 1</div><div class="guide-title">Find the match</div><div class="guide-copy">One object appears on both cards. The highlighted object is the answer.</div></div>
+              <div class="guide-visual guide-match-visual" id="guideMatch"></div>
+            </div>
+            <div class="guide-card">
+              <div><div class="guide-step">Step 2</div><div class="guide-title">Move your dot</div><div class="guide-copy">Left player uses WASD. Right player uses the arrow keys.</div></div>
+              <div class="guide-players">
+                <div class="guide-player left">
+                  <div class="guide-control-card-slot" id="guideWasdCard"></div>
+                  <div class="guide-keys"><span class="guide-key">W</span><span class="guide-key">A</span><span class="guide-key">S</span><span class="guide-key">D</span><span class="guide-dot p2"></span></div>
+                </div>
+                <div class="guide-player right">
+                  <div class="guide-control-card-slot" id="guideArrowCard"></div>
+                  <div class="guide-keys"><span class="guide-key">&uarr;</span><span class="guide-key">&larr;</span><span class="guide-key">&darr;</span><span class="guide-key">&rarr;</span><span class="guide-dot"></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="guide-card">
+              <div><div class="guide-step">Step 3</div><div class="guide-title">Answer fast</div><div class="guide-copy">Press the key after your dot is on the shared object. Wrong guesses pause you briefly.</div></div>
+              <div class="answer-demo">
+                <div class="answer-row"><span>Left player answers with</span><span class="guide-key wide">Space</span><span class="answer-mark ok">OK</span></div>
+                <div class="answer-row"><span>Right player answers with</span><span class="guide-key wide">Enter</span><span class="answer-mark ok">OK</span></div>
+                <div class="cooldown-demo"><span>Wrong guess cooldown</span><div class="coolbar"><span style="transform:scaleX(.58)"></span></div></div>
+              </div>
+            </div>
           </div>
-          <div class="guide-card">
-            <div class="guide-visual"><span class="guide-key wide">Space</span><span class="guide-key wide">Enter</span></div>
-            <div><div class="guide-title">Answer fast</div><div class="guide-copy">Press your answer key. Wrong guesses trigger cooldown.</div></div>
-          </div>
-        </aside>
+          <div class="instructions-actions"><button class="primary" id="backToPlayBottom">Back to Play</button></div>
+        </div>
       </section>
 
       <section id="tab-how" class="panel tabpane hidden explain">
@@ -1053,13 +1088,28 @@ No symbol selected: answer key does nothing</pre>
     }
     function renderGuideExamples(){
       const target = document.getElementById("guideMatch");
+      const wasdTarget = document.getElementById("guideWasdCard");
+      const arrowTarget = document.getElementById("guideArrowCard");
       if(!target) return;
       const deck = activeDeck();
       const left = deck[0];
       const right = deck.find(card => card.id !== left.id && sharedSymbolIds(left, card).length === 1) || deck[1];
+      const shared = sharedSymbolIds(left, right)[0];
       target.innerHTML = "";
-      target.appendChild(createCardElement(left, { className:"guide-mini", hintSymbolId:sharedSymbolIds(left, right)[0], eagerImages:false }));
-      target.appendChild(createCardElement(right, { className:"guide-mini", hintSymbolId:sharedSymbolIds(left, right)[0], eagerImages:false }));
+      target.appendChild(createCardElement(left, { className:"guide-example-card", hintSymbolId:shared, eagerImages:false }));
+      const versus = document.createElement("div");
+      versus.className = "guide-versus";
+      versus.textContent = "=";
+      target.appendChild(versus);
+      target.appendChild(createCardElement(right, { className:"guide-example-card", hintSymbolId:shared, eagerImages:false }));
+      if(wasdTarget){
+        wasdTarget.innerHTML = "";
+        wasdTarget.appendChild(createCardElement(left, { className:"guide-control-card", cursor:{ x:42, y:58 }, p2:true, eagerImages:false }));
+      }
+      if(arrowTarget){
+        arrowTarget.innerHTML = "";
+        arrowTarget.appendChild(createCardElement(right, { className:"guide-control-card", cursor:{ x:60, y:58 }, eagerImages:false }));
+      }
     }
     function setTab(name){
       document.querySelectorAll(".tabbtn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
@@ -1169,30 +1219,65 @@ No symbol selected: answer key does nothing</pre>
       slot.appendChild(el);
       return el;
     }
-    function showStartOverlay(mode = "button", text = ""){
+    function showStartOverlay(mode = "button"){
       const overlay = document.getElementById("startOverlay");
       const panel = overlay.querySelector(".start-panel");
       const btn = document.getElementById("middleStart");
-      const count = document.getElementById("countdownText");
+      positionStartOverlay();
       overlay.classList.remove("hidden");
-      panel.classList.toggle("play-again", mode === "play-again");
+      panel.classList.remove("play-again");
       btn.classList.toggle("hidden", mode !== "button");
-      if(mode === "play-again"){
-        btn.classList.remove("hidden");
-        btn.textContent = "PLAY AGAIN";
-      } else {
-        btn.textContent = "START";
-      }
-      count.classList.toggle("hidden", mode !== "count");
-      if(mode === "count"){
-        count.textContent = text;
-        count.classList.toggle("go", String(text).toUpperCase() === "GO!");
-        count.style.animation = "none";
-        void count.offsetWidth;
-        count.style.animation = "";
-      }
+      btn.textContent = "START";
     }
     function hideStartOverlay(){ document.getElementById("startOverlay").classList.add("hidden"); }
+    function positionStartOverlay(){
+      const overlay = document.getElementById("startOverlay");
+      const card = document.querySelector("#middleSlot .match-card");
+      if(!overlay || !card) return;
+      const r = card.getBoundingClientRect();
+      overlay.style.setProperty("--start-x", `${(r.left + r.width / 2).toFixed(1)}px`);
+      overlay.style.setProperty("--start-y", `${(r.top + r.height / 2).toFixed(1)}px`);
+    }
+    function positionCountdown(){
+      const count = document.getElementById("playCountdown");
+      const p1Card = document.querySelector("#p1Slot .active-player-card");
+      const p2Card = document.querySelector("#p2Slot .active-player-card");
+      if(!count || !p1Card || !p2Card) return;
+      const r1 = p1Card.getBoundingClientRect();
+      const r2 = p2Card.getBoundingClientRect();
+      const c1 = { x:r1.left + r1.width / 2, y:r1.top + r1.height / 2 };
+      const c2 = { x:r2.left + r2.width / 2, y:r2.top + r2.height / 2 };
+      let x = (c1.x + c2.x) / 2;
+      let y;
+      if(Math.abs(c1.x - c2.x) < Math.max(r1.width, r2.width) * .42){
+        const topCard = c1.y < c2.y ? r1 : r2;
+        const bottomCard = c1.y < c2.y ? r2 : r1;
+        y = Math.max(topCard.bottom + 26, Math.min(bottomCard.top - 22, (topCard.bottom + bottomCard.top) / 2));
+      } else {
+        y = Math.min(c1.y, c2.y) - Math.max(36, Math.min(r1.height, r2.height) * .10);
+      }
+      const half = Math.min(155, Math.max(75, Math.min(innerWidth, innerHeight) * .08));
+      x = Math.max(half, Math.min(innerWidth - half, x));
+      y = Math.max(half + 20, Math.min(innerHeight - half - 10, y));
+      count.style.setProperty("--countdown-x", `${x.toFixed(1)}px`);
+      count.style.setProperty("--countdown-y", `${y.toFixed(1)}px`);
+    }
+    function showPlayCountdown(text){
+      const count = document.getElementById("playCountdown");
+      count.textContent = text;
+      positionCountdown();
+      count.classList.remove("hidden");
+      count.classList.toggle("go", String(text).toUpperCase() === "GO!");
+      count.classList.remove("show");
+      void count.offsetWidth;
+      count.classList.add("show");
+    }
+    function hidePlayCountdown(){
+      const count = document.getElementById("playCountdown");
+      count.classList.remove("show","go");
+      count.classList.add("hidden");
+      count.textContent = "";
+    }
     function resetPanelsForCleanStart(){
       for(const which of ["p1","p2"]){
         const player = game[which];
@@ -1210,15 +1295,16 @@ No symbol selected: answer key does nothing</pre>
       document.querySelectorAll(".symbol.selected,.symbol.p2selected").forEach(el => el.classList.remove("selected","p2selected"));
       document.querySelectorAll(".cursor-dot").forEach(el => el.classList.add("idle"));
     }
-    function showCleanStart(playAgain = false){
+    function showCleanStart(){
       clearCountdown();
       game.running = false;
       game.counting = false;
       game.revealed = false;
+      hidePlayCountdown();
       resetPanelsForCleanStart();
       updateScores();
       mountMiddleCard(true);
-      showStartOverlay(playAgain ? "play-again" : "button");
+      showStartOverlay("button");
       updateGuideVisibility();
     }
     function mountMiddleCard(faceDown = false, reveal = false){
@@ -1227,7 +1313,6 @@ No symbol selected: answer key does nothing</pre>
       if(faceDown || !game.middle){
         const back = document.createElement("div");
         back.className = "match-card card-back";
-        back.innerHTML = '<div class="back-mark">▶</div>'; 
         slot.appendChild(back);
         return back;
       }
@@ -1245,9 +1330,22 @@ No symbol selected: answer key does nothing</pre>
         layer.className = "pile-layer";
         layer.dataset.layer = String(i);
         layer.style.zIndex = String(total - i);
+        layer.style.setProperty("--paper-shade", `${(i % 5) * .45}%`);
         pile.appendChild(layer);
       }
       return pile;
+    }
+    function pileLayerStyle(which, depth, cooling = false){
+      const side = which === "p1" ? 1 : -1;
+      const dx = side * (Math.sin(depth * 1.91) * .70 + depth * .16);
+      const dy = depth * (cooling ? .30 : 1.48);
+      const rot = side * (Math.sin(depth * .83) * .18 + depth * .035);
+      const scale = 1 - Math.min(cooling ? .014 : .026, depth * (cooling ? .0011 : .0020));
+      const opacity = Math.max(.72, .98 - depth * .022);
+      return {
+        opacity: opacity.toFixed(3),
+        transform: `translate3d(${dx.toFixed(2)}px,${dy.toFixed(2)}px,0) rotate(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)},${(scale * .998).toFixed(3)})`
+      };
     }
     function updatePile(which){
       const player = game[which];
@@ -1259,19 +1357,14 @@ No symbol selected: answer key does nothing</pre>
       const activeCardsLeft = Math.max(0, game.target - player.score);
       const behindCards = Math.max(0, activeCardsLeft - (player.card ? 1 : 0));
       const visible = Math.min(pile.children.length, behindCards, 10);
-      const side = which === "p1" ? 1 : -1;
       const cooling = player.cooldownUntil > now();
       pile.querySelectorAll(".pile-layer").forEach((layer, idx) => {
         const show = idx < visible;
         const depth = idx + 1;
         if(show){
-          const dx = side * (Math.sin(depth * 1.91) * .58 + depth * .08);
-          const dy = depth * (cooling ? .34 : 1.12);
-          const rot = side * (Math.sin(depth * .83) * .20 + depth * .026);
-          const scale = 1 - Math.min(cooling ? .014 : .022, depth * (cooling ? .0011 : .0017));
-          const opacity = Math.max(.62, .96 - depth * .028);
-          layer.style.opacity = opacity.toFixed(3);
-          layer.style.transform = `translate3d(${dx.toFixed(2)}px,${dy.toFixed(2)}px,0) rotate(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)},${(scale * .996).toFixed(3)})`;
+          const style = pileLayerStyle(which, depth, cooling);
+          layer.style.opacity = style.opacity;
+          layer.style.transform = style.transform;
         } else {
           layer.style.opacity = "0";
           layer.style.transform = `translate3d(0,${(12 + idx * .45).toFixed(1)}px,0) scale(.995)`;
@@ -1279,6 +1372,34 @@ No symbol selected: answer key does nothing</pre>
       });
     }
     function updatePiles(){ updatePile("p1"); updatePile("p2"); }
+    function animatePileRefill(which){
+      const panel = game[which].panel;
+      const slot = document.getElementById(which === "p1" ? "p1Slot" : "p2Slot");
+      const pile = slot.querySelector(".card-pile");
+      if(!panel || !pile) return;
+      panel.classList.add("refilling");
+      const visible = Math.min(pile.children.length, Math.max(0, game.target - 1), 10);
+      pile.querySelectorAll(".pile-layer").forEach((layer, idx) => {
+        const depth = idx + 1;
+        if(idx >= visible){
+          layer.style.opacity = "0";
+          return;
+        }
+        layer.style.transitionDelay = `${idx * 42}ms`;
+        layer.style.opacity = "0";
+        layer.style.transform = `translate3d(0,${(-30 - idx * 6).toFixed(1)}px,0) scale(.982)`;
+        requestAnimationFrame(() => {
+          const style = pileLayerStyle(which, depth, false);
+          layer.style.opacity = style.opacity;
+          layer.style.transform = style.transform;
+        });
+      });
+      setTimeout(() => {
+        panel.classList.remove("refilling");
+        pile.querySelectorAll(".pile-layer").forEach(layer => { layer.style.transitionDelay = ""; });
+        updatePile(which);
+      }, 760);
+    }
     function nextDeckCardForPreload(which){
       const player = game[which];
       if(!player.card || game.ended) return null;
@@ -1394,8 +1515,9 @@ No symbol selected: answer key does nothing</pre>
     function clearCountdown(){
       if(countdownTimer){ clearTimeout(countdownTimer); countdownTimer = null; }
       game.counting = false;
+      hidePlayCountdown();
     }
-    function setupGame(switchTab = true){
+    function setupGame(switchTab = true, opts = {}){
       clearCountdown();
       game.target = Math.max(1, Math.min(50, Number(document.getElementById("targetScore").value) || 10));
       const seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
@@ -1418,13 +1540,13 @@ No symbol selected: answer key does nothing</pre>
       game.keys.p2 = {left:false,right:false,up:false,down:false};
       game.p1.panel.classList.remove("winner");
       game.p2.panel.classList.remove("winner");
-      document.querySelectorAll(".win-overlay").forEach(el => el.remove());
+      if(!opts.preserveWinOverlay) document.querySelectorAll(".win-overlay").forEach(el => el.remove());
       updateScores();
       mountPlayerCard("p1", true);
       mountPlayerCard("p2", true);
       updateCooldownUi("p1");
       updateCooldownUi("p2");
-      showCleanStart(false);
+      showCleanStart();
       setStatus("Press START on the middle card. WASD left, arrows right.");
       if(switchTab) setTab("game");
     }
@@ -1433,12 +1555,13 @@ No symbol selected: answer key does nothing</pre>
       ensureAudio();
       game.counting = true;
       updateGuideVisibility();
+      hideStartOverlay();
       game.keys.p1 = {left:false,right:false,up:false,down:false};
       game.keys.p2 = {left:false,right:false,up:false,down:false};
       const steps = ["3","2","1","GO!"];
       let i = 0;
       const advance = () => {
-        showStartOverlay("count", steps[i]);
+        showPlayCountdown(steps[i]);
         setStatus(i < 3 ? `Starting in ${steps[i]}…` : "Go! Shared symbol, then answer.");
         i += 1;
         if(i < steps.length){
@@ -1450,7 +1573,7 @@ No symbol selected: answer key does nothing</pre>
             game.running = true;
             game.revealed = true;
             updateScores();
-            hideStartOverlay();
+            hidePlayCountdown();
             mountMiddleCard(false, true);
             updateGuideVisibility();
             setStatus("Go! Shared symbol, then answer. WASD left · arrows right.");
@@ -1603,11 +1726,18 @@ No symbol selected: answer key does nothing</pre>
         overlay.classList.add("leaving");
       }, 1550);
       setTimeout(() => {
-        showCleanStart(true);
+        setupGame(false, { preserveWinOverlay:true });
+        game.p1.panel.classList.add("refilling");
+        game.p2.panel.classList.add("refilling");
+        animatePileRefill("p1");
+        animatePileRefill("p2");
+        setStatus("Press START on the middle card. WASD left, arrows right.");
+      }, 2140);
+      setTimeout(() => {
+        overlay.remove();
         game.p1.panel.classList.remove("reset-fade");
         game.p2.panel.classList.remove("reset-fade");
-      }, 1980);
-      setTimeout(() => overlay.remove(), 2850);
+      }, 2820);
     }
     function answer(which){
       if(!game.running || game.ended) return;
@@ -1744,6 +1874,9 @@ No symbol selected: answer key does nothing</pre>
 
     document.querySelectorAll(".tabbtn").forEach(btn => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
     document.getElementById("exitGame").addEventListener("click", () => setTab("browse"));
+    document.getElementById("showInstructions").addEventListener("click", () => setTab("instructions"));
+    document.getElementById("backToPlayTop").addEventListener("click", () => setTab("game"));
+    document.getElementById("backToPlayBottom").addEventListener("click", () => setTab("game"));
     document.getElementById("deckMode").addEventListener("change", e => { deckMode = e.target.value; renderCards(); renderGuideExamples(); if(game.middle) setupGame(false); });
     document.getElementById("showNames").addEventListener("change", e => { showNames = e.target.checked; renderCards(); if(game.middle){ mountMiddleCard(!game.revealed); mountPlayerCard("p1"); mountPlayerCard("p2"); } });
     document.getElementById("visualShuffle").addEventListener("click", () => { layoutSalt = (layoutSalt * 1664525 + 1013904223) >>> 0; localStorage.setItem("oneSymbol.layoutSalt", String(layoutSalt)); layoutCache.clear(); renderCards(); renderGuideExamples(); if(game.middle){ mountMiddleCard(!game.revealed); mountPlayerCard("p1"); mountPlayerCard("p2"); } });
@@ -1763,6 +1896,10 @@ No symbol selected: answer key does nothing</pre>
       } else {
         beginCountdown();
       }
+    });
+    window.addEventListener("resize", () => {
+      if(game.counting) positionCountdown();
+      if(!document.getElementById("startOverlay").classList.contains("hidden")) positionStartOverlay();
     });
 
     function setKey(which, dir, value){ game.keys[which][dir] = value; }

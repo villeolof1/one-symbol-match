@@ -44,7 +44,7 @@ async function layoutMetrics(page) {
     const cards = [...document.querySelectorAll(".game-screen .match-card:not(.preloaded-next-card)")].map(rectPayload);
     const labels = [...document.querySelectorAll(".game-screen .player-head")].map(rectPayload);
     const cooldowns = [...document.querySelectorAll(".game-screen .player-foot.cooling")].map(rectPayload);
-    const guides = [...document.querySelectorAll(".play-guide:not(.hidden-guide)")]
+    const guides = [...document.querySelectorAll(".game-screen .play-guide:not(.hidden-guide)")]
       .filter((guide) => getComputedStyle(guide).display !== "none" && Number(getComputedStyle(guide).opacity) > 0.05)
       .map(rectPayload);
     const activeCards = [...document.querySelectorAll(".active-player-card")].map(rectPayload);
@@ -57,11 +57,15 @@ async function layoutMetrics(page) {
       const footRect = foot ? foot.getBoundingClientRect() : null;
       const firstVisible = [...pile.children].find((layer) => Number(getComputedStyle(layer).opacity) > 0.05);
       const layerRect = firstVisible ? firstVisible.getBoundingClientRect() : null;
+      const pileStyle = getComputedStyle(pile);
       return {
         ...payload,
         hasVisibleLayer: !!firstVisible,
         behindCard: !cardRect || !layerRect || layerRect.top >= cardRect.top - 8,
-        overlapsCooldown: !!footRect && layerRect && layerRect.bottom > footRect.top && layerRect.top < footRect.bottom && layerRect.right > footRect.left && layerRect.left < footRect.right
+        overlapsCooldown: !!footRect && layerRect && layerRect.bottom > footRect.top && layerRect.top < footRect.bottom && layerRect.right > footRect.left && layerRect.left < footRect.right,
+        filter: pileStyle.filter,
+        firstLayerAfterContent: firstVisible ? getComputedStyle(firstVisible, "::after").content : "none",
+        visibleLayers: [...pile.children].filter((layer) => Number(getComputedStyle(layer).opacity) > 0.05).length
       };
     });
     const middle = document.querySelector(".middle-zone .match-card");
@@ -74,7 +78,7 @@ function hasClipped(metrics) {
 }
 
 function hasBadPile(metrics) {
-  return metrics.piles.some((pile) => pile.hasVisibleLayer && (!pile.behindCard || pile.overlapsCooldown || pile.clipped));
+  return metrics.piles.some((pile) => pile.hasVisibleLayer && (!pile.behindCard || pile.overlapsCooldown || pile.clipped || pile.filter !== "none" || pile.firstLayerAfterContent !== "none"));
 }
 
 async function forceWrong(page, which = "p1") {
@@ -119,18 +123,21 @@ async function run() {
   const initialState = await page.evaluate(() => {
     const gameTab = document.getElementById("tab-game");
     const startButton = document.getElementById("middleStart");
-    const guide = document.getElementById("playGuide");
     const middle = document.querySelector("#middleSlot .card-back");
+    const br = startButton.getBoundingClientRect();
+    const mr = middle ? middle.getBoundingClientRect() : null;
     return {
       gameVisible: !gameTab.classList.contains("hidden"),
       bodyGameActive: document.body.classList.contains("game-active"),
       activeTab: document.querySelector(".tabbtn.active")?.dataset.tab,
       startVisible: !startButton.classList.contains("hidden"),
       startText: startButton.textContent,
-      guideVisible: !!guide && getComputedStyle(guide).display !== "none" && Number(getComputedStyle(guide).opacity) > 0.5,
-      guideCards: document.querySelectorAll("#playGuide .guide-card").length,
-      guideMiniCards: document.querySelectorAll("#playGuide .guide-mini").length,
+      buttonRound: Math.abs(br.width - br.height) < 2 && (getComputedStyle(startButton).borderTopLeftRadius.includes("%") || parseFloat(getComputedStyle(startButton).borderTopLeftRadius) >= br.width * 0.45),
+      noGameGuide: !document.querySelector("#tab-game .guide-card, #tab-game .play-guide, #tab-game #guideMatch"),
+      instructionsNav: !!document.querySelector('[data-tab="instructions"]'),
       middleBack: !!middle,
+      noBackMark: !document.querySelector("#middleSlot .back-mark"),
+      buttonCenterDelta: mr ? Math.hypot((br.left + br.width / 2) - (mr.left + mr.width / 2), (br.top + br.height / 2) - (mr.top + mr.height / 2)) : 999,
       running: game.running,
       counting: game.counting,
       ended: game.ended
@@ -139,12 +146,30 @@ async function run() {
   const initialLayout = await layoutMetrics(page);
   await page.screenshot({ path: path.join(outDir, "tempo-initial-play.png"), fullPage: false });
 
+  await page.evaluate(() => setTab("instructions"));
+  await page.waitForTimeout(160);
+  const instructionsState = await page.evaluate(() => ({
+    visible: !document.getElementById("tab-instructions").classList.contains("hidden"),
+    activeTab: document.querySelector(".tabbtn.active")?.dataset.tab,
+    guideCards: document.querySelectorAll("#instructionsGuide .guide-card").length,
+    guideExampleCards: document.querySelectorAll("#instructionsGuide .guide-example-card").length,
+    guideControlCards: document.querySelectorAll("#instructionsGuide .guide-control-card").length,
+    highlightedSymbols: document.querySelectorAll("#instructionsGuide .symbol.sharedhint").length,
+    keyCount: document.querySelectorAll("#instructionsGuide .guide-key").length,
+    dotCount: document.querySelectorAll("#instructionsGuide .guide-dot").length,
+    cooldownDemo: !!document.querySelector("#instructionsGuide .cooldown-demo .coolbar"),
+    backButtons: document.querySelectorAll("#tab-instructions button[id^='backToPlay']").length,
+    titleSize: parseFloat(getComputedStyle(document.querySelector("#tab-instructions h2")).fontSize),
+    surfaceHeight: document.querySelector("#tab-instructions .surface").getBoundingClientRect().height,
+    playerOrder: [...document.querySelectorAll("#instructionsGuide .guide-player")].map((el) => el.classList.contains("left") ? "wasd" : "arrows").join(",")
+  }));
+  await page.screenshot({ path: path.join(outDir, "tempo-instructions.png"), fullPage: false });
+
   await setupRunningGame(page);
   const desktopBefore = await layoutMetrics(page);
   const guideDuringRun = await page.evaluate(() => {
-    const guide = document.getElementById("playGuide");
     return {
-      visible: !!guide && getComputedStyle(guide).display !== "none" && Number(getComputedStyle(guide).opacity) > 0.15,
+      visible: !!document.querySelector("#tab-game .guide-card, #tab-game .play-guide, #tab-game #guideMatch"),
       playingClass: document.getElementById("tab-game").classList.contains("playing")
     };
   });
@@ -284,7 +309,32 @@ async function run() {
       setTimeout(() => {
         samples.push({
           ms: Math.round(performance.now() - start),
-          text: document.getElementById("countdownText").textContent,
+          text: document.getElementById("playCountdown").textContent,
+          visible: document.getElementById("playCountdown").classList.contains("show"),
+          inStartOverlay: !!document.querySelector("#startOverlay #playCountdown"),
+          middleBack: !!document.querySelector("#middleSlot .card-back"),
+          countdownRect: (() => {
+            const r = document.getElementById("playCountdown").getBoundingClientRect();
+            return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+          })(),
+          countdownPosition: (() => {
+            const cr = document.getElementById("playCountdown").getBoundingClientRect();
+            const p1 = document.querySelector("#p1Slot .active-player-card").getBoundingClientRect();
+            const p2 = document.querySelector("#p2Slot .active-player-card").getBoundingClientRect();
+            const p1c = { x: p1.left + p1.width / 2, y: p1.top + p1.height / 2 };
+            const p2c = { x: p2.left + p2.width / 2, y: p2.top + p2.height / 2 };
+            const expectedX = (p1c.x + p2c.x) / 2;
+            const centerX = cr.left + cr.width / 2;
+            const centerY = cr.top + cr.height / 2;
+            return {
+              xDelta: Math.abs(centerX - expectedX),
+              centerX,
+              centerY,
+              playerCenterY: Math.min(p1c.y, p2c.y),
+              overlapsP1: cr.left < p1.right && cr.right > p1.left && cr.top < p1.bottom && cr.bottom > p1.top,
+              overlapsP2: cr.left < p2.right && cr.right > p2.left && cr.top < p2.bottom && cr.bottom > p2.top
+            };
+          })(),
           running: game.running,
           counting: game.counting
         });
@@ -301,9 +351,21 @@ async function run() {
     await sampleAt(620);
     return samples;
   });
+
+  await page.evaluate(() => {
+    setupGame(false);
+    beginCountdown();
+  });
+  await page.waitForTimeout(140);
+  await page.screenshot({ path: path.join(outDir, "tempo-countdown-3.png"), fullPage: false });
+  await page.waitForTimeout(3150);
   await page.screenshot({ path: path.join(outDir, "tempo-countdown-go.png"), fullPage: false });
 
-  await setupRunningGame(page, 1);
+  await setupRunningGame(page, 10);
+  await page.evaluate(() => {
+    game.p1.score = game.target - 1;
+    updateScores();
+  });
   const winTiming = await forceCorrect(page, "p1");
   await page.waitForTimeout(1050);
   const winState = await page.evaluate(() => {
@@ -320,20 +382,32 @@ async function run() {
     };
   });
   await page.waitForFunction(() => !document.querySelector(".win-overlay"), null, { timeout: 4200 });
+  await page.waitForTimeout(240);
   const winReadyState = await page.evaluate(() => {
     const startButton = document.getElementById("middleStart");
     const middle = document.querySelector("#middleSlot .card-back");
     const br = startButton.getBoundingClientRect();
+    const mr = middle ? middle.getBoundingClientRect() : null;
+    const visiblePileLayers = [...document.querySelectorAll(".game-screen .pile-layer")].filter((layer) => Number(getComputedStyle(layer).opacity) > 0.05).length;
     return {
       overlayGone: !document.querySelector(".win-overlay"),
       middleBack: !!middle,
+      noBackMark: !document.querySelector("#middleSlot .back-mark"),
       buttonVisible: !startButton.classList.contains("hidden"),
       buttonText: startButton.textContent,
       playAgainClass: document.querySelector("#startOverlay .start-panel").classList.contains("play-again"),
+      p1Score: game.p1.score,
+      p2Score: game.p2.score,
+      p1Text: document.getElementById("p1Score").textContent,
+      p2Text: document.getElementById("p2Score").textContent,
+      activeCards: document.querySelectorAll(".active-player-card").length,
+      visiblePileLayers,
       staleWinner: !!document.querySelector(".player-arena.winner"),
       staleCooldown: !!document.querySelector(".player-foot.cooling"),
       staleSelection: !!document.querySelector(".symbol.selected,.symbol.p2selected"),
-      guideVisible: Number(getComputedStyle(document.getElementById("playGuide")).opacity) > 0.15,
+      noGameGuide: !document.querySelector("#tab-game .guide-card, #tab-game .play-guide, #tab-game #guideMatch"),
+      buttonRound: Math.abs(br.width - br.height) < 2 && (getComputedStyle(startButton).borderTopLeftRadius.includes("%") || parseFloat(getComputedStyle(startButton).borderTopLeftRadius) >= br.width * 0.45),
+      buttonCenterDelta: mr ? Math.hypot((br.left + br.width / 2) - (mr.left + mr.width / 2), (br.top + br.height / 2) - (mr.top + mr.height / 2)) : 999,
       buttonRect: { left: br.left, top: br.top, right: br.right, bottom: br.bottom, width: br.width, height: br.height },
       clipped: br.left < -1 || br.top < -1 || br.right > innerWidth + 1 || br.bottom > innerHeight + 1
     };
@@ -349,10 +423,10 @@ async function run() {
     counting: game.counting,
     ended: game.ended,
     scoreText: document.getElementById("p1Score").textContent,
-    countdownText: document.getElementById("countdownText").textContent,
+    countdownText: document.getElementById("playCountdown").textContent,
     staleSelection: !!document.querySelector(".symbol.selected,.symbol.p2selected"),
     staleCooldown: !!document.querySelector(".player-foot.cooling"),
-    guideVisible: Number(getComputedStyle(document.getElementById("playGuide")).opacity) > 0.15
+    noGameGuide: !document.querySelector("#tab-game .guide-card, #tab-game .play-guide, #tab-game #guideMatch")
   }));
 
   const viewportCases = [
@@ -372,6 +446,7 @@ async function run() {
 
   const result = {
     initialState,
+    instructionsState,
     initialLayout,
     guideDuringRun,
     staticChecks,
@@ -394,7 +469,8 @@ async function run() {
   console.log(JSON.stringify(result, null, 2));
 
   if (errors.length) process.exitCode = 1;
-  if (!initialState.gameVisible || !initialState.bodyGameActive || initialState.activeTab !== "game" || !initialState.startVisible || initialState.startText !== "START" || !initialState.guideVisible || initialState.guideCards !== 3 || initialState.guideMiniCards !== 2 || !initialState.middleBack || initialState.running || initialState.counting || initialState.ended || hasClipped(initialLayout)) process.exitCode = 1;
+  if (!initialState.gameVisible || !initialState.bodyGameActive || initialState.activeTab !== "game" || !initialState.startVisible || initialState.startText !== "START" || !initialState.buttonRound || !initialState.noGameGuide || !initialState.instructionsNav || !initialState.middleBack || !initialState.noBackMark || initialState.buttonCenterDelta > 5 || initialState.running || initialState.counting || initialState.ended || hasClipped(initialLayout)) process.exitCode = 1;
+  if (!instructionsState.visible || instructionsState.activeTab !== "instructions" || instructionsState.guideCards !== 3 || instructionsState.guideExampleCards !== 2 || instructionsState.guideControlCards !== 2 || instructionsState.highlightedSymbols < 2 || instructionsState.keyCount < 10 || instructionsState.dotCount !== 2 || !instructionsState.cooldownDemo || instructionsState.backButtons !== 2 || instructionsState.titleSize < 46 || instructionsState.surfaceHeight < 480 || instructionsState.playerOrder !== "wasd,arrows") process.exitCode = 1;
   if (guideDuringRun.visible || !guideDuringRun.playingClass) process.exitCode = 1;
   if (Object.values(staticChecks.validations).some(Boolean)) process.exitCode = 1;
   if (staticChecks.fileCount !== 57 || staticChecks.overlappingPairs > 0) process.exitCode = 1;
@@ -406,13 +482,17 @@ async function run() {
   if (scoreStart.p1Text !== "10" || scoreStart.p2Text !== "10" || scoreStart.p1Label !== "LEFT" || scoreStart.p2Label !== "LEFT") process.exitCode = 1;
   if (scoreAfterCorrect.p2Internal !== 1 || scoreAfterCorrect.p2Text !== "9") process.exitCode = 1;
   if (answerTiming > 10 || winTiming > 35) process.exitCode = 1;
-  const expectedCountdown = ["3", "2", "2", "1", "1", "GO!", "GO!", "GO!"];
+  const expectedCountdown = ["3", "2", "2", "1", "1", "GO!", "GO!", ""];
   if (countdownChecks.some((sample, idx) => sample.text !== expectedCountdown[idx])) process.exitCode = 1;
+  if (countdownChecks.slice(0, 7).some((sample) => !sample.visible || sample.inStartOverlay || !sample.middleBack || sample.countdownRect.width < 130 || sample.countdownRect.height < 130)) process.exitCode = 1;
+  if (countdownChecks.slice(0, 7).some((sample) => sample.countdownPosition.xDelta > 8 || sample.countdownPosition.overlapsP1 || sample.countdownPosition.overlapsP2)) process.exitCode = 1;
+  const countdownXDrift = Math.max(...countdownChecks.slice(0, 7).map((sample) => sample.countdownPosition.centerX)) - Math.min(...countdownChecks.slice(0, 7).map((sample) => sample.countdownPosition.centerX));
+  if (countdownXDrift > 3) process.exitCode = 1;
   if (countdownChecks.slice(0, 6).some((sample) => sample.running || !sample.counting)) process.exitCode = 1;
   if (!countdownChecks[countdownChecks.length - 1].running) process.exitCode = 1;
   if (!winState.exists || winState.leaving || !winState.text.includes("WINS") || winState.clipped) process.exitCode = 1;
-  if (!winReadyState.overlayGone || !winReadyState.middleBack || !winReadyState.buttonVisible || !winReadyState.buttonText.includes("PLAY AGAIN") || !winReadyState.playAgainClass || winReadyState.staleWinner || winReadyState.staleCooldown || winReadyState.staleSelection || winReadyState.guideVisible || winReadyState.clipped) process.exitCode = 1;
-  if (!playAgainState.overlayGone || playAgainState.p1Score !== 0 || playAgainState.p2Score !== 0 || !playAgainState.counting || playAgainState.ended || playAgainState.scoreText !== "1" || playAgainState.staleSelection || playAgainState.staleCooldown || playAgainState.guideVisible) process.exitCode = 1;
+  if (!winReadyState.overlayGone || !winReadyState.middleBack || !winReadyState.noBackMark || !winReadyState.buttonVisible || winReadyState.buttonText !== "START" || winReadyState.playAgainClass || !winReadyState.buttonRound || winReadyState.buttonCenterDelta > 5 || winReadyState.p1Score !== 0 || winReadyState.p2Score !== 0 || winReadyState.p1Text !== "10" || winReadyState.p2Text !== "10" || winReadyState.activeCards !== 2 || winReadyState.visiblePileLayers < 16 || winReadyState.staleWinner || winReadyState.staleCooldown || winReadyState.staleSelection || !winReadyState.noGameGuide || winReadyState.clipped) process.exitCode = 1;
+  if (!playAgainState.overlayGone || playAgainState.p1Score !== 0 || playAgainState.p2Score !== 0 || !playAgainState.counting || playAgainState.ended || playAgainState.scoreText !== "10" || playAgainState.staleSelection || playAgainState.staleCooldown || !playAgainState.noGameGuide) process.exitCode = 1;
   for (const metrics of Object.values(responsive)) {
     if (hasClipped(metrics) || hasBadPile(metrics)) process.exitCode = 1;
     if (metrics.middle.width <= Math.max(...metrics.activeCards.map((card) => card.width))) process.exitCode = 1;
