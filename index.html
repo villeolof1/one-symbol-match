@@ -185,26 +185,28 @@
     .player-arena.p2 .match-card{animation-delay:.02s}
     .game-screen .player-foot.cooling .cooltext{display:block; min-width:0; text-align:center; font-size:12px; line-height:1}
     .game-card-slot{display:grid; place-items:center; min-height:0; position:relative}
-    .instructions-hero{display:flex; align-items:end; justify-content:space-between; gap:18px; margin-bottom:18px}
+    .instructions-hero{position:sticky; top:8px; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:22px; padding:10px 0 14px; background:linear-gradient(180deg,rgba(15,23,42,.96),rgba(15,23,42,.72) 72%,transparent)}
     .instructions-hero h2{margin:0; font-size:clamp(38px,5.2vw,82px); line-height:.9; letter-spacing:-.075em}
     .instructions-hero p{margin:10px 0 0; max-width:760px; color:#cfe2ff; font-size:clamp(16px,1.35vw,22px); line-height:1.3}
-    .instructions-grid{display:grid; grid-template-columns:1.18fr 1fr .92fr; gap:16px; align-items:stretch}
-    .guide-card{border:1px solid rgba(255,255,255,.14); border-radius:24px; background:rgba(3,7,18,.34); box-shadow:0 16px 42px rgba(0,0,0,.20); padding:clamp(16px,2vw,26px); display:grid; gap:16px; align-content:start}
-    #tab-instructions .guide-card{background:linear-gradient(145deg,rgba(15,23,42,.52),rgba(3,7,18,.36)); border-color:rgba(255,255,255,.13)}
-    .guide-card.primary{grid-row:auto}.guide-step{font-size:13px; font-weight:1000; letter-spacing:.16em; text-transform:uppercase; color:#8bdcff}.guide-title{font-weight:1000; letter-spacing:-.055em; font-size:clamp(24px,2.3vw,42px); color:#fff}.guide-copy{font-size:clamp(15px,1.25vw,20px); color:#cfe2ff; line-height:1.3; margin-top:2px}
-    .guide-visual{display:flex; align-items:center; gap:clamp(12px,1.4vw,22px); min-width:80px}.guide-match-visual{justify-content:center; gap:clamp(14px,1.4vw,24px)}.guide-example-card{--card-size:clamp(136px,11.5vw,230px); border-width:6px; box-shadow:0 22px 52px rgba(0,0,0,.28), inset 0 -8px 18px rgba(15,23,42,.07)}.guide-control-card{--card-size:clamp(104px,8vw,154px); border-width:5px}.guide-example-card .symbol-label,.guide-control-card .symbol-label{display:none}.guide-example-card .cursor-dot,.guide-example-card .symbol:not(.sharedhint){display:none}.guide-control-card .symbol{display:none}.guide-control-card .symbol:nth-of-type(1),.guide-control-card .symbol:nth-of-type(2),.guide-control-card .symbol:nth-of-type(3){display:grid}.guide-control-card .cursor-dot{display:block}
-    .guide-versus{font-size:clamp(18px,2vw,30px); font-weight:1000; color:#dbeafe; opacity:.72}.guide-players{display:grid; grid-template-columns:1fr 1fr; gap:12px}.guide-player{display:grid; gap:12px; align-items:center; justify-items:center; padding:14px; border-radius:18px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.10)}.guide-player.left{box-shadow:inset 4px 0 0 var(--p2b)}.guide-player.right{box-shadow:inset 4px 0 0 var(--blue)}
-    .guide-keys{display:flex; gap:7px; align-items:center; justify-content:center; flex-wrap:wrap}.guide-key{min-width:clamp(38px,3.2vw,54px); min-height:clamp(34px,2.8vw,48px); display:grid; place-items:center; border-radius:10px; color:#0f172a; background:#f8fbff; border:1px solid rgba(148,163,184,.45); font-weight:1000; font-size:clamp(14px,1.1vw,18px); box-shadow:0 8px 18px rgba(0,0,0,.20)}.guide-key.wide{min-width:clamp(88px,7vw,132px)}.guide-dot{width:34px; height:34px; border-radius:50%; background:var(--blue); border:5px solid white; box-shadow:0 0 0 8px rgba(37,99,235,.20)}.guide-dot.p2{background:var(--p2)}
-    .answer-demo{display:grid; gap:14px}.answer-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 14px; border-radius:16px; background:rgba(255,255,255,.06); font-size:clamp(15px,1.15vw,18px); color:#dbeafe}.answer-mark{width:36px; height:36px; border-radius:50%; display:grid; place-items:center; font-weight:1000}.answer-mark.ok{background:rgba(34,197,94,.22); color:#bbf7d0}.answer-mark.bad{background:rgba(239,68,68,.22); color:#fecaca}.cooldown-demo{display:grid; gap:10px; padding:16px; border-radius:18px; background:rgba(239,68,68,.10); border:1px solid rgba(248,113,113,.20)}.cooldown-demo .coolbar{width:100%; max-width:none; opacity:1}.instructions-actions{display:flex; justify-content:flex-end; margin-top:18px}
+    .instructions-grid{display:grid; grid-template-columns:minmax(0,1fr); gap:clamp(22px,3.2vw,42px); align-items:stretch; max-width:1280px; margin:0 auto}
+    .guide-card{border:1px solid rgba(255,255,255,.14); border-radius:28px; background:rgba(3,7,18,.34); box-shadow:0 20px 58px rgba(0,0,0,.24); padding:clamp(18px,2.8vw,38px); display:grid; gap:clamp(18px,2vw,28px); align-content:start}
+    #tab-instructions .guide-card{background:linear-gradient(145deg,rgba(15,23,42,.58),rgba(3,7,18,.38)); border-color:rgba(255,255,255,.13)}
+    .guide-step{font-size:13px; font-weight:1000; letter-spacing:.16em; text-transform:uppercase; color:#8bdcff}.guide-title{font-weight:1000; letter-spacing:-.055em; font-size:clamp(30px,3.7vw,58px); color:#fff}.guide-copy{font-size:clamp(18px,1.7vw,26px); color:#cfe2ff; line-height:1.28; margin-top:4px; max-width:820px}
+    .guide-visual{display:flex; align-items:center; justify-content:center; gap:clamp(14px,2vw,32px); min-width:80px}.guide-match-visual{gap:clamp(18px,2.4vw,40px)}.guide-example-card{--card-size:clamp(220px,22vw,360px); border-width:7px; box-shadow:0 24px 62px rgba(0,0,0,.30), inset 0 -8px 18px rgba(15,23,42,.07)}.guide-control-card{--card-size:clamp(190px,18vw,300px); border-width:6px; box-shadow:0 22px 54px rgba(0,0,0,.28), inset 0 -8px 18px rgba(15,23,42,.07)}.guide-overview-card{--card-size:clamp(170px,16vw,280px); border-width:6px}.guide-overview-middle{--card-size:clamp(230px,22vw,390px); border-width:7px}.guide-example-card .symbol-label,.guide-control-card .symbol-label,.guide-overview-card .symbol-label{display:none}.guide-control-card .cursor-dot{display:block; left:calc(var(--guide-dot-x,50) * 1%); top:calc(var(--guide-dot-y,50) * 1%); transform:translate(-50%,-50%)}.symbol.wronghint{outline:3px solid rgba(239,68,68,.95); background:rgba(239,68,68,.14); box-shadow:0 0 0 9px rgba(239,68,68,.12)}
+    .guide-versus{font-size:clamp(26px,3vw,46px); font-weight:1000; color:#dbeafe; opacity:.78}.guide-players{display:grid; grid-template-columns:1fr 1fr; gap:clamp(18px,2.2vw,34px)}.guide-player{position:relative; display:grid; gap:clamp(12px,1.5vw,20px); align-items:center; justify-items:center; padding:clamp(16px,2vw,26px); border-radius:24px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.10)}.guide-player.left{box-shadow:inset 6px 0 0 var(--p2b)}.guide-player.right{box-shadow:inset 6px 0 0 var(--blue)}.guide-player-label{font-size:clamp(16px,1.3vw,22px); font-weight:1000; color:#e0f2fe}
+    .guide-arena{display:grid; grid-template-columns:1fr 1.16fr 1fr; align-items:end; gap:clamp(16px,2.4vw,34px)}.guide-arena-card{display:grid; gap:12px; justify-items:center}.guide-arena-label{font-weight:1000; color:#dbeafe; font-size:clamp(15px,1.3vw,22px); text-align:center}.guide-arena-note{padding:clamp(14px,1.6vw,22px); border-radius:20px; color:#dbeafe; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); font-size:clamp(16px,1.35vw,22px); line-height:1.3}
+    .guide-keys{display:flex; gap:7px; align-items:center; justify-content:center; flex-wrap:wrap}.guide-key{min-width:clamp(44px,3.7vw,64px); min-height:clamp(40px,3.2vw,56px); display:grid; place-items:center; border-radius:12px; color:#0f172a; background:#f8fbff; border:1px solid rgba(148,163,184,.45); font-weight:1000; font-size:clamp(15px,1.25vw,21px); box-shadow:0 10px 22px rgba(0,0,0,.22)}.guide-key.wide{min-width:clamp(118px,10vw,180px)}.guide-dot{width:34px; height:34px; border-radius:50%; background:var(--blue); border:5px solid white; box-shadow:0 0 0 8px rgba(37,99,235,.20)}.guide-dot.p2{background:var(--p2)}
+    .guide-motion-path{position:absolute; height:4px; border-radius:999px; background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(255,255,255,.92)); z-index:7; transform-origin:left center; box-shadow:0 0 16px rgba(255,255,255,.28); pointer-events:none}.guide-motion-path::after{content:""; position:absolute; right:-7px; top:50%; width:14px; height:14px; border-radius:50%; transform:translateY(-50%); background:currentColor; box-shadow:0 0 0 7px color-mix(in srgb,currentColor 24%,transparent)}.guide-motion-path.p2{color:var(--p2)}.guide-motion-path.p1{color:var(--blue)}.guide-motion-card .cursor-dot{animation:guideDotMove 2.2s cubic-bezier(.4,0,.18,1) infinite}
+    .answer-demo{display:grid; gap:clamp(16px,2vw,26px)}.answer-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 18px; border-radius:18px; background:rgba(255,255,255,.06); font-size:clamp(16px,1.25vw,22px); color:#dbeafe}.answer-mark{width:42px; height:42px; border-radius:50%; display:grid; place-items:center; font-weight:1000}.answer-mark.ok{background:rgba(34,197,94,.22); color:#bbf7d0}.answer-mark.bad{background:rgba(239,68,68,.22); color:#fecaca}.cooldown-demo{display:grid; gap:14px; padding:clamp(16px,2vw,26px); border-radius:22px; background:rgba(239,68,68,.10); border:1px solid rgba(248,113,113,.20)}.cooldown-demo .coolbar{width:100%; max-width:none; opacity:1}.cooldown-cards{display:grid; grid-template-columns:1fr auto 1fr; gap:clamp(14px,2vw,28px); align-items:center}.cooldown-label{font-weight:1000; font-size:clamp(17px,1.4vw,24px); color:#fecaca}.cooldown-arrow{font-size:clamp(28px,3vw,46px); color:#fecaca; font-weight:1000}
     .player-arena.reset-fade .game-card-slot{opacity:.18; transform:scale(.975); transition:opacity .55s ease, transform .55s cubic-bezier(.16,.84,.18,1)}
     .player-arena.refilling .game-card-slot{animation:refillSettle .74s cubic-bezier(.14,.84,.18,1)}
     .player-arena.deal-in .active-player-card{animation:dealIn .34s cubic-bezier(.14,.84,.18,1)}
     .card-pile{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; z-index:0; transform:translateY(clamp(3px,.7vh,8px))}
-    .card-pile::before{content:""; position:absolute; width:calc(var(--player-card-size) * .84); height:calc(var(--player-card-size) * .12); left:50%; top:calc(50% + var(--player-card-size) * .42); transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(ellipse at center,rgba(0,0,0,.26),rgba(0,0,0,.13) 45%,transparent 72%); opacity:.72}
+    .card-pile::before{content:""; position:absolute; width:calc(var(--player-card-size) * .92); height:calc(var(--player-card-size) * .18); left:50%; top:calc(50% + var(--player-card-size) * .43); transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(ellipse at center,rgba(0,0,0,.24),rgba(15,23,42,.14) 48%,transparent 74%); opacity:.58}
     .player-arena.cooling .card-pile{transform:translateY(clamp(-4px,-.45vh,-2px)) scaleY(.68); transform-origin:center top}
-    .pile-layer{--paper-shade:0%; position:absolute; width:var(--player-card-size); height:var(--player-card-size); border-radius:50%; overflow:hidden; background:radial-gradient(circle at 36% 23%,hsl(210 100% calc(99% - var(--paper-shade))),hsl(210 70% calc(98% - var(--paper-shade))) 50%,hsl(211 48% calc(94% - var(--paper-shade))) 82%,hsl(212 34% calc(86% - var(--paper-shade))) 100%); border:clamp(3px,.72vw,5px) solid rgba(255,255,255,.99); box-shadow:0 1px 0 rgba(255,255,255,.86),0 5px 11px rgba(15,23,42,.055),inset -12px -16px 26px rgba(15,23,42,.052),inset 0 0 0 1px rgba(15,23,42,.052); opacity:0; transform:translate3d(0,14px,0) scale(.995); transition:opacity .18s ease, transform .24s cubic-bezier(.16,.88,.24,1); will-change:transform,opacity; transform-origin:center center}
-    .pile-layer::before{content:""; position:absolute; inset:clamp(7px,1.2vw,12px); border-radius:50%; background:conic-gradient(from 230deg,rgba(148,163,184,.18),transparent 18%,transparent 72%,rgba(255,255,255,.30) 86%,rgba(148,163,184,.12)); border:1px solid rgba(148,163,184,.13); opacity:.68}
-    .player-arena.refilling .pile-layer{transition:opacity .22s ease, transform .42s cubic-bezier(.12,.88,.16,1)}
+    .pile-layer{--paper-shade:0%; --edge-tint:rgba(148,163,184,.16); position:absolute; width:var(--player-card-size); height:var(--player-card-size); border-radius:50%; overflow:hidden; background:radial-gradient(circle at 34% 22%,hsl(210 100% calc(99% - var(--paper-shade))),hsl(210 74% calc(98% - var(--paper-shade))) 48%,hsl(211 52% calc(94% - var(--paper-shade))) 83%,hsl(212 36% calc(86% - var(--paper-shade))) 100%); border:clamp(3px,.72vw,5px) solid rgba(255,255,255,.99); box-shadow:0 1px 0 rgba(255,255,255,.92),0 4px 9px rgba(15,23,42,.06),inset -15px -17px 27px rgba(15,23,42,.058),inset 9px 8px 16px rgba(255,255,255,.28),inset 0 0 0 1px rgba(15,23,42,.052); opacity:0; transform:translate3d(0,14px,0) scale(.995); transition:opacity .18s ease, transform .24s cubic-bezier(.16,.88,.24,1); will-change:transform,opacity; transform-origin:center center}
+    .pile-layer::before{content:""; position:absolute; inset:clamp(7px,1.2vw,12px); border-radius:50%; background:radial-gradient(circle at 52% 48%,transparent 0 64%,rgba(255,255,255,.44) 65%,rgba(148,163,184,.12) 72%,transparent 78%),conic-gradient(from 210deg,var(--edge-tint),transparent 14%,transparent 68%,rgba(255,255,255,.32) 84%,rgba(148,163,184,.10)); border:1px solid rgba(148,163,184,.13); opacity:.76}
+    .player-arena.refilling .pile-layer{transition-property:opacity,transform; transition-timing-function:cubic-bezier(.12,.88,.16,1)}
     .game-card-slot > .match-card{position:relative; z-index:2}
     .game-card-slot > .match-card.preloaded-next-card{position:absolute; z-index:1; opacity:0; pointer-events:none; transform:translate3d(0,0,0) scale(.996); transition:opacity .055s linear, transform .085s cubic-bezier(.16,.88,.24,1); will-change:opacity,transform}
     .game-card-slot > .match-card.preloaded-next-card.ready{opacity:1; transform:translate3d(0,0,0) scale(1)}
@@ -231,18 +233,18 @@
       box-shadow:0 0 0 0 rgba(239,68,68,.36),0 0 40px rgba(239,68,68,.25);
     }
 
-    .win-overlay{position:fixed; inset:0; z-index:2000; display:grid; place-items:center; pointer-events:none; background:radial-gradient(circle at 50% 50%,rgba(59,130,246,.20),rgba(3,7,18,.42) 56%,rgba(3,7,18,.78)); animation:winFadeIn .22s ease-out; transition:background 1.05s ease, opacity 1.05s ease, transform 1.05s ease}
-    .win-overlay.leaving{opacity:0; transform:scale(1.012); background:radial-gradient(circle at 50% 50%,rgba(59,130,246,.04),rgba(3,7,18,.05) 58%,rgba(3,7,18,.12))}
+    .win-overlay{position:fixed; inset:0; z-index:2000; display:grid; place-items:center; pointer-events:none; background:radial-gradient(circle at 50% 50%,rgba(59,130,246,.20),rgba(3,7,18,.42) 56%,rgba(3,7,18,.78)); animation:winFadeIn .22s ease-out; transition:opacity 1.15s ease, background 1.15s ease}
+    .win-overlay.leaving{opacity:0; background:radial-gradient(circle at 50% 50%,rgba(59,130,246,.04),rgba(3,7,18,.05) 58%,rgba(3,7,18,.12))}
     .win-card{appearance:none; font-family:inherit; display:grid; gap:10px; justify-items:center; padding:24px 34px 26px; border-radius:32px; color:white; background:linear-gradient(135deg,rgba(37,99,235,.90),rgba(6,182,212,.75)); border:1px solid rgba(191,219,254,.55); box-shadow:0 34px 110px rgba(0,0,0,.48),0 0 0 10px rgba(255,255,255,.08); transform:scale(.86); animation:winPop .52s cubic-bezier(.12,.92,.12,1) forwards; pointer-events:none; cursor:default; transition:transform .85s cubic-bezier(.16,.84,.18,1), opacity .85s ease, filter .85s ease}
-    .win-overlay.leaving .win-card{transform:scale(.96) translateY(-10px); opacity:0; filter:blur(1px)}
+    .win-overlay.leaving .win-card{transform:scale(1); opacity:0}
     .win-title{font-size:clamp(48px,9vw,118px); line-height:.82; font-weight:1000; letter-spacing:-.08em; text-shadow:0 12px 40px rgba(0,0,0,.34)}
     .win-sub{font-size:clamp(16px,2.3vw,28px); font-weight:950; color:#e0f2fe; transition:font-size .72s ease, opacity .72s ease, transform .72s ease}
     .win-action{display:none; font-weight:1000; letter-spacing:.02em}
-    .win-overlay.leaving .win-title{letter-spacing:-.04em}
     .win-confetti{position:absolute; width:12px; height:26px; border-radius:4px; background:hsl(var(--hue),90%,62%); left:50%; top:50%; opacity:0; transform:translate(-50%,-50%) rotate(var(--r)); animation:confettiBurst 1.05s cubic-bezier(.13,.75,.19,1) forwards}
     @keyframes cardPop{from{transform:scale(.982)}to{transform:scale(1)}}
     @keyframes dealIn{0%{transform:translate3d(0,-22px,0) scale(.94); opacity:.25}68%{transform:translate3d(0,3px,0) scale(1.018); opacity:1}100%{transform:translate3d(0,0,0) scale(1); opacity:1}}
     @keyframes cardFlipReveal{0%{transform:perspective(900px) rotateY(89deg) scale(.98); filter:brightness(1.15)}55%{transform:perspective(900px) rotateY(-8deg) scale(1.018)}100%{transform:perspective(900px) rotateY(0) scale(1); filter:brightness(1)}}
+    @keyframes guideDotMove{0%,22%{left:calc(var(--guide-dot-x,50) * 1%); top:calc(var(--guide-dot-y,50) * 1%)}74%,100%{left:calc(var(--guide-target-x,var(--guide-dot-x,50)) * 1%); top:calc(var(--guide-target-y,var(--guide-dot-y,50)) * 1%)}}
     @keyframes countPulse{0%{transform:translate(-50%,-50%) scale(.72); opacity:.3}72%{transform:translate(-50%,-50%) scale(1.1); opacity:1}100%{transform:translate(-50%,-50%) scale(1); opacity:1}}
     @keyframes feedbackPulse{
       0%{transform:translate(-50%,-50%) scale(.24); opacity:.92}
@@ -266,6 +268,7 @@
     @media (max-width:980px) and (max-height:760px){.middle-zone .match-card{--card-size:min(86vw,40vh,440px)}.player-arena{--player-card-size:min(82vw,28vh,400px); padding-bottom:58px}.game-screen .player-foot{bottom:-10px}}
     @media (max-width:560px){.app{width:100%; padding:10px 10px 28px}.hero,.panel{border-radius:20px}.surface{border-radius:20px}.statgrid{grid-template-columns:1fr}.cardsgrid{grid-template-columns:1fr}.match-card{--card-size:min(86vw,330px)}.controlgroup{width:100%}.controlgroup > *{flex:1}.tabbtn,.primary,.ghost,.dangerbtn{padding:10px 12px}.game-screen{padding:6px}.scoreline{grid-template-columns:1fr 1fr}.scoreline #gameStatus{grid-column:1/-1; order:3}.scorepill{min-height:46px;padding:5px 9px}.score-num{font-size:32px}.hud-buttons{justify-content:center}.player-head,.player-foot{font-size:12px}.selected-name{max-width:48%}.guide-players{grid-template-columns:1fr}.guide-match-visual{flex-wrap:wrap}.guide-example-card{--card-size:min(38vw,170px)}.arena{grid-template-rows:minmax(0,34fr) minmax(0,66fr); gap:0}.middle-zone{padding-bottom:0}.middle-zone .match-card{--card-size:min(84vw,28.5vh,318px)}.player-arena{--player-card-size:min(84vw,20vh,238px); padding-bottom:62px}.players-row{gap:0; transform:translateY(4px)}.game-screen .player-head{bottom:4px; min-height:24px; padding:4px 9px}.game-screen .player-foot{bottom:30px}.coolbar{height:5px; width:min(calc(var(--player-card-size) * .48),150px)}.game-screen .player-foot.cooling .cooltext{font-size:11px}.win-title{font-size:clamp(34px,12vw,54px)}.win-card{min-width:min(330px,88vw)}#middleStart{width:clamp(82px,22vw,126px); height:clamp(82px,22vw,126px); font-size:clamp(15px,5vw,22px)}}
     @media (max-height:760px) and (max-width:560px){.game-screen{padding:4px}.scorepill{min-height:42px}.score-num{font-size:28px}.arena{grid-template-rows:minmax(0,32fr) minmax(0,68fr)}.middle-zone .match-card{--card-size:min(80vw,25vh,244px)}.player-arena{--player-card-size:min(80vw,18vh,180px); padding-bottom:52px}.players-row{transform:translateY(4px)}.game-screen .player-head{bottom:6px}.game-screen .player-foot{bottom:28px}}
+    @media (max-width:720px){#tab-instructions .surface{padding:16px}.instructions-hero{position:relative; top:auto; display:grid; gap:14px}.instructions-hero .primary{justify-self:start}.guide-arena,.guide-players,.cooldown-cards{grid-template-columns:1fr}.guide-match-visual{display:grid; justify-items:center}.guide-example-card{--card-size:min(76vw,300px)}.guide-control-card{--card-size:min(68vw,270px)}.guide-overview-card{--card-size:min(58vw,230px)}.guide-overview-middle{--card-size:min(72vw,310px)}.guide-versus,.cooldown-arrow{transform:rotate(90deg)}}
   </style>
 </head>
 <body>
@@ -364,9 +367,31 @@
             <button class="primary" id="backToPlayTop">Back to Play</button>
           </div>
           <div class="instructions-grid" id="instructionsGuide" aria-label="Quick play instructions">
+            <div class="guide-card guide-overview">
+              <div><div class="guide-step">Overview</div><div class="guide-title">Three cards, two personal decks</div><div class="guide-copy">Each player only compares their own card to the big middle card. You never need to match against the other player's card.</div></div>
+              <div class="guide-arena">
+                <div class="guide-arena-card">
+                  <div class="guide-control-card-slot" id="guideArenaLeft"></div>
+                  <div class="guide-arena-label">Player 2 - WASD</div>
+                </div>
+                <div class="guide-arena-card">
+                  <div class="guide-control-card-slot" id="guideArenaMiddle"></div>
+                  <div class="guide-arena-label">Middle card</div>
+                </div>
+                <div class="guide-arena-card">
+                  <div class="guide-control-card-slot" id="guideArenaRight"></div>
+                  <div class="guide-arena-label">Player 1 - Arrows</div>
+                </div>
+              </div>
+              <div class="guide-arena-note">Left player searches the middle card plus the left card. Right player searches the middle card plus the right card.</div>
+            </div>
             <div class="guide-card primary">
               <div><div class="guide-step">Step 1</div><div class="guide-title">Find the match</div><div class="guide-copy">One object appears on both cards. The highlighted object is the answer.</div></div>
-              <div class="guide-visual guide-match-visual" id="guideMatch"></div>
+              <div class="guide-visual guide-match-visual" id="guideMatch">
+                <div class="guide-control-card-slot" id="guideMatchMiddle"></div>
+                <div class="guide-versus">=</div>
+                <div class="guide-control-card-slot" id="guideMatchPlayer"></div>
+              </div>
             </div>
             <div class="guide-card">
               <div><div class="guide-step">Step 2</div><div class="guide-title">Move your dot</div><div class="guide-copy">Left player uses WASD. Right player uses the arrow keys.</div></div>
@@ -382,15 +407,33 @@
               </div>
             </div>
             <div class="guide-card">
-              <div><div class="guide-step">Step 3</div><div class="guide-title">Answer fast</div><div class="guide-copy">Press the key after your dot is on the shared object. Wrong guesses pause you briefly.</div></div>
-              <div class="answer-demo">
-                <div class="answer-row"><span>Left player answers with</span><span class="guide-key wide">Space</span><span class="answer-mark ok">OK</span></div>
-                <div class="answer-row"><span>Right player answers with</span><span class="guide-key wide">Enter</span><span class="answer-mark ok">OK</span></div>
-                <div class="cooldown-demo"><span>Wrong guess cooldown</span><div class="coolbar"><span style="transform:scaleX(.58)"></span></div></div>
+              <div><div class="guide-step">Step 3</div><div class="guide-title">Lock your answer</div><div class="guide-copy">When your dot is on the matching object, press your answer key.</div></div>
+              <div class="guide-players answer-demo">
+                <div class="guide-player left">
+                  <div class="guide-player-label">Player 2</div>
+                  <div class="guide-control-card-slot" id="guideAnswerLeft"></div>
+                  <div class="answer-row"><span>Answer with</span><span class="guide-key wide">Space</span><span class="answer-mark ok">OK</span></div>
+                </div>
+                <div class="guide-player right">
+                  <div class="guide-player-label">Player 1</div>
+                  <div class="guide-control-card-slot" id="guideAnswerRight"></div>
+                  <div class="answer-row"><span>Answer with</span><span class="guide-key wide">Enter</span><span class="answer-mark ok">OK</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="guide-card">
+              <div><div class="guide-step">Step 4</div><div class="guide-title">Wrong guess cooldown</div><div class="guide-copy">If your dot is on an object that is not the shared match, you pause briefly before trying again.</div></div>
+              <div class="cooldown-demo">
+                <div class="cooldown-label">Wrong object selected</div>
+                <div class="cooldown-cards">
+                  <div class="guide-control-card-slot" id="guideWrongPlayer"></div>
+                  <div class="cooldown-arrow">not on</div>
+                  <div class="guide-control-card-slot" id="guideWrongMiddle"></div>
+                </div>
+                <div class="coolbar"><span style="transform:scaleX(.58)"></span></div>
               </div>
             </div>
           </div>
-          <div class="instructions-actions"><button class="primary" id="backToPlayBottom">Back to Play</button></div>
         </div>
       </section>
 
@@ -981,6 +1024,7 @@ No symbol selected: answer key does nothing</pre>
         symbolEl.className = "symbol";
         if(opts.selectedSymbolId === item.symbolId) symbolEl.classList.add(opts.p2 ? "p2selected" : "selected");
         if(opts.hintSymbolId === item.symbolId) symbolEl.classList.add("sharedhint");
+        if(opts.wrongSymbolId === item.symbolId) symbolEl.classList.add("wronghint");
         symbolEl.style.left = item.x + "%";
         symbolEl.style.top = item.y + "%";
         symbolEl.style.fontSize = `calc(var(--card-size) * ${item.size / 100})`;
@@ -1087,29 +1131,65 @@ No symbol selected: answer key does nothing</pre>
       document.getElementById("symbolList").innerHTML = activeSymbols().map(s => `<div class="symbol-chip"><img class="e" src="${symbolImageUrl(s)}" alt="${s.name}" loading="lazy" decoding="async"><span><span class="n">${s.name}</span><br><span class="id">symbol ${s.id + 1}</span></span></div>`).join("");
     }
     function renderGuideExamples(){
-      const target = document.getElementById("guideMatch");
-      const wasdTarget = document.getElementById("guideWasdCard");
-      const arrowTarget = document.getElementById("guideArrowCard");
-      if(!target) return;
+      const ids = ["guideArenaMiddle","guideArenaLeft","guideArenaRight","guideMatchMiddle","guideMatchPlayer","guideWasdCard","guideArrowCard","guideAnswerLeft","guideAnswerRight","guideWrongPlayer","guideWrongMiddle"];
+      const els = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+      if(!els.guideMatchMiddle) return;
       const deck = activeDeck();
-      const left = deck[0];
-      const right = deck.find(card => card.id !== left.id && sharedSymbolIds(left, card).length === 1) || deck[1];
-      const shared = sharedSymbolIds(left, right)[0];
-      target.innerHTML = "";
-      target.appendChild(createCardElement(left, { className:"guide-example-card", hintSymbolId:shared, eagerImages:false }));
-      const versus = document.createElement("div");
-      versus.className = "guide-versus";
-      versus.textContent = "=";
-      target.appendChild(versus);
-      target.appendChild(createCardElement(right, { className:"guide-example-card", hintSymbolId:shared, eagerImages:false }));
-      if(wasdTarget){
-        wasdTarget.innerHTML = "";
-        wasdTarget.appendChild(createCardElement(left, { className:"guide-control-card", cursor:{ x:42, y:58 }, p2:true, eagerImages:false }));
-      }
-      if(arrowTarget){
-        arrowTarget.innerHTML = "";
-        arrowTarget.appendChild(createCardElement(right, { className:"guide-control-card", cursor:{ x:60, y:58 }, eagerImages:false }));
-      }
+      const middle = deck[0];
+      const left = deck.find(card => card.id !== middle.id && sharedSymbolIds(middle, card).length === 1) || deck[1];
+      const right = deck.find(card => card.id !== middle.id && card.id !== left.id && sharedSymbolIds(middle, card).length === 1) || deck[2];
+      const sharedLeft = sharedSymbolIds(middle, left)[0];
+      const sharedRight = sharedSymbolIds(middle, right)[0];
+      const wrongLeft = left.symbols.find(id => id !== sharedLeft && !middle.symbols.includes(id)) ?? left.symbols.find(id => id !== sharedLeft) ?? left.symbols[0];
+      const guidePos = (card, symbolId, fallback = { x:50, y:50 }) => {
+        const item = layoutForCard(card).find(entry => entry.symbolId === symbolId);
+        return item ? { x:item.x, y:item.y } : fallback;
+      };
+      const setSlot = (id, card, opts = {}) => {
+        const slot = els[id];
+        if(!slot) return null;
+        slot.innerHTML = "";
+        const cardEl = createCardElement(card, { eagerImages:false, ...opts });
+        slot.appendChild(cardEl);
+        if(opts.cursor){
+          cardEl.style.setProperty("--guide-dot-x", opts.cursor.x);
+          cardEl.style.setProperty("--guide-dot-y", opts.cursor.y);
+        }
+        return cardEl;
+      };
+      const addPath = (cardEl, from, to, cls) => {
+        if(!cardEl) return;
+        cardEl.style.setProperty("--guide-target-x", to.x);
+        cardEl.style.setProperty("--guide-target-y", to.y);
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const path = document.createElement("span");
+        path.className = `guide-motion-path ${cls}`;
+        path.style.left = `${from.x}%`;
+        path.style.top = `${from.y}%`;
+        path.style.width = `${Math.hypot(dx, dy).toFixed(2)}%`;
+        path.style.transform = `rotate(${Math.atan2(dy, dx) * 180 / Math.PI}deg)`;
+        cardEl.appendChild(path);
+      };
+      const leftTarget = guidePos(left, sharedLeft, { x:58, y:42 });
+      const rightTarget = guidePos(right, sharedRight, { x:42, y:58 });
+      setSlot("guideArenaMiddle", middle, { className:"guide-overview-card guide-overview-middle", hintSymbolId:sharedLeft });
+      setSlot("guideArenaLeft", left, { className:"guide-overview-card", hintSymbolId:sharedLeft });
+      setSlot("guideArenaRight", right, { className:"guide-overview-card", hintSymbolId:sharedRight });
+      setSlot("guideMatchMiddle", middle, { className:"guide-example-card", hintSymbolId:sharedLeft });
+      setSlot("guideMatchPlayer", left, { className:"guide-example-card", hintSymbolId:sharedLeft });
+      const wasdCard = setSlot("guideWasdCard", left, { className:"guide-control-card guide-motion-card", cursor:{ x:32, y:72 }, p2:true, hintSymbolId:sharedLeft });
+      addPath(wasdCard, { x:32, y:72 }, leftTarget, "p2");
+      wasdCard?.style.setProperty("--guide-dot-x", "32");
+      wasdCard?.style.setProperty("--guide-dot-y", "72");
+      const arrowCard = setSlot("guideArrowCard", right, { className:"guide-control-card guide-motion-card", cursor:{ x:72, y:34 }, hintSymbolId:sharedRight });
+      addPath(arrowCard, { x:72, y:34 }, rightTarget, "p1");
+      arrowCard?.style.setProperty("--guide-dot-x", "72");
+      arrowCard?.style.setProperty("--guide-dot-y", "34");
+      setSlot("guideAnswerLeft", left, { className:"guide-control-card", cursor:leftTarget, p2:true, hintSymbolId:sharedLeft, selectedSymbolId:sharedLeft });
+      setSlot("guideAnswerRight", right, { className:"guide-control-card", cursor:rightTarget, hintSymbolId:sharedRight, selectedSymbolId:sharedRight });
+      setSlot("guideWrongPlayer", left, { className:"guide-control-card", cursor:guidePos(left, wrongLeft, { x:35, y:65 }), p2:true, wrongSymbolId:wrongLeft, selectedSymbolId:wrongLeft });
+      setSlot("guideWrongMiddle", middle, { className:"guide-control-card", hintSymbolId:sharedLeft });
     }
     function setTab(name){
       document.querySelectorAll(".tabbtn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
@@ -1322,8 +1402,6 @@ No symbol selected: answer key does nothing</pre>
     function makePileElement(which){
       const pile = document.createElement("div");
       pile.className = "card-pile";
-      // A capped stack reads as a clean card pile without turning the side into
-      // visible ruler marks when the target score is high.
       const total = Math.max(0, Math.min(10, game.target - 1));
       for(let i = 0; i < total; i++){
         const layer = document.createElement("div");
@@ -1331,17 +1409,19 @@ No symbol selected: answer key does nothing</pre>
         layer.dataset.layer = String(i);
         layer.style.zIndex = String(total - i);
         layer.style.setProperty("--paper-shade", `${(i % 5) * .45}%`);
+        layer.style.setProperty("--edge-tint", i % 2 ? "rgba(96,165,250,.11)" : "rgba(148,163,184,.16)");
         pile.appendChild(layer);
       }
       return pile;
     }
     function pileLayerStyle(which, depth, cooling = false){
       const side = which === "p1" ? 1 : -1;
-      const dx = side * (Math.sin(depth * 1.91) * .70 + depth * .16);
-      const dy = depth * (cooling ? .30 : 1.48);
-      const rot = side * (Math.sin(depth * .83) * .18 + depth * .035);
-      const scale = 1 - Math.min(cooling ? .014 : .026, depth * (cooling ? .0011 : .0020));
-      const opacity = Math.max(.72, .98 - depth * .022);
+      const fan = Math.sin(depth * 1.73) * 1.15;
+      const dx = side * (fan + depth * (cooling ? .22 : .62));
+      const dy = depth * (cooling ? .42 : 1.62) + Math.cos(depth * 1.31) * .34;
+      const rot = side * (Math.sin(depth * .91) * .28 + depth * (cooling ? .04 : .11));
+      const scale = 1 - Math.min(cooling ? .017 : .033, depth * (cooling ? .00125 : .0030));
+      const opacity = Math.max(.70, .985 - depth * .024);
       return {
         opacity: opacity.toFixed(3),
         transform: `translate3d(${dx.toFixed(2)}px,${dy.toFixed(2)}px,0) rotate(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)},${(scale * .998).toFixed(3)})`
@@ -1372,33 +1452,48 @@ No symbol selected: answer key does nothing</pre>
       });
     }
     function updatePiles(){ updatePile("p1"); updatePile("p2"); }
-    function animatePileRefill(which){
+    function animatePileRefill(which, missingCards = game.target){
       const panel = game[which].panel;
       const slot = document.getElementById(which === "p1" ? "p1Slot" : "p2Slot");
       const pile = slot.querySelector(".card-pile");
       if(!panel || !pile) return;
       panel.classList.add("refilling");
       const visible = Math.min(pile.children.length, Math.max(0, game.target - 1), 10);
+      const missing = Math.max(0, Math.min(visible, Math.round(missingCards)));
+      const baseVisible = Math.max(0, visible - missing);
+      const duration = Math.max(600, Math.min(2600, missing * 220));
+      const stagger = missing > 1 ? Math.min(145, Math.max(62, duration / missing)) : 0;
+      const side = which === "p1" ? 1 : -1;
       pile.querySelectorAll(".pile-layer").forEach((layer, idx) => {
         const depth = idx + 1;
         if(idx >= visible){
           layer.style.opacity = "0";
           return;
         }
-        layer.style.transitionDelay = `${idx * 42}ms`;
-        layer.style.opacity = "0";
-        layer.style.transform = `translate3d(0,${(-30 - idx * 6).toFixed(1)}px,0) scale(.982)`;
-        requestAnimationFrame(() => {
-          const style = pileLayerStyle(which, depth, false);
+        const style = pileLayerStyle(which, depth, false);
+        if(idx < baseVisible){
+          layer.style.transitionDelay = "0ms";
+          layer.style.transitionDuration = ".18s";
           layer.style.opacity = style.opacity;
           layer.style.transform = style.transform;
-        });
+          return;
+        }
+        const enterIndex = idx - baseVisible;
+        layer.style.transitionDelay = "0ms";
+        layer.style.transitionDuration = `${Math.max(360, Math.min(620, stagger * 2.7)).toFixed(0)}ms`;
+        layer.style.opacity = "0";
+        layer.style.transform = `translate3d(${(side * (150 + enterIndex * 18)).toFixed(1)}px,${(-44 - enterIndex * 7).toFixed(1)}px,0) rotate(${(side * (10 + enterIndex * 1.8)).toFixed(1)}deg) scale(.94)`;
+        setTimeout(() => {
+          layer.style.opacity = style.opacity;
+          layer.style.transform = style.transform;
+        }, Math.round(enterIndex * stagger));
       });
       setTimeout(() => {
         panel.classList.remove("refilling");
-        pile.querySelectorAll(".pile-layer").forEach(layer => { layer.style.transitionDelay = ""; });
+        pile.querySelectorAll(".pile-layer").forEach(layer => { layer.style.transitionDelay = ""; layer.style.transitionDuration = ""; });
         updatePile(which);
-      }, 760);
+      }, duration + 420);
+      return duration + 420;
     }
     function nextDeckCardForPreload(which){
       const player = game[which];
@@ -1700,6 +1795,7 @@ No symbol selected: answer key does nothing</pre>
     }
     function showWin(which){
       const playerName = which === "p1" ? "Player 1" : "Player 2";
+      const refillScores = { p1:game.p1.score, p2:game.p2.score };
       game.p1.panel.classList.remove("winner");
       game.p2.panel.classList.remove("winner");
       playSound("win");
@@ -1727,17 +1823,22 @@ No symbol selected: answer key does nothing</pre>
       }, 1550);
       setTimeout(() => {
         setupGame(false, { preserveWinOverlay:true });
-        game.p1.panel.classList.add("refilling");
-        game.p2.panel.classList.add("refilling");
-        animatePileRefill("p1");
-        animatePileRefill("p2");
-        setStatus("Press START on the middle card. WASD left, arrows right.");
-      }, 2140);
+        game.p1.panel.classList.add("reset-fade");
+        game.p2.panel.classList.add("reset-fade");
+        setStatus(`${playerName} wins! Final score ${refillScores.p1}–${refillScores.p2}.`);
+      }, 2250);
       setTimeout(() => {
         overlay.remove();
         game.p1.panel.classList.remove("reset-fade");
         game.p2.panel.classList.remove("reset-fade");
-      }, 2820);
+        const p1Duration = animatePileRefill("p1", refillScores.p1);
+        const p2Duration = animatePileRefill("p2", refillScores.p2);
+        const doneAfter = Math.max(p1Duration || 0, p2Duration || 0);
+        setTimeout(() => {
+          updatePiles();
+          setStatus("Press START on the middle card. WASD left, arrows right.");
+        }, doneAfter + 40);
+      }, 2860);
     }
     function answer(which){
       if(!game.running || game.ended) return;
@@ -1876,7 +1977,6 @@ No symbol selected: answer key does nothing</pre>
     document.getElementById("exitGame").addEventListener("click", () => setTab("browse"));
     document.getElementById("showInstructions").addEventListener("click", () => setTab("instructions"));
     document.getElementById("backToPlayTop").addEventListener("click", () => setTab("game"));
-    document.getElementById("backToPlayBottom").addEventListener("click", () => setTab("game"));
     document.getElementById("deckMode").addEventListener("change", e => { deckMode = e.target.value; renderCards(); renderGuideExamples(); if(game.middle) setupGame(false); });
     document.getElementById("showNames").addEventListener("change", e => { showNames = e.target.checked; renderCards(); if(game.middle){ mountMiddleCard(!game.revealed); mountPlayerCard("p1"); mountPlayerCard("p2"); } });
     document.getElementById("visualShuffle").addEventListener("click", () => { layoutSalt = (layoutSalt * 1664525 + 1013904223) >>> 0; localStorage.setItem("oneSymbol.layoutSalt", String(layoutSalt)); layoutCache.clear(); renderCards(); renderGuideExamples(); if(game.middle){ mountMiddleCard(!game.revealed); mountPlayerCard("p1"); mountPlayerCard("p2"); } });

@@ -154,14 +154,24 @@ async function run() {
     guideCards: document.querySelectorAll("#instructionsGuide .guide-card").length,
     guideExampleCards: document.querySelectorAll("#instructionsGuide .guide-example-card").length,
     guideControlCards: document.querySelectorAll("#instructionsGuide .guide-control-card").length,
+    overviewCards: document.querySelectorAll("#instructionsGuide .guide-overview-card").length,
+    allInstructionCardsFull: [...document.querySelectorAll("#instructionsGuide .match-card")].every((card) => card.querySelectorAll(".symbol").length >= activeDeck()[0].symbols.length),
     highlightedSymbols: document.querySelectorAll("#instructionsGuide .symbol.sharedhint").length,
+    wrongSymbols: document.querySelectorAll("#instructionsGuide .symbol.wronghint").length,
+    motionPaths: document.querySelectorAll("#instructionsGuide .guide-motion-path").length,
     keyCount: document.querySelectorAll("#instructionsGuide .guide-key").length,
     dotCount: document.querySelectorAll("#instructionsGuide .guide-dot").length,
-    cooldownDemo: !!document.querySelector("#instructionsGuide .cooldown-demo .coolbar"),
+    cursorDots: document.querySelectorAll("#instructionsGuide .cursor-dot").length,
+    cooldownDemo: !!document.querySelector("#instructionsGuide .cooldown-demo .coolbar") && !!document.querySelector("#guideWrongPlayer") && !!document.querySelector("#guideWrongMiddle"),
     backButtons: document.querySelectorAll("#tab-instructions button[id^='backToPlay']").length,
     titleSize: parseFloat(getComputedStyle(document.querySelector("#tab-instructions h2")).fontSize),
     surfaceHeight: document.querySelector("#tab-instructions .surface").getBoundingClientRect().height,
-    playerOrder: [...document.querySelectorAll("#instructionsGuide .guide-player")].map((el) => el.classList.contains("left") ? "wasd" : "arrows").join(",")
+    playerOrder: [...document.querySelectorAll("#instructionsGuide .guide-card:nth-of-type(3) .guide-player")].map((el) => el.classList.contains("left") ? "wasd" : "arrows").join(","),
+    answerOrder: [...document.querySelectorAll("#instructionsGuide .guide-card:nth-of-type(4) .guide-player")].map((el) => el.classList.contains("left") ? "space" : "enter").join(","),
+    stacked: (() => {
+      const cards = [...document.querySelectorAll("#instructionsGuide .guide-card")].map((el) => el.getBoundingClientRect());
+      return cards.every((rect, idx) => idx === 0 || rect.top >= cards[idx - 1].bottom - 4);
+    })()
   }));
   await page.screenshot({ path: path.join(outDir, "tempo-instructions.png"), fullPage: false });
 
@@ -373,16 +383,39 @@ async function run() {
     const card = document.querySelector(".win-card");
     if (!overlay || !card) return { exists: false };
     const r = card.getBoundingClientRect();
+    const title = card.querySelector(".win-title");
     return {
       exists: true,
       leaving: overlay.classList.contains("leaving"),
       text: card.textContent,
+      titleLetterSpacing: title ? getComputedStyle(title).letterSpacing : "",
+      cardFilter: getComputedStyle(card).filter,
       rect: { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height },
       clipped: r.left < -1 || r.top < -1 || r.right > innerWidth + 1 || r.bottom > innerHeight + 1
     };
   });
-  await page.waitForFunction(() => !document.querySelector(".win-overlay"), null, { timeout: 4200 });
-  await page.waitForTimeout(240);
+  await page.waitForTimeout(1250);
+  const winLeavingState = await page.evaluate(() => {
+    const overlay = document.querySelector(".win-overlay");
+    const card = document.querySelector(".win-card");
+    if (!overlay || !card) return { exists: false };
+    const title = card.querySelector(".win-title");
+    return {
+      exists: true,
+      leaving: overlay.classList.contains("leaving"),
+      text: card.textContent,
+      titleLetterSpacing: title ? getComputedStyle(title).letterSpacing : "",
+      cardFilter: getComputedStyle(card).filter
+    };
+  });
+  await page.waitForFunction(() => !document.querySelector(".win-overlay"), null, { timeout: 5200 });
+  await page.waitForTimeout(320);
+  const refillEarlyState = await page.evaluate(() => ({
+    refillingPanels: document.querySelectorAll(".player-arena.refilling").length,
+    visiblePileLayers: [...document.querySelectorAll(".game-screen .pile-layer")].filter((layer) => Number(getComputedStyle(layer).opacity) > 0.05).length
+  }));
+  await page.waitForFunction(() => !document.querySelector(".player-arena.refilling"), null, { timeout: 4200 });
+  await page.waitForTimeout(180);
   const winReadyState = await page.evaluate(() => {
     const startButton = document.getElementById("middleStart");
     const middle = document.querySelector("#middleSlot .card-back");
@@ -460,6 +493,8 @@ async function run() {
     countdownChecks,
     winTimingMs: Number(winTiming.toFixed(3)),
     winState,
+    winLeavingState,
+    refillEarlyState,
     winReadyState,
     playAgainState,
     responsive,
@@ -470,7 +505,7 @@ async function run() {
 
   if (errors.length) process.exitCode = 1;
   if (!initialState.gameVisible || !initialState.bodyGameActive || initialState.activeTab !== "game" || !initialState.startVisible || initialState.startText !== "START" || !initialState.buttonRound || !initialState.noGameGuide || !initialState.instructionsNav || !initialState.middleBack || !initialState.noBackMark || initialState.buttonCenterDelta > 5 || initialState.running || initialState.counting || initialState.ended || hasClipped(initialLayout)) process.exitCode = 1;
-  if (!instructionsState.visible || instructionsState.activeTab !== "instructions" || instructionsState.guideCards !== 3 || instructionsState.guideExampleCards !== 2 || instructionsState.guideControlCards !== 2 || instructionsState.highlightedSymbols < 2 || instructionsState.keyCount < 10 || instructionsState.dotCount !== 2 || !instructionsState.cooldownDemo || instructionsState.backButtons !== 2 || instructionsState.titleSize < 46 || instructionsState.surfaceHeight < 480 || instructionsState.playerOrder !== "wasd,arrows") process.exitCode = 1;
+  if (!instructionsState.visible || instructionsState.activeTab !== "instructions" || instructionsState.guideCards !== 5 || instructionsState.guideExampleCards < 2 || instructionsState.guideControlCards < 6 || instructionsState.overviewCards !== 3 || !instructionsState.allInstructionCardsFull || instructionsState.highlightedSymbols < 8 || instructionsState.wrongSymbols < 1 || instructionsState.motionPaths !== 2 || instructionsState.keyCount < 10 || instructionsState.dotCount !== 2 || instructionsState.cursorDots < 5 || !instructionsState.cooldownDemo || instructionsState.backButtons !== 1 || instructionsState.titleSize < 46 || instructionsState.surfaceHeight < 900 || instructionsState.playerOrder !== "wasd,arrows" || instructionsState.answerOrder !== "space,enter" || !instructionsState.stacked) process.exitCode = 1;
   if (guideDuringRun.visible || !guideDuringRun.playingClass) process.exitCode = 1;
   if (Object.values(staticChecks.validations).some(Boolean)) process.exitCode = 1;
   if (staticChecks.fileCount !== 57 || staticChecks.overlappingPairs > 0) process.exitCode = 1;
@@ -490,7 +525,9 @@ async function run() {
   if (countdownXDrift > 3) process.exitCode = 1;
   if (countdownChecks.slice(0, 6).some((sample) => sample.running || !sample.counting)) process.exitCode = 1;
   if (!countdownChecks[countdownChecks.length - 1].running) process.exitCode = 1;
-  if (!winState.exists || winState.leaving || !winState.text.includes("WINS") || winState.clipped) process.exitCode = 1;
+  if (!winState.exists || winState.leaving || !winState.text.includes("WINS") || winState.clipped || winState.cardFilter !== "none") process.exitCode = 1;
+  if (!winLeavingState.exists || !winLeavingState.leaving || winLeavingState.text !== winState.text || winLeavingState.titleLetterSpacing !== winState.titleLetterSpacing || winLeavingState.cardFilter !== "none") process.exitCode = 1;
+  if (refillEarlyState.refillingPanels < 1 || refillEarlyState.visiblePileLayers >= 18) process.exitCode = 1;
   if (!winReadyState.overlayGone || !winReadyState.middleBack || !winReadyState.noBackMark || !winReadyState.buttonVisible || winReadyState.buttonText !== "START" || winReadyState.playAgainClass || !winReadyState.buttonRound || winReadyState.buttonCenterDelta > 5 || winReadyState.p1Score !== 0 || winReadyState.p2Score !== 0 || winReadyState.p1Text !== "10" || winReadyState.p2Text !== "10" || winReadyState.activeCards !== 2 || winReadyState.visiblePileLayers < 16 || winReadyState.staleWinner || winReadyState.staleCooldown || winReadyState.staleSelection || !winReadyState.noGameGuide || winReadyState.clipped) process.exitCode = 1;
   if (!playAgainState.overlayGone || playAgainState.p1Score !== 0 || playAgainState.p2Score !== 0 || !playAgainState.counting || playAgainState.ended || playAgainState.scoreText !== "10" || playAgainState.staleSelection || playAgainState.staleCooldown || !playAgainState.noGameGuide) process.exitCode = 1;
   for (const metrics of Object.values(responsive)) {
