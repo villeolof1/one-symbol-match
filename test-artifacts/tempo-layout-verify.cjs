@@ -7,17 +7,19 @@ const outDir = path.join(root, "test-artifacts");
 
 async function setupRunningGame(page, target = 10) {
   await page.goto(url);
-  await page.click('[data-tab="game"]');
   await page.evaluate((targetScore) => {
+    setTab("game");
     document.getElementById("targetScore").value = String(targetScore);
     setupGame(false);
     clearCountdown();
     hideStartOverlay();
     game.running = true;
     game.counting = false;
+    game.revealed = true;
     mountMiddleCard(false, false);
     updateCooldownUi("p1");
     updateCooldownUi("p2");
+    updateGuideVisibility();
   }, target);
   await page.waitForTimeout(250);
 }
@@ -42,6 +44,9 @@ async function layoutMetrics(page) {
     const cards = [...document.querySelectorAll(".game-screen .match-card:not(.preloaded-next-card)")].map(rectPayload);
     const labels = [...document.querySelectorAll(".game-screen .player-head")].map(rectPayload);
     const cooldowns = [...document.querySelectorAll(".game-screen .player-foot.cooling")].map(rectPayload);
+    const guides = [...document.querySelectorAll(".play-guide:not(.hidden-guide)")]
+      .filter((guide) => getComputedStyle(guide).display !== "none" && Number(getComputedStyle(guide).opacity) > 0.05)
+      .map(rectPayload);
     const activeCards = [...document.querySelectorAll(".active-player-card")].map(rectPayload);
     const piles = [...document.querySelectorAll(".game-screen .card-pile")].map((pile) => {
       const payload = rectPayload(pile);
@@ -60,12 +65,12 @@ async function layoutMetrics(page) {
       };
     });
     const middle = document.querySelector(".middle-zone .match-card");
-    return { viewport, cards, labels, cooldowns, activeCards, piles, middle: middle ? rectPayload(middle) : null };
+    return { viewport, cards, labels, cooldowns, guides, activeCards, piles, middle: middle ? rectPayload(middle) : null };
   });
 }
 
 function hasClipped(metrics) {
-  return [...metrics.cards, ...metrics.labels, ...metrics.cooldowns, ...metrics.piles].some((item) => item.clipped);
+  return [...metrics.cards, ...metrics.labels, ...metrics.cooldowns, ...metrics.guides, ...metrics.piles].some((item) => item.clipped);
 }
 
 function hasBadPile(metrics) {
@@ -109,8 +114,40 @@ async function run() {
   });
   page.on("pageerror", (err) => errors.push(`pageerror: ${err.message}`));
 
+  await page.goto(url);
+  await page.waitForTimeout(300);
+  const initialState = await page.evaluate(() => {
+    const gameTab = document.getElementById("tab-game");
+    const startButton = document.getElementById("middleStart");
+    const guide = document.getElementById("playGuide");
+    const middle = document.querySelector("#middleSlot .card-back");
+    return {
+      gameVisible: !gameTab.classList.contains("hidden"),
+      bodyGameActive: document.body.classList.contains("game-active"),
+      activeTab: document.querySelector(".tabbtn.active")?.dataset.tab,
+      startVisible: !startButton.classList.contains("hidden"),
+      startText: startButton.textContent,
+      guideVisible: !!guide && getComputedStyle(guide).display !== "none" && Number(getComputedStyle(guide).opacity) > 0.5,
+      guideCards: document.querySelectorAll("#playGuide .guide-card").length,
+      guideMiniCards: document.querySelectorAll("#playGuide .guide-mini").length,
+      middleBack: !!middle,
+      running: game.running,
+      counting: game.counting,
+      ended: game.ended
+    };
+  });
+  const initialLayout = await layoutMetrics(page);
+  await page.screenshot({ path: path.join(outDir, "tempo-initial-play.png"), fullPage: false });
+
   await setupRunningGame(page);
   const desktopBefore = await layoutMetrics(page);
+  const guideDuringRun = await page.evaluate(() => {
+    const guide = document.getElementById("playGuide");
+    return {
+      visible: !!guide && getComputedStyle(guide).display !== "none" && Number(getComputedStyle(guide).opacity) > 0.15,
+      playingClass: document.getElementById("tab-game").classList.contains("playing")
+    };
+  });
   await page.screenshot({ path: path.join(outDir, "tempo-desktop-running.png"), fullPage: false });
 
   const staticChecks = await page.evaluate(() => {
@@ -282,7 +319,7 @@ async function run() {
       clipped: r.left < -1 || r.top < -1 || r.right > innerWidth + 1 || r.bottom > innerHeight + 1
     };
   });
-  await page.waitForTimeout(2200);
+  await page.waitForFunction(() => !document.querySelector(".win-overlay"), null, { timeout: 4200 });
   const winReadyState = await page.evaluate(() => {
     const startButton = document.getElementById("middleStart");
     const middle = document.querySelector("#middleSlot .card-back");
@@ -293,6 +330,10 @@ async function run() {
       buttonVisible: !startButton.classList.contains("hidden"),
       buttonText: startButton.textContent,
       playAgainClass: document.querySelector("#startOverlay .start-panel").classList.contains("play-again"),
+      staleWinner: !!document.querySelector(".player-arena.winner"),
+      staleCooldown: !!document.querySelector(".player-foot.cooling"),
+      staleSelection: !!document.querySelector(".symbol.selected,.symbol.p2selected"),
+      guideVisible: Number(getComputedStyle(document.getElementById("playGuide")).opacity) > 0.15,
       buttonRect: { left: br.left, top: br.top, right: br.right, bottom: br.bottom, width: br.width, height: br.height },
       clipped: br.left < -1 || br.top < -1 || br.right > innerWidth + 1 || br.bottom > innerHeight + 1
     };
@@ -308,7 +349,10 @@ async function run() {
     counting: game.counting,
     ended: game.ended,
     scoreText: document.getElementById("p1Score").textContent,
-    countdownText: document.getElementById("countdownText").textContent
+    countdownText: document.getElementById("countdownText").textContent,
+    staleSelection: !!document.querySelector(".symbol.selected,.symbol.p2selected"),
+    staleCooldown: !!document.querySelector(".player-foot.cooling"),
+    guideVisible: Number(getComputedStyle(document.getElementById("playGuide")).opacity) > 0.15
   }));
 
   const viewportCases = [
@@ -327,6 +371,9 @@ async function run() {
   }
 
   const result = {
+    initialState,
+    initialLayout,
+    guideDuringRun,
     staticChecks,
     desktopBefore,
     cooldownBefore,
@@ -347,6 +394,8 @@ async function run() {
   console.log(JSON.stringify(result, null, 2));
 
   if (errors.length) process.exitCode = 1;
+  if (!initialState.gameVisible || !initialState.bodyGameActive || initialState.activeTab !== "game" || !initialState.startVisible || initialState.startText !== "START" || !initialState.guideVisible || initialState.guideCards !== 3 || initialState.guideMiniCards !== 2 || !initialState.middleBack || initialState.running || initialState.counting || initialState.ended || hasClipped(initialLayout)) process.exitCode = 1;
+  if (guideDuringRun.visible || !guideDuringRun.playingClass) process.exitCode = 1;
   if (Object.values(staticChecks.validations).some(Boolean)) process.exitCode = 1;
   if (staticChecks.fileCount !== 57 || staticChecks.overlappingPairs > 0) process.exitCode = 1;
   if (staticChecks.minSymbolSize < 13.0 || staticChecks.maxSymbolSize < 32 || staticChecks.minSizeRange < 14 || staticChecks.minCoverage < 0.56 || staticChecks.maxHalfEmpty > 0.54 || staticChecks.maxQuadrantEmpty > 0.62 || staticChecks.maxVisualGap > 8.8 || staticChecks.largeEdgeClipRisk > 0) process.exitCode = 1;
@@ -362,8 +411,8 @@ async function run() {
   if (countdownChecks.slice(0, 6).some((sample) => sample.running || !sample.counting)) process.exitCode = 1;
   if (!countdownChecks[countdownChecks.length - 1].running) process.exitCode = 1;
   if (!winState.exists || winState.leaving || !winState.text.includes("WINS") || winState.clipped) process.exitCode = 1;
-  if (!winReadyState.overlayGone || !winReadyState.middleBack || !winReadyState.buttonVisible || !winReadyState.buttonText.includes("PLAY AGAIN") || !winReadyState.playAgainClass || winReadyState.clipped) process.exitCode = 1;
-  if (!playAgainState.overlayGone || playAgainState.p1Score !== 0 || playAgainState.p2Score !== 0 || !playAgainState.counting || playAgainState.ended || playAgainState.scoreText !== "1") process.exitCode = 1;
+  if (!winReadyState.overlayGone || !winReadyState.middleBack || !winReadyState.buttonVisible || !winReadyState.buttonText.includes("PLAY AGAIN") || !winReadyState.playAgainClass || winReadyState.staleWinner || winReadyState.staleCooldown || winReadyState.staleSelection || winReadyState.guideVisible || winReadyState.clipped) process.exitCode = 1;
+  if (!playAgainState.overlayGone || playAgainState.p1Score !== 0 || playAgainState.p2Score !== 0 || !playAgainState.counting || playAgainState.ended || playAgainState.scoreText !== "1" || playAgainState.staleSelection || playAgainState.staleCooldown || playAgainState.guideVisible) process.exitCode = 1;
   for (const metrics of Object.values(responsive)) {
     if (hasClipped(metrics) || hasBadPile(metrics)) process.exitCode = 1;
     if (metrics.middle.width <= Math.max(...metrics.activeCards.map((card) => card.width))) process.exitCode = 1;

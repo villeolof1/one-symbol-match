@@ -184,11 +184,20 @@
     .player-arena.p2 .match-card{animation-delay:.02s}
     .game-screen .player-foot.cooling .cooltext{display:block; min-width:0; text-align:center; font-size:12px; line-height:1}
     .game-card-slot{display:grid; place-items:center; min-height:0; position:relative}
+    .play-guide{position:absolute; left:clamp(18px,2vw,34px); top:clamp(104px,12vh,138px); width:min(340px,24vw); z-index:30; display:grid; grid-template-columns:1fr; gap:8px; pointer-events:none; transition:opacity .22s ease, transform .22s ease}
+    .play-guide.hidden-guide{opacity:0; transform:translateY(10px); pointer-events:none}
+    .guide-card{min-height:74px; border:1px solid rgba(255,255,255,.14); border-radius:18px; background:rgba(3,7,18,.34); box-shadow:0 16px 42px rgba(0,0,0,.20); padding:8px 10px; display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:center}
+    .guide-title{font-weight:1000; letter-spacing:-.035em; font-size:clamp(13px,1.05vw,16px); color:#fff}.guide-copy{font-size:clamp(11px,.9vw,13px); color:#cfe2ff; line-height:1.25; margin-top:2px}
+    .guide-visual{display:flex; align-items:center; gap:7px; min-width:80px}.guide-mini{--card-size:54px; border-width:3px; box-shadow:0 8px 18px rgba(0,0,0,.20), inset 0 -5px 12px rgba(15,23,42,.08)}.guide-mini .symbol{display:none}.guide-mini .symbol:nth-of-type(1),.guide-mini .symbol:nth-of-type(2),.guide-mini .symbol:nth-of-type(3){display:grid}.guide-mini::before{inset:4px}.guide-mini .cursor-dot{display:none}
+    .guide-keys{display:flex; gap:4px; align-items:center; flex-wrap:wrap}.guide-key{min-width:24px; min-height:24px; display:grid; place-items:center; border-radius:7px; color:#0f172a; background:#f8fbff; border:1px solid rgba(148,163,184,.45); font-weight:1000; font-size:12px; box-shadow:0 4px 10px rgba(0,0,0,.16)}.guide-key.wide{min-width:54px}.guide-dot{width:20px; height:20px; border-radius:50%; background:var(--blue); border:3px solid white; box-shadow:0 0 0 5px rgba(37,99,235,.20)}.guide-dot.p2{background:var(--p2)}
+    .game-screen.playing .play-guide,.game-screen.resetting .play-guide{display:none; opacity:0; transform:translateY(10px); pointer-events:none}
+    .player-arena.reset-fade .game-card-slot{opacity:.22; transform:scale(.975); transition:opacity .45s ease, transform .45s cubic-bezier(.16,.84,.18,1)}
+    .player-arena.deal-in .active-player-card{animation:dealIn .34s cubic-bezier(.14,.84,.18,1)}
     .card-pile{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; z-index:0; transform:translateY(clamp(3px,.7vh,8px))}
     .player-arena.cooling .card-pile{transform:translateY(clamp(-4px,-.45vh,-2px)) scaleY(.68); transform-origin:center top}
-    .pile-layer{position:absolute; width:var(--player-card-size); height:var(--player-card-size); border-radius:50%; background:radial-gradient(circle at 36% 24%,#ffffff,#fbfdff 48%,#f0f5fb 77%,#dbe7f0 100%); border:clamp(3px,.75vw,5px) solid rgba(255,255,255,.98); box-shadow:0 1px 0 rgba(148,163,184,.42),0 2px 0 rgba(226,232,240,.7),0 7px 10px rgba(15,23,42,.09),inset 0 -8px 15px rgba(15,23,42,.055),inset 0 0 0 1px rgba(15,23,42,.06); opacity:0; transform:translate3d(0,14px,0) scale(.995); transition:opacity .18s ease, transform .24s cubic-bezier(.16,.88,.24,1); will-change:transform,opacity; transform-origin:center center}
+    .pile-layer{position:absolute; width:var(--player-card-size); height:var(--player-card-size); border-radius:50%; background:radial-gradient(circle at 36% 24%,#ffffff,#fbfdff 50%,#f1f6fb 78%,#dce7f0 100%); border:clamp(3px,.75vw,5px) solid rgba(255,255,255,.98); box-shadow:0 1px 0 rgba(148,163,184,.38),0 3px 0 rgba(226,232,240,.35),0 8px 13px rgba(15,23,42,.09),inset 0 -8px 15px rgba(15,23,42,.055),inset 0 0 0 1px rgba(15,23,42,.06); opacity:0; transform:translate3d(0,14px,0) scale(.995); transition:opacity .18s ease, transform .24s cubic-bezier(.16,.88,.24,1); will-change:transform,opacity; transform-origin:center center}
     .pile-layer::before{content:""; position:absolute; inset:8px; border-radius:50%; border:1px solid rgba(148,163,184,.15); border-bottom-color:rgba(71,85,105,.22); opacity:.72}
-    .pile-layer::after{content:""; position:absolute; left:12%; right:12%; bottom:-2.1%; height:8.5%; border-radius:50%; clip-path:ellipse(50% 48% at 50% 0%); background:repeating-linear-gradient(to bottom,rgba(203,213,225,.58) 0 1px,rgba(248,250,252,.75) 1px 2px,rgba(148,163,184,.34) 2px 3px); filter:blur(.08px); opacity:.18; transform:scaleY(.46); transform-origin:top center; box-shadow:0 7px 14px rgba(15,23,42,.13)}
+    .pile-layer::after{content:""; position:absolute; left:16%; right:16%; bottom:-2%; height:7%; border-radius:50%; background:radial-gradient(ellipse at 50% 0%,rgba(226,232,240,.52),rgba(203,213,225,.22) 42%,rgba(15,23,42,.10) 76%,transparent 77%); opacity:.20; transform:scaleY(.42); transform-origin:top center; box-shadow:0 7px 14px rgba(15,23,42,.13)}
     .game-card-slot > .match-card{position:relative; z-index:2}
     .game-card-slot > .match-card.preloaded-next-card{position:absolute; z-index:1; opacity:0; pointer-events:none; transform:translate3d(0,0,0) scale(.996); transition:opacity .055s linear, transform .085s cubic-bezier(.16,.88,.24,1); will-change:opacity,transform}
     .game-card-slot > .match-card.preloaded-next-card.ready{opacity:1; transform:translate3d(0,0,0) scale(1)}
@@ -225,6 +234,7 @@
     .win-overlay.leaving .win-title{letter-spacing:-.04em}
     .win-confetti{position:absolute; width:12px; height:26px; border-radius:4px; background:hsl(var(--hue),90%,62%); left:50%; top:50%; opacity:0; transform:translate(-50%,-50%) rotate(var(--r)); animation:confettiBurst 1.05s cubic-bezier(.13,.75,.19,1) forwards}
     @keyframes cardPop{from{transform:scale(.982)}to{transform:scale(1)}}
+    @keyframes dealIn{0%{transform:translate3d(0,-22px,0) scale(.94); opacity:.25}68%{transform:translate3d(0,3px,0) scale(1.018); opacity:1}100%{transform:translate3d(0,0,0) scale(1); opacity:1}}
     @keyframes cardFlipReveal{0%{transform:perspective(900px) rotateY(89deg) scale(.98); filter:brightness(1.15)}55%{transform:perspective(900px) rotateY(-8deg) scale(1.018)}100%{transform:perspective(900px) rotateY(0) scale(1); filter:brightness(1)}}
     @keyframes countPulse{0%{transform:scale(.72); opacity:.3}72%{transform:scale(1.1); opacity:1}100%{transform:scale(1); opacity:1}}
     @keyframes feedbackPulse{
@@ -244,10 +254,11 @@
     .game-screen .match-card{box-shadow:0 18px 38px rgba(0,0,0,.30), inset 0 -10px 28px rgba(15,23,42,.08)}
     .game-screen .symbol-label{display:none}
 
-    @media (max-width:980px){.hero{grid-template-columns:1fr}.navtabs{justify-content:flex-start}.statgrid{grid-template-columns:repeat(2,minmax(130px,1fr))}.pairtester{grid-template-columns:1fr}.game-hud{grid-template-columns:1fr}.hud-options{display:none}.arena{grid-template-rows:minmax(0,38fr) minmax(0,62fr)}.players-row{grid-template-columns:1fr; gap:0; transform:translateY(clamp(-18px,-2vh,-8px))}.middle-zone .match-card{--card-size:min(92vw,40vh,510px)}.player-arena{--player-card-size:min(88vw,31vh,430px); padding-bottom:clamp(62px,7vh,82px)}.player-arena.p1{order:2}.player-arena.p2{order:1}.game-screen .player-arena.p1 .player-head,.game-screen .player-arena.p2 .player-head{left:16px; right:auto}.game-screen .player-foot{bottom:-22px}}
+    @media (max-width:1100px){.play-guide{display:none}}
+    @media (max-width:980px){.hero{grid-template-columns:1fr}.navtabs{justify-content:flex-start}.statgrid{grid-template-columns:repeat(2,minmax(130px,1fr))}.pairtester{grid-template-columns:1fr}.game-hud{grid-template-columns:1fr}.hud-options{display:none}.guide-card{min-height:54px; grid-template-columns:auto 1fr; padding:7px 9px}.guide-card:nth-child(2),.guide-card:nth-child(3){display:none}.guide-mini{--card-size:42px}.arena{grid-template-rows:minmax(0,38fr) minmax(0,62fr)}.players-row{grid-template-columns:1fr; gap:0; transform:translateY(clamp(-18px,-2vh,-8px))}.middle-zone .match-card{--card-size:min(92vw,40vh,510px)}.player-arena{--player-card-size:min(88vw,31vh,430px); padding-bottom:clamp(62px,7vh,82px)}.player-arena.p1{order:2}.player-arena.p2{order:1}.game-screen .player-arena.p1 .player-head,.game-screen .player-arena.p2 .player-head{left:16px; right:auto}.game-screen .player-foot{bottom:-22px}}
     @media (min-width:981px) and (max-height:800px){.middle-zone .match-card{--card-size:min(62vw,calc((100vh - 104px) * .565),600px)}.player-arena{--player-card-size:min(48vw,39.8vh,510px); padding-bottom:54px}.game-screen .player-foot{bottom:-46px}}
     @media (max-width:980px) and (max-height:760px){.middle-zone .match-card{--card-size:min(86vw,40vh,440px)}.player-arena{--player-card-size:min(82vw,28vh,400px); padding-bottom:58px}.game-screen .player-foot{bottom:-18px}}
-    @media (max-width:560px){.app{width:100%; padding:10px 10px 28px}.hero,.panel{border-radius:20px}.surface{border-radius:20px}.statgrid{grid-template-columns:1fr}.cardsgrid{grid-template-columns:1fr}.match-card{--card-size:min(86vw,330px)}.controlgroup{width:100%}.controlgroup > *{flex:1}.tabbtn,.primary,.ghost,.dangerbtn{padding:10px 12px}.game-screen{padding:6px}.scoreline{grid-template-columns:1fr 1fr}.scoreline #gameStatus{grid-column:1/-1; order:3}.scorepill{min-height:46px;padding:5px 9px}.score-num{font-size:32px}.hud-buttons{justify-content:center}.player-head,.player-foot{font-size:12px}.selected-name{max-width:48%}.arena{grid-template-rows:minmax(0,34fr) minmax(0,66fr); gap:0}.middle-zone{padding-bottom:0}.middle-zone .match-card{--card-size:min(84vw,28.5vh,318px)}.player-arena{--player-card-size:min(84vw,20vh,238px); padding-bottom:62px}.players-row{gap:0; transform:translateY(4px)}.game-screen .player-head{bottom:4px; min-height:24px; padding:4px 9px}.game-screen .player-foot{bottom:30px}.coolbar{height:5px; width:min(calc(var(--player-card-size) * .48),150px)}.game-screen .player-foot.cooling .cooltext{font-size:11px}.win-title{font-size:clamp(34px,12vw,54px)}.win-card{min-width:min(330px,88vw)}}
+    @media (max-width:560px){.app{width:100%; padding:10px 10px 28px}.hero,.panel{border-radius:20px}.surface{border-radius:20px}.statgrid{grid-template-columns:1fr}.cardsgrid{grid-template-columns:1fr}.match-card{--card-size:min(86vw,330px)}.controlgroup{width:100%}.controlgroup > *{flex:1}.tabbtn,.primary,.ghost,.dangerbtn{padding:10px 12px}.game-screen{padding:6px}.scoreline{grid-template-columns:1fr 1fr}.scoreline #gameStatus{grid-column:1/-1; order:3}.scorepill{min-height:46px;padding:5px 9px}.score-num{font-size:32px}.hud-buttons{justify-content:center}.player-head,.player-foot{font-size:12px}.selected-name{max-width:48%}.play-guide{display:none}.arena{grid-template-rows:minmax(0,34fr) minmax(0,66fr); gap:0}.middle-zone{padding-bottom:0}.middle-zone .match-card{--card-size:min(84vw,28.5vh,318px)}.player-arena{--player-card-size:min(84vw,20vh,238px); padding-bottom:62px}.players-row{gap:0; transform:translateY(4px)}.game-screen .player-head{bottom:4px; min-height:24px; padding:4px 9px}.game-screen .player-foot{bottom:30px}.coolbar{height:5px; width:min(calc(var(--player-card-size) * .48),150px)}.game-screen .player-foot.cooling .cooltext{font-size:11px}.win-title{font-size:clamp(34px,12vw,54px)}.win-card{min-width:min(330px,88vw)}}
     @media (max-height:760px) and (max-width:560px){.game-screen{padding:4px}.scorepill{min-height:42px}.score-num{font-size:28px}.arena{grid-template-rows:minmax(0,32fr) minmax(0,68fr)}.middle-zone .match-card{--card-size:min(80vw,25vh,244px)}.player-arena{--player-card-size:min(80vw,18vh,180px); padding-bottom:52px}.players-row{transform:translateY(4px)}.game-screen .player-head{bottom:6px}.game-screen .player-foot{bottom:28px}}
   </style>
 </head>
@@ -266,14 +277,14 @@
         </div>
       </section>
       <nav class="navtabs" aria-label="Main views">
-        <button class="tabbtn active" data-tab="browse">Browse cards</button>
-        <button class="tabbtn" data-tab="game">2-player game</button>
+        <button class="tabbtn active" data-tab="game">Play</button>
+        <button class="tabbtn" data-tab="browse">Cards</button>
         <button class="tabbtn" data-tab="how">How it works</button>
       </nav>
     </header>
 
     <main>
-      <section id="tab-browse" class="panel tabpane">
+      <section id="tab-browse" class="panel tabpane hidden">
         <div class="surface">
           <div class="controls">
             <div class="controlgroup">
@@ -298,7 +309,7 @@
         </div>
       </section>
 
-      <section id="tab-game" class="game-screen tabpane hidden">
+      <section id="tab-game" class="game-screen tabpane">
         <div class="game-hud">
           <div class="hud-buttons">
             <button id="exitGame">Cards</button>
@@ -332,6 +343,20 @@
             </div>
           </section>
         </div>
+        <aside class="play-guide" id="playGuide" aria-label="Quick play instructions">
+          <div class="guide-card">
+            <div class="guide-visual" id="guideMatch"></div>
+            <div><div class="guide-title">Find the shared object</div><div class="guide-copy">One object appears on your card and the middle card.</div></div>
+          </div>
+          <div class="guide-card">
+            <div class="guide-visual"><span class="guide-key">W</span><span class="guide-key">A</span><span class="guide-key">S</span><span class="guide-key">D</span><span class="guide-dot p2"></span><span class="guide-dot"></span></div>
+            <div><div class="guide-title">Move your dot</div><div class="guide-copy">WASD controls Player 2. Arrows control Player 1.</div></div>
+          </div>
+          <div class="guide-card">
+            <div class="guide-visual"><span class="guide-key wide">Space</span><span class="guide-key wide">Enter</span></div>
+            <div><div class="guide-title">Answer fast</div><div class="guide-copy">Press your answer key. Wrong guesses trigger cooldown.</div></div>
+          </div>
+        </aside>
       </section>
 
       <section id="tab-how" class="panel tabpane hidden explain">
@@ -1026,12 +1051,23 @@ No symbol selected: answer key does nothing</pre>
     function renderSymbols(){
       document.getElementById("symbolList").innerHTML = activeSymbols().map(s => `<div class="symbol-chip"><img class="e" src="${symbolImageUrl(s)}" alt="${s.name}" loading="lazy" decoding="async"><span><span class="n">${s.name}</span><br><span class="id">symbol ${s.id + 1}</span></span></div>`).join("");
     }
+    function renderGuideExamples(){
+      const target = document.getElementById("guideMatch");
+      if(!target) return;
+      const deck = activeDeck();
+      const left = deck[0];
+      const right = deck.find(card => card.id !== left.id && sharedSymbolIds(left, card).length === 1) || deck[1];
+      target.innerHTML = "";
+      target.appendChild(createCardElement(left, { className:"guide-mini", hintSymbolId:sharedSymbolIds(left, right)[0], eagerImages:false }));
+      target.appendChild(createCardElement(right, { className:"guide-mini", hintSymbolId:sharedSymbolIds(left, right)[0], eagerImages:false }));
+    }
     function setTab(name){
       document.querySelectorAll(".tabbtn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
       document.querySelectorAll(".tabpane").forEach(p => p.classList.add("hidden"));
       document.getElementById(`tab-${name}`).classList.remove("hidden");
       document.body.classList.toggle("game-active", name === "game");
       if(name === "game" && !game.middle) setupGame(false);
+      updateGuideVisibility();
     }
 
     function makePlayer(){
@@ -1055,6 +1091,12 @@ No symbol selected: answer key does nothing</pre>
     function now(){ return performance.now(); }
     function playerLocked(player){ return now() < player.cooldownUntil; }
     function setStatus(text){ document.getElementById("gameStatus").textContent = text; }
+    function updateGuideVisibility(){
+      const screen = document.getElementById("tab-game");
+      if(!screen) return;
+      screen.classList.toggle("playing", game.running || game.counting || game.revealed);
+      screen.classList.toggle("resetting", game.ended && !document.getElementById("middleStart").classList.contains("hidden"));
+    }
     function updateScores(){
       const p1Remaining = Math.max(0, game.target - game.p1.score);
       const p2Remaining = Math.max(0, game.target - game.p2.score);
@@ -1069,6 +1111,7 @@ No symbol selected: answer key does nothing</pre>
       document.getElementById("p1Scorepill").classList.toggle("near-win", p1Near);
       document.getElementById("p2Scorepill").classList.toggle("near-win", p2Near);
       updatePiles();
+      updateGuideVisibility();
     }
 
     function symbolAtCursor(card, cursor){
@@ -1150,6 +1193,34 @@ No symbol selected: answer key does nothing</pre>
       }
     }
     function hideStartOverlay(){ document.getElementById("startOverlay").classList.add("hidden"); }
+    function resetPanelsForCleanStart(){
+      for(const which of ["p1","p2"]){
+        const player = game[which];
+        player.cooldownUntil = 0;
+        player.cooldownTotal = 0;
+        player.selectedSymbolId = null;
+        player.lastSelected = null;
+        if(player.panel) player.panel.classList.remove("winner","cooling","flash","reset-fade");
+        if(player.coolText) player.coolText.textContent = "";
+        if(player.coolBar) player.coolBar.style.transform = "scaleX(0)";
+        if(player.selectedText) player.selectedText.textContent = "No symbol";
+      }
+      document.querySelectorAll(".feedback-ring").forEach(el => el.remove());
+      document.querySelectorAll(".flying-card").forEach(el => el.remove());
+      document.querySelectorAll(".symbol.selected,.symbol.p2selected").forEach(el => el.classList.remove("selected","p2selected"));
+      document.querySelectorAll(".cursor-dot").forEach(el => el.classList.add("idle"));
+    }
+    function showCleanStart(playAgain = false){
+      clearCountdown();
+      game.running = false;
+      game.counting = false;
+      game.revealed = false;
+      resetPanelsForCleanStart();
+      updateScores();
+      mountMiddleCard(true);
+      showStartOverlay(playAgain ? "play-again" : "button");
+      updateGuideVisibility();
+    }
     function mountMiddleCard(faceDown = false, reveal = false){
       const slot = document.getElementById("middleSlot");
       slot.innerHTML = "";
@@ -1286,10 +1357,14 @@ No symbol selected: answer key does nothing</pre>
       updateDot(which);
       updateSelection(which);
     }
-    function mountPlayerCard(which){
+    function mountPlayerCard(which, deal = false){
       const player = game[which];
       const slotId = which === "p1" ? "p1Slot" : "p2Slot";
       const slot = document.getElementById(slotId);
+      if(player.panel){
+        player.panel.classList.toggle("deal-in", deal);
+        if(deal) setTimeout(() => player.panel && player.panel.classList.remove("deal-in"), 420);
+      }
       if(player.preloadTimer){ clearTimeout(player.preloadTimer); player.preloadTimer = null; }
       slot.innerHTML = "";
       slot.classList.toggle("empty", !player.card);
@@ -1345,12 +1420,11 @@ No symbol selected: answer key does nothing</pre>
       game.p2.panel.classList.remove("winner");
       document.querySelectorAll(".win-overlay").forEach(el => el.remove());
       updateScores();
-      mountMiddleCard(true);
-      mountPlayerCard("p1");
-      mountPlayerCard("p2");
+      mountPlayerCard("p1", true);
+      mountPlayerCard("p2", true);
       updateCooldownUi("p1");
       updateCooldownUi("p2");
-      showStartOverlay("button");
+      showCleanStart(false);
       setStatus("Press START on the middle card. WASD left, arrows right.");
       if(switchTab) setTab("game");
     }
@@ -1358,6 +1432,7 @@ No symbol selected: answer key does nothing</pre>
       if(!game.middle || game.counting || game.running || game.ended) return;
       ensureAudio();
       game.counting = true;
+      updateGuideVisibility();
       game.keys.p1 = {left:false,right:false,up:false,down:false};
       game.keys.p2 = {left:false,right:false,up:false,down:false};
       const steps = ["3","2","1","GO!"];
@@ -1377,6 +1452,7 @@ No symbol selected: answer key does nothing</pre>
             updateScores();
             hideStartOverlay();
             mountMiddleCard(false, true);
+            updateGuideVisibility();
             setStatus("Go! Shared symbol, then answer. WASD left · arrows right.");
           }, 520);
         }
@@ -1521,11 +1597,17 @@ No symbol selected: answer key does nothing</pre>
       }
       document.body.appendChild(overlay);
       setTimeout(() => {
+        game.p1.panel.classList.add("reset-fade");
+        game.p2.panel.classList.add("reset-fade");
         mountMiddleCard(true);
-        showStartOverlay("play-again");
         overlay.classList.add("leaving");
       }, 1550);
-      setTimeout(() => overlay.remove(), 2500);
+      setTimeout(() => {
+        showCleanStart(true);
+        game.p1.panel.classList.remove("reset-fade");
+        game.p2.panel.classList.remove("reset-fade");
+      }, 1980);
+      setTimeout(() => overlay.remove(), 2850);
     }
     function answer(which){
       if(!game.running || game.ended) return;
@@ -1662,9 +1744,9 @@ No symbol selected: answer key does nothing</pre>
 
     document.querySelectorAll(".tabbtn").forEach(btn => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
     document.getElementById("exitGame").addEventListener("click", () => setTab("browse"));
-    document.getElementById("deckMode").addEventListener("change", e => { deckMode = e.target.value; renderCards(); if(game.middle) setupGame(false); });
+    document.getElementById("deckMode").addEventListener("change", e => { deckMode = e.target.value; renderCards(); renderGuideExamples(); if(game.middle) setupGame(false); });
     document.getElementById("showNames").addEventListener("change", e => { showNames = e.target.checked; renderCards(); if(game.middle){ mountMiddleCard(!game.revealed); mountPlayerCard("p1"); mountPlayerCard("p2"); } });
-    document.getElementById("visualShuffle").addEventListener("click", () => { layoutSalt = (layoutSalt * 1664525 + 1013904223) >>> 0; localStorage.setItem("oneSymbol.layoutSalt", String(layoutSalt)); layoutCache.clear(); renderCards(); if(game.middle){ mountMiddleCard(!game.revealed); mountPlayerCard("p1"); mountPlayerCard("p2"); } });
+    document.getElementById("visualShuffle").addEventListener("click", () => { layoutSalt = (layoutSalt * 1664525 + 1013904223) >>> 0; localStorage.setItem("oneSymbol.layoutSalt", String(layoutSalt)); layoutCache.clear(); renderCards(); renderGuideExamples(); if(game.middle){ mountMiddleCard(!game.revealed); mountPlayerCard("p1"); mountPlayerCard("p2"); } });
     document.getElementById("validateBtn").addEventListener("click", () => {
       const deck = activeDeck();
       const result = validateDeck(deck);
@@ -1734,6 +1816,9 @@ No symbol selected: answer key does nothing</pre>
 
     renderCards();
     renderSymbols();
+    renderGuideExamples();
+    setupGame(false);
+    setTab("game");
     requestAnimationFrame(tick);
   </script>
 </body>
