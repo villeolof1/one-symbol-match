@@ -281,6 +281,25 @@ async function run() {
 
   await setupRunningGame(page);
   const desktopBefore = await layoutMetrics(page);
+  const normalRefillAnchors = await page.evaluate(() => {
+    return ["p1", "p2"].reduce((out, side) => {
+      const slot = document.getElementById(side === "p1" ? "p1Slot" : "p2Slot");
+      const card = slot?.querySelector(".active-player-card");
+      const pile = slot?.querySelector(".card-pile");
+      const slotRect = slot?.getBoundingClientRect();
+      const cardRect = card?.getBoundingClientRect();
+      const pileRect = pile?.getBoundingClientRect();
+      out[side] = {
+        slotCenterX: slotRect ? slotRect.left + slotRect.width / 2 : null,
+        slotCenterY: slotRect ? slotRect.top + slotRect.height / 2 : null,
+        cardCenterX: cardRect ? cardRect.left + cardRect.width / 2 : null,
+        cardCenterY: cardRect ? cardRect.top + cardRect.height / 2 : null,
+        pileCenterX: pileRect ? pileRect.left + pileRect.width / 2 : null,
+        pileCenterY: pileRect ? pileRect.top + pileRect.height / 2 : null
+      };
+      return out;
+    }, {});
+  });
   const guideDuringRun = await page.evaluate(() => {
     return {
       visible: !!document.querySelector("#tab-game .guide-card, #tab-game .play-guide, #tab-game #guideMatch"),
@@ -549,7 +568,19 @@ async function run() {
     activeCardIds: {
       p1: document.querySelector("#p1Slot .active-player-card")?.dataset.cardId,
       p2: document.querySelector("#p2Slot .active-player-card")?.dataset.cardId
-    }
+    },
+    anchors: ["p1", "p2"].reduce((out, side) => {
+      const slot = document.getElementById(side === "p1" ? "p1Slot" : "p2Slot");
+      const pile = slot?.querySelector(".card-pile");
+      const slotRect = slot?.getBoundingClientRect();
+      const pileRect = pile?.getBoundingClientRect();
+      const pileStyle = pile ? getComputedStyle(pile) : null;
+      out[side] = {
+        slotCenterY: slotRect ? slotRect.top + slotRect.height / 2 : null,
+        pileCenterY: pileRect && pileStyle.display !== "none" ? pileRect.top + pileRect.height / 2 : null
+      };
+      return out;
+    }, {})
   }));
   await page.waitForTimeout(950);
   const refillActiveState = await page.evaluate(() => {
@@ -598,6 +629,18 @@ async function run() {
         p1: document.querySelector("#p1Slot .active-player-card")?.dataset.cardId,
         p2: document.querySelector("#p2Slot .active-player-card")?.dataset.cardId
       },
+      anchors: ["p1", "p2"].reduce((out, side) => {
+        const slot = document.getElementById(side === "p1" ? "p1Slot" : "p2Slot");
+        const pile = slot?.querySelector(".card-pile");
+        const slotRect = slot?.getBoundingClientRect();
+        const pileRect = pile?.getBoundingClientRect();
+        const pileStyle = pile ? getComputedStyle(pile) : null;
+        out[side] = {
+          slotCenterY: slotRect ? slotRect.top + slotRect.height / 2 : null,
+          pileCenterY: pileRect && pileStyle.display !== "none" ? pileRect.top + pileRect.height / 2 : null
+        };
+        return out;
+      }, {}),
       zOrderOk: refillCards.every((card) => {
         const slot = card.closest(".game-card-slot");
         const active = slot.querySelector(".active-player-card");
@@ -657,8 +700,11 @@ async function run() {
       const cy = slotRect.top + slotRect.height / 2;
       const cards = [...slot.querySelectorAll(".refill-card")].map((card) => {
         const rect = card.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
         const centered = Math.hypot((rect.left + rect.width / 2) - cx, (rect.top + rect.height / 2) - cy) < 3;
-        const centerDeltaX = (rect.left + rect.width / 2) - cx;
+        const centerDeltaX = centerX - cx;
+        const centerDeltaY = centerY - cy;
         const coversCenter = rect.left <= cx && rect.right >= cx && rect.top <= cy && rect.bottom >= cy;
         return {
           index: Number(card.dataset.refillIndex),
@@ -670,7 +716,10 @@ async function run() {
           landing: card.classList.contains("landing"),
           preflight: card.classList.contains("preflight"),
           centered,
+          centerX,
+          centerY,
           centerDeltaX,
+          centerDeltaY,
           coversCenter
         };
       });
@@ -682,6 +731,15 @@ async function run() {
         topCentered: centeredCards[0] || null,
         activeCardId: slot.querySelector(".active-player-card")?.dataset.cardId,
         committedCardId: refillState.committedCardIds[side] || null,
+        anchor: (() => {
+          const pile = slot.querySelector(".card-pile");
+          const pileRect = pile?.getBoundingClientRect();
+          const pileStyle = pile ? getComputedStyle(pile) : null;
+          return {
+            slotCenterY: cy,
+            pileCenterY: pileRect && pileStyle.display !== "none" ? pileRect.top + pileRect.height / 2 : null
+          };
+        })(),
         stackOrderOk: !centeredCards[0] || centeredCards.every((card, idx) => idx === 0 || card.z < centeredCards[idx - 1].z),
         edgeTravelOk: cards.some((card) => (card.landing || card.preflight) && Math.abs(card.centerDeltaX) > 18 && (side === "p1" ? card.centerDeltaX > 0 : card.centerDeltaX < 0)),
         coveredCentered: cards.filter((card) => card.covered).every((card) => card.centered),
@@ -726,7 +784,19 @@ async function run() {
       activeCardIds: {
         p1: document.querySelector("#p1Slot .active-player-card")?.dataset.cardId,
         p2: document.querySelector("#p2Slot .active-player-card")?.dataset.cardId
-      }
+      },
+      anchors: ["p1", "p2"].reduce((out, side) => {
+        const slot = document.getElementById(side === "p1" ? "p1Slot" : "p2Slot");
+        const pile = slot?.querySelector(".card-pile");
+        const slotRect = slot?.getBoundingClientRect();
+        const pileRect = pile?.getBoundingClientRect();
+        const pileStyle = pile ? getComputedStyle(pile) : null;
+        out[side] = {
+          slotCenterY: slotRect ? slotRect.top + slotRect.height / 2 : null,
+          pileCenterY: pileRect && pileStyle.display !== "none" ? pileRect.top + pileRect.height / 2 : null
+        };
+        return out;
+      }, {})
     };
   });
   await page.screenshot({ path: path.join(outDir, "tempo-post-win-refill-stack.png"), fullPage: false });
@@ -868,6 +938,7 @@ async function run() {
     guideDuringRun,
     staticChecks,
     desktopBefore,
+    normalRefillAnchors,
     cooldownBefore,
     scoreStart,
     cooldownAfterWrong,
@@ -936,8 +1007,37 @@ async function run() {
   const refillActiveCardsStable = ["p1", "p2"].every((side) => refillEarlyState.scores[side] >= refillEarlyState.target
     ? !refillEarlyState.activeCardIds[side] && !refillActiveState.activeCardIds[side]
     : refillActiveState.activeCardIds[side] === refillEarlyState.activeCardIds[side]);
+  const anchorDriftOk = ["p1", "p2"].every((side) => {
+    const base = refillEarlyState.anchors[side];
+    const samples = [
+      refillActiveState.anchors[side],
+      refillStackState.anchors[side],
+      ...refillFrameSamples.map((sample) => sample[side].anchor)
+    ].filter(Boolean);
+    return samples.every((sample) => {
+      const slotStable = base.slotCenterY == null || sample.slotCenterY == null || Math.abs(sample.slotCenterY - base.slotCenterY) <= 3;
+      const pileStable = base.pileCenterY == null || sample.pileCenterY == null || Math.abs(sample.pileCenterY - base.pileCenterY) <= 3;
+      return slotStable && pileStable;
+    });
+  });
+  const normalAnchorOk = ["p1", "p2"].every((side) => {
+    const normal = normalRefillAnchors[side];
+    const refill = refillEarlyState.anchors[side];
+    return normal && refill && normal.slotCenterY != null && refill.slotCenterY != null && Math.abs(refill.slotCenterY - normal.slotCenterY) <= 3;
+  });
+  const winnerLandingAnchorOk = refillWinnerSides.every((side) => {
+    const normal = normalRefillAnchors[side];
+    const landedCards = refillFrameSamples
+      .flatMap((sample) => sample[side].cards)
+      .filter((card) => card.centered && (card.settling || card.covered));
+    return normal && landedCards.length > 0 && landedCards.every((card) => (
+      Math.abs(card.centerX - normal.slotCenterX) <= 3 &&
+      Math.abs(card.centerY - normal.slotCenterY) <= 3
+    ));
+  });
   if (!refillEarlyState.active || refillEarlyState.started || refillEarlyState.complete || !refillEarlyState.startVisible || refillEarlyState.refillingPanels !== 0 || refillEarlyState.refillCards !== 0 || refillEarlyState.visiblePileLayers >= 18 || !refillEarlyState.prepared || refillEarlyState.preparedCardCount !== refillEarlyState.plannedCardCount || refillEarlyState.preparedAt < refillEarlyState.prepareStartedAt) process.exitCode = 1;
   if (refillWinnerSides.length < 1 || !refillWinnerSides.every((side) => !refillEarlyState.activeCardIds[side])) process.exitCode = 1;
+  if (!anchorDriftOk || !normalAnchorOk || !winnerLandingAnchorOk) process.exitCode = 1;
   if (!refillActiveState.active || !refillActiveState.started || refillActiveState.refillingPanels !== 2 || refillActiveState.refillCards < 2 || refillActiveState.p1RefillCards < 1 || refillActiveState.p2RefillCards < 1 || !refillActiveState.faceUpCardsHaveSymbols || !refillActiveState.fullyOpaque || refillActiveState.transitionDurations.length !== 1 || !refillActiveState.indexes.includes("p1:0") || !refillActiveState.indexes.includes("p2:0") || !refillActiveState.zOrderOk || !refillActiveState.zIncreasing || !refillActiveState.entryDirectionOk || refillActiveState.visiblePileLayers !== refillEarlyState.visiblePileLayers || !refillActiveCardsStable || !refillActiveState.prepared || refillActiveState.createdDuringEntry !== 0 || refillActiveState.preparedCardCount !== refillActiveState.plannedCardCount || refillActiveState.firstAppendAt < refillActiveState.preparedAt || refillActiveState.activeAnimations < 1) process.exitCode = 1;
   if (!refillPerfState.prepared || refillPerfState.createdDuringEntry !== 0 || refillPerfState.appendAfterPrepareMs < 0 || refillPerfState.maxConsecutiveOver50 > 1) process.exitCode = 1;
   const refillStackSideOk = ["p1", "p2"].every((side) => {
