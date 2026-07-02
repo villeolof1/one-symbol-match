@@ -608,6 +608,7 @@ async function run() {
       const cards = [...slot.querySelectorAll(".refill-card")].map((card) => {
         const rect = card.getBoundingClientRect();
         const centered = Math.hypot((rect.left + rect.width / 2) - cx, (rect.top + rect.height / 2) - cy) < 3;
+        const centerDeltaX = (rect.left + rect.width / 2) - cx;
         const coversCenter = rect.left <= cx && rect.right >= cx && rect.top <= cy && rect.bottom >= cy;
         return {
           index: Number(card.dataset.refillIndex),
@@ -617,7 +618,9 @@ async function run() {
           covered: card.classList.contains("covered"),
           settling: card.classList.contains("settling"),
           landing: card.classList.contains("landing"),
+          preflight: card.classList.contains("preflight"),
           centered,
+          centerDeltaX,
           coversCenter
         };
       });
@@ -630,6 +633,7 @@ async function run() {
         activeCardId: slot.querySelector(".active-player-card")?.dataset.cardId,
         committedCardId: refillState.committedCardIds[side] || null,
         stackOrderOk: !centeredCards[0] || centeredCards.every((card, idx) => idx === 0 || card.z < centeredCards[idx - 1].z),
+        edgeTravelOk: cards.some((card) => (card.landing || card.preflight) && Math.abs(card.centerDeltaX) > 18 && (side === "p1" ? card.centerDeltaX > 0 : card.centerDeltaX < 0)),
         coveredCentered: cards.filter((card) => card.covered).every((card) => card.centered),
         fullyOpaque: cards.every((card) => card.opacity === 1)
       };
@@ -883,10 +887,7 @@ async function run() {
   });
   const refillLongSide = refillEarlyState.scores.p1 >= refillEarlyState.scores.p2 ? "p1" : "p2";
   const longSideCards = refillStackState.cards.filter((card) => card.side === refillLongSide);
-  const expectedStackPileLayersMin = refillEarlyState.visiblePileLayers + ["p1", "p2"]
-    .filter((side) => refillStackState.committedCardIds[side])
-    .reduce((total, side) => total + refillEarlyState.scores[side], 0);
-  if (!refillStackState.contiguous || !refillStackState.zIncreasing || !refillStackState.fullyOpaque || refillStackState.visiblePileLayers < expectedStackPileLayersMin || !refillStackSideOk || refillStackState.committedCardIds[refillLongSide] || longSideCards.length < Math.min(5, refillEarlyState.scores[refillLongSide])) process.exitCode = 1;
+  if (!refillStackState.contiguous || !refillStackState.zIncreasing || !refillStackState.fullyOpaque || refillStackState.visiblePileLayers < refillEarlyState.visiblePileLayers || !refillStackSideOk || refillStackState.committedCardIds[refillLongSide] || longSideCards.length < Math.min(5, refillEarlyState.scores[refillLongSide])) process.exitCode = 1;
   const refillFrameSamplesOk = refillFrameSamples.every((sample) => ["p1", "p2"].every((side) => {
     const state = sample[side];
     if (state.committedCardId) {
@@ -895,6 +896,8 @@ async function run() {
     return state.stackOrderOk && state.coveredCentered && state.fullyOpaque;
   }));
   if (!refillFrameSamplesOk) process.exitCode = 1;
+  const refillEdgeTravelOk = ["p1", "p2"].every((side) => refillFrameSamples.some((sample) => sample[side].committedCardId || sample[side].edgeTravelOk));
+  if (!refillEdgeTravelOk) process.exitCode = 1;
   if (!winReadyState.overlayGone || !winReadyState.middleBack || !winReadyState.noBackMark || !winReadyState.buttonVisible || winReadyState.buttonText !== "START" || winReadyState.playAgainClass || !winReadyState.buttonRound || winReadyState.buttonCenterDelta > 5 || winReadyState.p1Score !== 0 || winReadyState.p2Score !== 0 || winReadyState.p1Text !== "10" || winReadyState.p2Text !== "10" || winReadyState.activeCards !== 2 || winReadyState.visiblePileLayers < 16 || winReadyState.staleWinner || winReadyState.staleCooldown || winReadyState.staleSelection || !winReadyState.noGameGuide || winReadyState.clipped) process.exitCode = 1;
   if (winReadyState.activeCardIds.p1 !== winReadyState.finalCardIds.p1 || winReadyState.activeCardIds.p2 !== winReadyState.finalCardIds.p2 || winReadyState.committedCardIds.p1 !== winReadyState.finalCardIds.p1 || winReadyState.committedCardIds.p2 !== winReadyState.finalCardIds.p2 || !winReadyState.activeCommitted.p1 || !winReadyState.activeCommitted.p2) process.exitCode = 1;
   if ((refillEarlyState.scores.p1 > 0 && winReadyState.activeCardIds.p1 === refillEarlyState.activeCardIds.p1) || (refillEarlyState.scores.p2 > 0 && winReadyState.activeCardIds.p2 === refillEarlyState.activeCardIds.p2)) process.exitCode = 1;

@@ -7,3 +7,4 @@
 [0702/123004.627:WARNING:services\audio\sync_reader.cc:154] ASR: No room in socket buffer.: The pipe is being closed. (0xE8)
 [0702/123315.498:WARNING:services\audio\sync_reader.cc:154] ASR: No room in socket buffer.: The pipe is being closed. (0xE8)
 [0702/123329.488:WARNING:services\audio\sync_reader.cc:154] ASR: No room in socket buffer.: The pipe is being closed. (0xE8)
+[0702/132307.450:WARNING:services\audio\sync_reader.cc:154] ASR: No room in socket buffer.: The pipe is being closed. (0xE8)
