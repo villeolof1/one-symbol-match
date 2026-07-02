@@ -1413,7 +1413,16 @@ No symbol selected: answer key does nothing</pre>
       finalCardIds:{ p1:null, p2:null },
       initialActiveCardIds:{ p1:null, p2:null },
       committedCardIds:{ p1:null, p2:null },
-      hiddenRefreshStamp:0
+      hiddenRefreshStamp:0,
+      animations:[],
+      preparePromise:null,
+      prepared:false,
+      prepareStartedAt:0,
+      preparedAt:0,
+      firstAppendAt:0,
+      createdDuringEntry:0,
+      animationStartedPromise:null,
+      resolveAnimationStarted:null
     };
 
     function now(){ return performance.now(); }
@@ -1724,6 +1733,10 @@ No symbol selected: answer key does nothing</pre>
     function clearRefillVisuals(resetState = true){
       refillState.timers.forEach(timer => clearTimeout(timer));
       refillState.timers = [];
+      refillState.animations.forEach(anim => {
+        try { anim.cancel(); } catch {}
+      });
+      refillState.animations = [];
       if(refillState.startTimer) clearTimeout(refillState.startTimer);
       if(refillState.countdownTimer) clearTimeout(refillState.countdownTimer);
       refillState.startTimer = null;
@@ -1731,10 +1744,21 @@ No symbol selected: answer key does nothing</pre>
       document.querySelectorAll(".refill-card").forEach(el => el.remove());
       document.querySelectorAll(".refill-layer").forEach(el => el.remove());
       document.querySelectorAll(".player-arena.refilling").forEach(el => el.classList.remove("refilling"));
+      for(const plan of Object.values(refillState.plans || {})){
+        if(plan?.preparedEls) plan.preparedEls.forEach(el => el?.remove());
+      }
       refillState.plans = { p1:null, p2:null };
       refillState.finalCardIds = { p1:null, p2:null };
       refillState.initialActiveCardIds = { p1:null, p2:null };
       refillState.committedCardIds = { p1:null, p2:null };
+      refillState.preparePromise = null;
+      refillState.prepared = false;
+      refillState.prepareStartedAt = 0;
+      refillState.preparedAt = 0;
+      refillState.firstAppendAt = 0;
+      refillState.createdDuringEntry = 0;
+      refillState.animationStartedPromise = null;
+      refillState.resolveAnimationStarted = null;
       if(resetState){
         refillState.active = false;
         refillState.started = false;
@@ -1777,6 +1801,24 @@ No symbol selected: answer key does nothing</pre>
         setPileVisibleCount(which, baseVisible);
       }
     }
+    function clearWinnerTopCardForRefill(scores){
+      for(const which of ["p1","p2"]){
+        if((scores[which] || 0) < game.target) continue;
+        const player = game[which];
+        const slot = document.getElementById(which === "p1" ? "p1Slot" : "p2Slot");
+        if(!slot) continue;
+        slot.querySelectorAll(".active-player-card,.preloaded-next-card,.empty-player-card").forEach(el => el.remove());
+        slot.classList.add("empty");
+        player.card = null;
+        player.cardEl = null;
+        player.nextCardEl = null;
+        player.nextPreparedCard = null;
+        player.cursor = { x:50, y:50 };
+        player.lastSelected = null;
+        player.selectedSymbolId = null;
+        if(player.selectedText) player.selectedText.textContent = "";
+      }
+    }
     function buildRefillPlans(counts, bases){
       const plans = { p1:null, p2:null };
       const usedIds = new Set([game.middle?.id, game.p1.card?.id, game.p2.card?.id].filter(id => id != null));
@@ -1803,10 +1845,93 @@ No symbol selected: answer key does nothing</pre>
           finalIndex:count - 1,
           finalCard,
           cards,
+          preparedEls:[],
+          motions:[],
           committed:count === 0
         };
       }
       return plans;
+    }
+    function refillCountsFromScores(){
+      const counts = {
+        p1:Math.max(0, Math.min(game.target, Math.round(refillState.scores.p1 || 0))),
+        p2:Math.max(0, Math.min(game.target, Math.round(refillState.scores.p2 || 0)))
+      };
+      const bases = {
+        p1:Math.max(0, Math.min(9, game.target - 1 - counts.p1)),
+        p2:Math.max(0, Math.min(9, game.target - 1 - counts.p2))
+      };
+      return { counts, bases };
+    }
+    function ensureRefillPlans(){
+      const { counts, bases } = refillCountsFromScores();
+      refillState.initialActiveCardIds = {
+        p1:game.p1.card ? String(game.p1.card.id) : null,
+        p2:game.p2.card ? String(game.p2.card.id) : null
+      };
+      refillState.plans = buildRefillPlans(counts, bases);
+      refillState.finalCardIds = {
+        p1:refillState.plans.p1?.finalCard ? String(refillState.plans.p1.finalCard.id) : null,
+        p2:refillState.plans.p2?.finalCard ? String(refillState.plans.p2.finalCard.id) : null
+      };
+      refillState.committedCardIds = {
+        p1:counts.p1 === 0 ? refillState.initialActiveCardIds.p1 : null,
+        p2:counts.p2 === 0 ? refillState.initialActiveCardIds.p2 : null
+      };
+      return { counts, bases };
+    }
+    function prepareRefillCardElements(){
+      if(refillState.preparePromise) return refillState.preparePromise;
+      refillState.prepareStartedAt = performance.now();
+      if(!refillState.plans.p1 || !refillState.plans.p2) ensureRefillPlans();
+      const decodeJobs = [];
+      for(const which of ["p1","p2"]){
+        const plan = refillState.plans[which];
+        if(!plan || plan.preparedEls?.length === plan.cards.length) continue;
+        plan.preparedEls = plan.cards.map((card, index) => {
+          const isFinal = index === plan.finalIndex;
+          decodeJobs.push(warmCardSymbols(card));
+          const el = createCardElement(card, { cursor:isFinal ? { x:50, y:50 } : null, p2:which === "p2", className:`refill-card ${which} landing`, eagerImages:true });
+          el.dataset.refillFor = which;
+          el.dataset.refillIndex = String(index);
+          el.dataset.refillFinal = isFinal ? "true" : "false";
+          el.style.setProperty("--refill-z", String(40 + index));
+          el.style.zIndex = String(40 + index);
+          el.style.transition = "box-shadow .18s ease";
+          return el;
+        });
+      }
+      refillState.preparePromise = Promise.all(decodeJobs).catch(() => {}).then(() => {
+        refillState.prepared = true;
+        refillState.preparedAt = performance.now();
+        return refillState.plans;
+      });
+      return refillState.preparePromise;
+    }
+    function prepareRefillMotion(which){
+      const slot = document.getElementById(which === "p1" ? "p1Slot" : "p2Slot");
+      const plan = refillState.plans[which];
+      if(!slot || !plan) return;
+      const side = which === "p1" ? 1 : -1;
+      const slotRect = slot.getBoundingClientRect();
+      plan.motions = plan.cards.map((card, index) => {
+        const screenExit = side < 0
+          ? -(slotRect.left + slotRect.width + 130 + index * 20)
+          : (window.innerWidth - slotRect.left + 130 + index * 20);
+        const startY = -74 - (index % 3) * 7;
+        const startRot = side * (11 + (index % 4) * 1.1);
+        const startTransform = `translate3d(${screenExit.toFixed(1)}px,${startY.toFixed(1)}px,0) rotate(${startRot.toFixed(2)}deg) scale(.84)`;
+        const landTransform = "translate3d(0,0,0) rotate(0deg) scale(1)";
+        return {
+          side,
+          screenExit,
+          startY,
+          startRot,
+          startTransform,
+          landTransform,
+          arcTransform:`translate3d(${(side * 90).toFixed(1)}px,${(-24 - (index % 2) * 5).toFixed(1)}px,0) rotate(${(side * 2.6).toFixed(2)}deg) scale(.94)`
+        };
+      });
     }
     function commitRefillTopCard(which, el, card, plan){
       if(!el || !card || !plan || plan.committed) return;
@@ -1838,12 +1963,17 @@ No symbol selected: answer key does nothing</pre>
       el.style.opacity = "";
       el.style.transform = "";
       el.style.transition = "";
+      if(el._refillEntryAnim){
+        try { el._refillEntryAnim.cancel(); } catch {}
+        el._refillEntryAnim = null;
+      }
       if(layer){
         layer.querySelectorAll(".refill-card").forEach(cardEl => {
           if(cardEl !== el) cardEl.remove();
         });
       }
       slot.appendChild(el);
+      slot.classList.remove("empty");
       if(layer && !layer.querySelector(".refill-card")) layer.remove();
       if(oldEl && oldEl !== el) oldEl.remove();
       player.cardEl = el;
@@ -1870,37 +2000,39 @@ No symbol selected: answer key does nothing</pre>
     function refillVisualCard(which, index, plan){
       const slot = document.getElementById(which === "p1" ? "p1Slot" : "p2Slot");
       if(!slot || !plan || !plan.cards[index]) return;
-      const side = which === "p1" ? 1 : -1;
-      const slotRect = slot.getBoundingClientRect();
-      const screenExit = side < 0
-        ? -(slotRect.left + slotRect.width + 130 + index * 20)
-        : (window.innerWidth - slotRect.left + 130 + index * 20);
       const card = plan.cards[index];
       const isFinal = index === plan.finalIndex;
       const layer = ensureRefillLayer(which);
       if(!layer) return;
-      const el = createCardElement(card, { cursor:isFinal ? { x:50, y:50 } : null, p2:which === "p2", className:`refill-card ${which} landing`, eagerImages:true });
-      el.dataset.refillFor = which;
-      el.dataset.refillIndex = String(index);
-      el.dataset.refillFinal = isFinal ? "true" : "false";
-      el.style.setProperty("--refill-z", String(40 + index));
-      el.style.zIndex = String(40 + index);
-      const startY = -74 - (index % 3) * 7;
-      const startRot = side * (11 + (index % 4) * 1.1);
-      const startTransform = `translate3d(${screenExit.toFixed(1)}px,${startY.toFixed(1)}px,0) rotate(${startRot.toFixed(2)}deg) scale(.84)`;
-      const landTransform = "translate3d(0,0,0) rotate(0deg) scale(1)";
-      el.style.setProperty("--refill-x", `${screenExit.toFixed(1)}px`);
-      el.style.setProperty("--refill-y", `${startY.toFixed(1)}px`);
-      el.style.setProperty("--refill-rot", `${startRot.toFixed(2)}deg`);
-      el.style.setProperty("--refill-arc-x", `${side * (34 + (index % 3) * 3)}px`);
+      let el = plan.preparedEls?.[index];
+      if(!el){
+        refillState.createdDuringEntry += 1;
+        el = createCardElement(card, { cursor:isFinal ? { x:50, y:50 } : null, p2:which === "p2", className:`refill-card ${which} landing`, eagerImages:true });
+        el.dataset.refillFor = which;
+        el.dataset.refillIndex = String(index);
+        el.dataset.refillFinal = isFinal ? "true" : "false";
+        el.style.setProperty("--refill-z", String(40 + index));
+        el.style.zIndex = String(40 + index);
+      }
+      const motion = plan.motions?.[index] || prepareFallbackRefillMotion(which, index, slot);
+      const startTransform = motion.startTransform;
+      const landTransform = motion.landTransform;
+      el.style.setProperty("--refill-x", `${motion.screenExit.toFixed(1)}px`);
+      el.style.setProperty("--refill-y", `${motion.startY.toFixed(1)}px`);
+      el.style.setProperty("--refill-rot", `${motion.startRot.toFixed(2)}deg`);
+      el.style.setProperty("--refill-arc-x", `${motion.side * (34 + (index % 3) * 3)}px`);
       el.style.setProperty("--refill-arc-y", `${(-10 - (index % 2) * 3).toFixed(1)}px`);
-      el.style.setProperty("--refill-land-rot", `${side * (.35 + (index % 3) * .08)}deg`);
+      el.style.setProperty("--refill-land-rot", `${motion.side * (.35 + (index % 3) * .08)}deg`);
       el.style.transition = "box-shadow .18s ease";
       el.style.transform = startTransform;
       layer.appendChild(el);
+      if(!refillState.firstAppendAt){
+        refillState.firstAppendAt = performance.now();
+        if(refillState.resolveAnimationStarted) refillState.resolveAnimationStarted();
+      }
       const entryAnim = el.animate([
         { transform:startTransform, offset:0 },
-        { transform:`translate3d(${(side * 90).toFixed(1)}px,${(-24 - (index % 2) * 5).toFixed(1)}px,0) rotate(${(side * 2.6).toFixed(2)}deg) scale(.94)`, offset:.68 },
+        { transform:motion.arcTransform, offset:.68 },
         { transform:landTransform, offset:1 }
       ], {
         duration:760,
@@ -1908,6 +2040,7 @@ No symbol selected: answer key does nothing</pre>
         fill:"forwards"
       });
       el._refillEntryAnim = entryAnim;
+      refillState.animations.push(entryAnim);
       entryAnim.finished.then(() => {
         if(el.isConnected){
           el.style.transform = landTransform;
@@ -1917,6 +2050,7 @@ No symbol selected: answer key does nothing</pre>
         if(el._refillEntryAnim && el._refillEntryAnim.playState !== "finished"){
           el._refillEntryAnim.finish();
         }
+        el._refillEntryAnim = null;
         el.style.transform = landTransform;
         el.classList.add("settling");
         el.classList.remove("landing");
@@ -1929,6 +2063,24 @@ No symbol selected: answer key does nothing</pre>
         refillState.timers.push(settleTimer);
       }
     }
+    function prepareFallbackRefillMotion(which, index, slot){
+      const side = which === "p1" ? 1 : -1;
+      const slotRect = slot.getBoundingClientRect();
+      const screenExit = side < 0
+        ? -(slotRect.left + slotRect.width + 130 + index * 20)
+        : (window.innerWidth - slotRect.left + 130 + index * 20);
+      const startY = -74 - (index % 3) * 7;
+      const startRot = side * (11 + (index % 4) * 1.1);
+      return {
+        side,
+        screenExit,
+        startY,
+        startRot,
+        startTransform:`translate3d(${screenExit.toFixed(1)}px,${startY.toFixed(1)}px,0) rotate(${startRot.toFixed(2)}deg) scale(.84)`,
+        landTransform:"translate3d(0,0,0) rotate(0deg) scale(1)",
+        arcTransform:`translate3d(${(side * 90).toFixed(1)}px,${(-24 - (index % 2) * 5).toFixed(1)}px,0) rotate(${(side * 2.6).toFixed(2)}deg) scale(.94)`
+      };
+    }
     function refreshHiddenDeckAfterRefill(){
       const avoid = new Set([game.middle?.id, game.p1.card?.id, game.p2.card?.id].filter(id => id != null));
       const fresh = shuffle(activeDeck().filter(card => !avoid.has(card.id)), (Date.now() ^ layoutSalt ^ 0x9e3779b9) >>> 0);
@@ -1937,7 +2089,7 @@ No symbol selected: answer key does nothing</pre>
       preparePreloadedCard("p2");
       refillState.hiddenRefreshStamp += 1;
     }
-    function startFaceUpRefill(){
+    async function startFaceUpRefill(){
       if(!refillState.active || refillState.started) return refillState.promise || Promise.resolve();
       if(refillState.startTimer){
         clearTimeout(refillState.startTimer);
@@ -1946,27 +2098,13 @@ No symbol selected: answer key does nothing</pre>
       refillState.started = true;
       refillState.complete = false;
       const cadence = 300;
-      const counts = {
-        p1:Math.max(0, Math.min(game.target, Math.round(refillState.scores.p1 || 0))),
-        p2:Math.max(0, Math.min(game.target, Math.round(refillState.scores.p2 || 0)))
-      };
-      const bases = {
-        p1:Math.max(0, Math.min(9, game.target - 1 - counts.p1)),
-        p2:Math.max(0, Math.min(9, game.target - 1 - counts.p2))
-      };
-      refillState.initialActiveCardIds = {
-        p1:game.p1.card ? String(game.p1.card.id) : null,
-        p2:game.p2.card ? String(game.p2.card.id) : null
-      };
-      refillState.plans = buildRefillPlans(counts, bases);
-      refillState.finalCardIds = {
-        p1:refillState.plans.p1?.finalCard ? String(refillState.plans.p1.finalCard.id) : null,
-        p2:refillState.plans.p2?.finalCard ? String(refillState.plans.p2.finalCard.id) : null
-      };
-      refillState.committedCardIds = {
-        p1:counts.p1 === 0 ? refillState.initialActiveCardIds.p1 : null,
-        p2:counts.p2 === 0 ? refillState.initialActiveCardIds.p2 : null
-      };
+      const { counts, bases } = refillState.plans.p1 && refillState.plans.p2
+        ? refillCountsFromScores()
+        : ensureRefillPlans();
+      refillState.animationStartedPromise = new Promise(resolve => { refillState.resolveAnimationStarted = resolve; });
+      await prepareRefillCardElements();
+      if(!refillState.active || !refillState.started) return refillState.promise || Promise.resolve();
+      for(const which of ["p1","p2"]) prepareRefillMotion(which);
       for(const which of ["p1","p2"]){
         game[which].panel.classList.add("refilling");
         ensureRefillLayer(which);
@@ -1979,6 +2117,10 @@ No symbol selected: answer key does nothing</pre>
       const duration = Math.max(counts.p1, counts.p2) * cadence + 1160;
       refillState.promise = new Promise(resolve => {
         const doneTimer = setTimeout(() => {
+          refillState.animations.forEach(anim => {
+            try { anim.cancel(); } catch {}
+          });
+          refillState.animations = [];
           document.querySelectorAll(".refill-layer .refill-card").forEach(el => el.remove());
           document.querySelectorAll(".refill-layer").forEach(el => el.remove());
           game.p1.panel.classList.remove("refilling");
@@ -1989,6 +2131,8 @@ No symbol selected: answer key does nothing</pre>
           refillState.started = false;
           refillState.complete = true;
           refillState.promise = null;
+          refillState.animationStartedPromise = null;
+          refillState.resolveAnimationStarted = null;
           resolve();
         }, duration);
         refillState.timers.push(doneTimer);
@@ -2001,7 +2145,10 @@ No symbol selected: answer key does nothing</pre>
       refillState.started = false;
       refillState.complete = false;
       refillState.scores = { p1:scores.p1 || 0, p2:scores.p2 || 0 };
+      clearWinnerTopCardForRefill(refillState.scores);
       primePileRefillVisuals(refillState.scores);
+      ensureRefillPlans();
+      prepareRefillCardElements();
       refillState.startTimer = setTimeout(() => startFaceUpRefill(), delay);
       return refillState;
     }
@@ -2010,10 +2157,15 @@ No symbol selected: answer key does nothing</pre>
         document.getElementById("middleStart").classList.add("hidden");
         startFaceUpRefill();
         if(!refillState.countdownTimer){
-          refillState.countdownTimer = setTimeout(() => {
-            refillState.countdownTimer = null;
-            beginCountdown();
-          }, 500);
+          refillState.countdownTimer = -1;
+          const beginAfterRefillStarts = () => {
+            if(!refillState.active && refillState.complete) return;
+            refillState.countdownTimer = setTimeout(() => {
+              refillState.countdownTimer = null;
+              beginCountdown();
+            }, 500);
+          };
+          (refillState.animationStartedPromise || Promise.resolve()).then(beginAfterRefillStarts);
         }
         return;
       }
@@ -2355,6 +2507,7 @@ No symbol selected: answer key does nothing</pre>
         setupGame(false, { preserveWinOverlay:true });
         game.p1.panel.classList.add("reset-fade");
         game.p2.panel.classList.add("reset-fade");
+        clearWinnerTopCardForRefill(refillScores);
         setStatus(`${playerName} wins! Final score ${displayScore(refillScores)}.`);
       }, 2250);
       setTimeout(() => {

@@ -533,9 +533,15 @@ async function run() {
     active: refillState.active,
     started: refillState.started,
     complete: refillState.complete,
+    prepared: refillState.prepared,
+    prepareStartedAt: refillState.prepareStartedAt,
+    preparedAt: refillState.preparedAt,
+    preparedCardCount: ["p1", "p2"].reduce((total, side) => total + (refillState.plans[side]?.preparedEls?.length || 0), 0),
+    plannedCardCount: ["p1", "p2"].reduce((total, side) => total + (refillState.plans[side]?.cards?.length || 0), 0),
     scores: { ...refillState.scores },
     finalCardIds: { ...refillState.finalCardIds },
     committedCardIds: { ...refillState.committedCardIds },
+    target: game.target,
     startVisible: !document.getElementById("middleStart").classList.contains("hidden"),
     refillingPanels: document.querySelectorAll(".player-arena.refilling").length,
     refillCards: document.querySelectorAll(".refill-card").length,
@@ -569,6 +575,13 @@ async function run() {
       finalCardIds: { ...refillState.finalCardIds },
       initialActiveCardIds: { ...refillState.initialActiveCardIds },
       committedCardIds: { ...refillState.committedCardIds },
+      prepared: refillState.prepared,
+      firstAppendAt: refillState.firstAppendAt,
+      preparedAt: refillState.preparedAt,
+      createdDuringEntry: refillState.createdDuringEntry,
+      activeAnimations: refillState.animations.filter((anim) => anim.playState !== "idle").length,
+      preparedCardCount: ["p1", "p2"].reduce((total, side) => total + (refillState.plans[side]?.preparedEls?.length || 0), 0),
+      plannedCardCount: ["p1", "p2"].reduce((total, side) => total + (refillState.plans[side]?.cards?.length || 0), 0),
       refillingPanels: document.querySelectorAll(".player-arena.refilling").length,
       refillCards: refillCards.length,
       p1RefillCards: document.querySelectorAll(".refill-card.p1").length,
@@ -590,13 +603,50 @@ async function run() {
         const active = slot.querySelector(".active-player-card");
         const pile = slot.querySelector(".card-pile");
         const layer = card.closest(".refill-layer");
-        return Number(getComputedStyle(card).zIndex) > Number(getComputedStyle(active).zIndex)
-          && Number(getComputedStyle(layer).zIndex) > Number(getComputedStyle(active).zIndex)
-          && Number(getComputedStyle(active).zIndex) > Number(getComputedStyle(pile).zIndex);
+        const cardZ = Number(getComputedStyle(card).zIndex);
+        const layerZ = Number(getComputedStyle(layer).zIndex);
+        const pileZ = Number(getComputedStyle(pile).zIndex);
+        if (!active) return cardZ > pileZ && layerZ > pileZ;
+        const activeZ = Number(getComputedStyle(active).zIndex);
+        return cardZ > activeZ && layerZ > activeZ && activeZ > pileZ;
       })
     };
   });
   await page.screenshot({ path: path.join(outDir, "tempo-post-win-refill.png"), fullPage: false });
+  const refillPerfState = await page.evaluate(async () => {
+    const frameDeltas = [];
+    let last = performance.now();
+    let consecutive = 0;
+    let maxConsecutiveOver50 = 0;
+    await new Promise((resolve) => {
+      let frames = 0;
+      const tick = (t) => {
+        const delta = t - last;
+        frameDeltas.push(delta);
+        if (delta > 50) {
+          consecutive += 1;
+          maxConsecutiveOver50 = Math.max(maxConsecutiveOver50, consecutive);
+        } else {
+          consecutive = 0;
+        }
+        last = t;
+        frames += 1;
+        if (frames < 18 && refillState.active) requestAnimationFrame(tick);
+        else resolve();
+      };
+      requestAnimationFrame(tick);
+    });
+    return {
+      prepared: refillState.prepared,
+      prepMs: refillState.preparedAt && refillState.prepareStartedAt ? refillState.preparedAt - refillState.prepareStartedAt : null,
+      appendAfterPrepareMs: refillState.firstAppendAt && refillState.preparedAt ? refillState.firstAppendAt - refillState.preparedAt : null,
+      createdDuringEntry: refillState.createdDuringEntry,
+      activeAnimations: refillState.animations.filter((anim) => anim.playState !== "idle").length,
+      maxFrameGap: Math.max(...frameDeltas),
+      framesOver50: frameDeltas.filter((delta) => delta > 50).length,
+      maxConsecutiveOver50
+    };
+  });
   const sampleRefillStackFrame = () => page.evaluate(() => {
     const sides = ["p1", "p2"];
     const bySide = {};
@@ -773,10 +823,15 @@ async function run() {
     buttonHidden: document.getElementById("middleStart").classList.contains("hidden"),
     active: refillState.active,
     started: refillState.started,
+    prepared: refillState.prepared,
+    firstAppendAt: refillState.firstAppendAt,
+    preparedAt: refillState.preparedAt,
+    createdDuringEntry: refillState.createdDuringEntry,
     refillCards: document.querySelectorAll(".refill-card").length,
     p1RefillCards: document.querySelectorAll(".refill-card.p1").length,
     p2RefillCards: document.querySelectorAll(".refill-card.p2").length
   }));
+  await page.screenshot({ path: path.join(outDir, "tempo-early-start-refill.png"), fullPage: false });
   await page.waitForTimeout(430);
   const earlyStartCountdownState = await page.evaluate(() => ({
     counting: game.counting,
@@ -825,6 +880,7 @@ async function run() {
     winLeavingState,
     refillEarlyState,
     refillActiveState,
+    refillPerfState,
     refillFrameSamples,
     refillStackState,
     winReadyState,
@@ -876,8 +932,14 @@ async function run() {
   if (!winState.exists || winState.leaving || !winState.text.includes("WINS") || winState.clipped || winState.cardFilter !== "none") process.exitCode = 1;
   if (!winLeavingState.exists || !winLeavingState.leaving || winLeavingState.text !== winState.text || winLeavingState.titleLetterSpacing !== winState.titleLetterSpacing || winLeavingState.cardFilter !== "none") process.exitCode = 1;
   if (!flipBackState.bodyFlag || (!flipBackState.flipOut && !flipBackState.flipInBack && !flipBackState.middleBack)) process.exitCode = 1;
-  if (!refillEarlyState.active || refillEarlyState.started || refillEarlyState.complete || !refillEarlyState.startVisible || refillEarlyState.refillingPanels !== 0 || refillEarlyState.refillCards !== 0 || refillEarlyState.visiblePileLayers >= 18) process.exitCode = 1;
-  if (!refillActiveState.active || !refillActiveState.started || refillActiveState.refillingPanels !== 2 || refillActiveState.refillCards < 2 || refillActiveState.p1RefillCards < 1 || refillActiveState.p2RefillCards < 1 || !refillActiveState.faceUpCardsHaveSymbols || !refillActiveState.fullyOpaque || refillActiveState.transitionDurations.length !== 1 || !refillActiveState.indexes.includes("p1:0") || !refillActiveState.indexes.includes("p2:0") || !refillActiveState.zOrderOk || !refillActiveState.zIncreasing || !refillActiveState.entryDirectionOk || refillActiveState.visiblePileLayers !== refillEarlyState.visiblePileLayers || refillActiveState.activeCardIds.p1 !== refillEarlyState.activeCardIds.p1 || refillActiveState.activeCardIds.p2 !== refillEarlyState.activeCardIds.p2) process.exitCode = 1;
+  const refillWinnerSides = ["p1", "p2"].filter((side) => refillEarlyState.scores[side] >= refillEarlyState.target);
+  const refillActiveCardsStable = ["p1", "p2"].every((side) => refillEarlyState.scores[side] >= refillEarlyState.target
+    ? !refillEarlyState.activeCardIds[side] && !refillActiveState.activeCardIds[side]
+    : refillActiveState.activeCardIds[side] === refillEarlyState.activeCardIds[side]);
+  if (!refillEarlyState.active || refillEarlyState.started || refillEarlyState.complete || !refillEarlyState.startVisible || refillEarlyState.refillingPanels !== 0 || refillEarlyState.refillCards !== 0 || refillEarlyState.visiblePileLayers >= 18 || !refillEarlyState.prepared || refillEarlyState.preparedCardCount !== refillEarlyState.plannedCardCount || refillEarlyState.preparedAt < refillEarlyState.prepareStartedAt) process.exitCode = 1;
+  if (refillWinnerSides.length < 1 || !refillWinnerSides.every((side) => !refillEarlyState.activeCardIds[side])) process.exitCode = 1;
+  if (!refillActiveState.active || !refillActiveState.started || refillActiveState.refillingPanels !== 2 || refillActiveState.refillCards < 2 || refillActiveState.p1RefillCards < 1 || refillActiveState.p2RefillCards < 1 || !refillActiveState.faceUpCardsHaveSymbols || !refillActiveState.fullyOpaque || refillActiveState.transitionDurations.length !== 1 || !refillActiveState.indexes.includes("p1:0") || !refillActiveState.indexes.includes("p2:0") || !refillActiveState.zOrderOk || !refillActiveState.zIncreasing || !refillActiveState.entryDirectionOk || refillActiveState.visiblePileLayers !== refillEarlyState.visiblePileLayers || !refillActiveCardsStable || !refillActiveState.prepared || refillActiveState.createdDuringEntry !== 0 || refillActiveState.preparedCardCount !== refillActiveState.plannedCardCount || refillActiveState.firstAppendAt < refillActiveState.preparedAt || refillActiveState.activeAnimations < 1) process.exitCode = 1;
+  if (!refillPerfState.prepared || refillPerfState.createdDuringEntry !== 0 || refillPerfState.appendAfterPrepareMs < 0 || refillPerfState.maxConsecutiveOver50 > 1) process.exitCode = 1;
   const refillStackSideOk = ["p1", "p2"].every((side) => {
     const sideCards = refillStackState.cards.filter((card) => card.side === side);
     if (refillStackState.committedCardIds[side]) {
@@ -903,7 +965,7 @@ async function run() {
   if ((refillEarlyState.scores.p1 > 0 && winReadyState.activeCardIds.p1 === refillEarlyState.activeCardIds.p1) || (refillEarlyState.scores.p2 > 0 && winReadyState.activeCardIds.p2 === refillEarlyState.activeCardIds.p2)) process.exitCode = 1;
   if (postHiddenRefreshState.hiddenRefreshStamp < winReadyState.hiddenRefreshStamp || postHiddenRefreshState.activeCardIds.p1 !== winReadyState.activeCardIds.p1 || postHiddenRefreshState.activeCardIds.p2 !== winReadyState.activeCardIds.p2 || !postHiddenRefreshState.activeCommitted.p1 || !postHiddenRefreshState.activeCommitted.p2 || postHiddenRefreshState.preloadedCardIds.length < 2 || !postHiddenRefreshState.preloadedNotVisible) process.exitCode = 1;
   if (!playAgainState.overlayGone || playAgainState.p1Score !== 0 || playAgainState.p2Score !== 0 || !playAgainState.counting || playAgainState.ended || playAgainState.scoreText !== "10" || playAgainState.staleSelection || playAgainState.staleCooldown || !playAgainState.noGameGuide) process.exitCode = 1;
-  if (!earlyStartRefillState.buttonHidden || !earlyStartRefillState.active || !earlyStartRefillState.started || earlyStartRefillState.refillCards < 1 || earlyStartRefillState.p1RefillCards < 1 || earlyStartRefillState.p2RefillCards < 1) process.exitCode = 1;
+  if (!earlyStartRefillState.buttonHidden || !earlyStartRefillState.active || !earlyStartRefillState.started || !earlyStartRefillState.prepared || earlyStartRefillState.createdDuringEntry !== 0 || earlyStartRefillState.firstAppendAt < earlyStartRefillState.preparedAt || earlyStartRefillState.refillCards < 1 || earlyStartRefillState.p1RefillCards < 1 || earlyStartRefillState.p2RefillCards < 1) process.exitCode = 1;
   if (!earlyStartCountdownState.counting || earlyStartCountdownState.running || earlyStartCountdownState.countdownText !== "3" || !earlyStartCountdownState.startHidden) process.exitCode = 1;
   for (const metrics of Object.values(responsive)) {
     if (hasClipped(metrics) || hasBadPile(metrics)) process.exitCode = 1;
