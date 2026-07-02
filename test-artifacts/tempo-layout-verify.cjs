@@ -57,11 +57,17 @@ async function layoutMetrics(page) {
       const footRect = foot ? foot.getBoundingClientRect() : null;
       const firstVisible = [...pile.children].find((layer) => Number(getComputedStyle(layer).opacity) > 0.05);
       const layerRect = firstVisible ? firstVisible.getBoundingClientRect() : null;
+      const visibleLayerRects = [...pile.children]
+        .filter((layer) => Number(getComputedStyle(layer).opacity) > 0.05)
+        .map((layer) => layer.getBoundingClientRect());
+      const minLayerTop = visibleLayerRects.length ? Math.min(...visibleLayerRects.map((rect) => rect.top)) : null;
       const pileStyle = getComputedStyle(pile);
       return {
         ...payload,
         hasVisibleLayer: !!firstVisible,
         behindCard: !cardRect || !layerRect || layerRect.top >= cardRect.top - 8,
+        topProtrusion: cardRect && minLayerTop != null ? Math.max(0, cardRect.top - minLayerTop) : 0,
+        activeCardId: active?.dataset.cardId || null,
         overlapsCooldown: !!footRect && layerRect && layerRect.bottom > footRect.top && layerRect.top < footRect.bottom && layerRect.right > footRect.left && layerRect.left < footRect.right,
         filter: pileStyle.filter,
         firstLayerAfterContent: firstVisible ? getComputedStyle(firstVisible, "::after").content : "none",
@@ -134,7 +140,13 @@ async function run() {
       startText: startButton.textContent,
       buttonRound: Math.abs(br.width - br.height) < 2 && (getComputedStyle(startButton).borderTopLeftRadius.includes("%") || parseFloat(getComputedStyle(startButton).borderTopLeftRadius) >= br.width * 0.45),
       noGameGuide: !document.querySelector("#tab-game .guide-card, #tab-game .play-guide, #tab-game #guideMatch"),
-      instructionsNav: !!document.querySelector('[data-tab="instructions"]'),
+      howToPlayNav: document.querySelector('[data-tab="instructions"]')?.textContent.trim() === "How to play",
+      howToPlayHud: document.getElementById("showInstructions")?.textContent.trim() === "How to play",
+      noInstructionsText: ![...document.querySelectorAll("button")].some((button) => button.textContent.trim() === "Instructions"),
+      leftLabel: document.querySelector("#p2Scorepill .score-label")?.textContent.trim(),
+      rightLabel: document.querySelector("#p1Scorepill .score-label")?.textContent.trim(),
+      leftPlayerHead: document.querySelector("#p2Panel .player-name")?.textContent.trim(),
+      rightPlayerHead: document.querySelector("#p1Panel .player-name")?.textContent.trim(),
       middleBack: !!middle,
       noBackMark: !document.querySelector("#middleSlot .back-mark"),
       buttonCenterDelta: mr ? Math.hypot((br.left + br.width / 2) - (mr.left + mr.width / 2), (br.top + br.height / 2) - (mr.top + mr.height / 2)) : 999,
@@ -157,23 +169,115 @@ async function run() {
     overviewCards: document.querySelectorAll("#instructionsGuide .guide-overview-card").length,
     allInstructionCardsFull: [...document.querySelectorAll("#instructionsGuide .match-card")].every((card) => card.querySelectorAll(".symbol").length >= activeDeck()[0].symbols.length),
     highlightedSymbols: document.querySelectorAll("#instructionsGuide .symbol.sharedhint").length,
+    altHighlightedSymbols: document.querySelectorAll("#instructionsGuide .symbol.sharedhint2").length,
     wrongSymbols: document.querySelectorAll("#instructionsGuide .symbol.wronghint").length,
     motionPaths: document.querySelectorAll("#instructionsGuide .guide-motion-path").length,
     keyCount: document.querySelectorAll("#instructionsGuide .guide-key").length,
     dotCount: document.querySelectorAll("#instructionsGuide .guide-dot").length,
     cursorDots: document.querySelectorAll("#instructionsGuide .cursor-dot").length,
     cooldownDemo: !!document.querySelector("#instructionsGuide .cooldown-demo .coolbar") && !!document.querySelector("#guideWrongPlayer") && !!document.querySelector("#guideWrongMiddle"),
+    cooldownTextClean: !document.querySelector("#instructionsGuide .cooldown-demo")?.textContent.includes("Wrong object selected") && !document.querySelector("#instructionsGuide .cooldown-demo")?.textContent.includes("not on the middle card"),
+    cooldownNeutral: (() => {
+      const color = getComputedStyle(document.querySelector("#instructionsGuide .cooldown-demo")).backgroundColor;
+      return !color.includes("239, 68, 68") && !color.includes("248, 113, 113");
+    })(),
     backButtons: document.querySelectorAll("#tab-instructions button[id^='backToPlay']").length,
     titleSize: parseFloat(getComputedStyle(document.querySelector("#tab-instructions h2")).fontSize),
     surfaceHeight: document.querySelector("#tab-instructions .surface").getBoundingClientRect().height,
     playerOrder: [...document.querySelectorAll("#instructionsGuide .guide-card:nth-of-type(3) .guide-player")].map((el) => el.classList.contains("left") ? "wasd" : "arrows").join(","),
     answerOrder: [...document.querySelectorAll("#instructionsGuide .guide-card:nth-of-type(4) .guide-player")].map((el) => el.classList.contains("left") ? "space" : "enter").join(","),
+    overviewLabels: [...document.querySelectorAll(".guide-arena-label")].map((el) => el.textContent.trim()).join("|"),
+    overviewSharedIds: [...document.querySelectorAll("#guideArenaMiddle .symbol.sharedhint,#guideArenaMiddle .symbol.sharedhint2")].map((el) => el.dataset.symbolId),
+    overviewColors: [...document.querySelectorAll("#guideArenaMiddle .symbol.sharedhint,#guideArenaMiddle .symbol.sharedhint2")].map((el) => getComputedStyle(el).outlineColor),
+    step2Highlights: document.querySelectorAll("#guideWasdCard .sharedhint,#guideWasdCard .sharedhint2,#guideArrowCard .sharedhint,#guideArrowCard .sharedhint2").length,
+    wasdGrid: getComputedStyle(document.querySelector(".guide-keys.wasd")).gridTemplateColumns.split(" ").length,
+    arrowGrid: getComputedStyle(document.querySelector(".guide-keys.arrows")).gridTemplateColumns.split(" ").length,
+    idleMotionAnimation: getComputedStyle(document.querySelector("#guideWasdCard .cursor-dot")).animationName,
+    idleAnswerAnimation: getComputedStyle(document.querySelector("#guideAnswerLeft .symbol.sharedhint")).animationName,
+    idleCooldownAnimation: getComputedStyle(document.querySelector("#guideWrongPlayer .symbol.wronghint")).animationName,
+    idleCooldownCorrectAnimation: getComputedStyle(document.querySelector("#guideWrongMiddle .symbol.sharedhint")).animationName,
     stacked: (() => {
       const cards = [...document.querySelectorAll("#instructionsGuide .guide-card")].map((el) => el.getBoundingClientRect());
       return cards.every((rect, idx) => idx === 0 || rect.top >= cards[idx - 1].bottom - 4);
     })()
   }));
   await page.screenshot({ path: path.join(outDir, "tempo-instructions.png"), fullPage: false });
+  await page.hover(".guide-motion-demo.left");
+  await page.waitForTimeout(220);
+  const motionHoverState = await page.evaluate(() => ({
+    cursorAnimation: getComputedStyle(document.querySelector("#guideWasdCard .cursor-dot")).animationName,
+    activeWasdKeys: document.querySelector(".guide-motion-demo.left").dataset.activeKeys.split(",").filter(Boolean).sort(),
+    activeArrowKeysBeforeHover: document.querySelector(".guide-motion-demo.right").dataset.activeKeys.split(",").filter(Boolean),
+    liveWasdClasses: [...document.querySelectorAll(".guide-motion-demo.left .guide-key.active")].map(el => el.textContent.trim()).sort(),
+    phaseSamples: (() => {
+      const samples = [
+        [215, ["left", "up"], [-1, -1]],
+        [755, ["right"], [1, 0]],
+        [1835, ["down", "left"], [-1, 1]],
+        [2375, ["down", "right"], [1, 1]],
+        [2915, ["left"], [-1, 0]],
+        [3995, ["up"], [0, -1]],
+        [4535, ["right"], [1, 0]]
+      ];
+      return samples.map(([time, expectedKeys, expectedDir]) => {
+        const sample = window.__sampleGuideMotion(time);
+        const dir = [
+          sample.keys.includes("left") ? -1 : sample.keys.includes("right") ? 1 : 0,
+          sample.keys.includes("up") ? -1 : sample.keys.includes("down") ? 1 : 0
+        ];
+        return { time, x:sample.x, y:sample.y, active:sample.keys.sort(), expectedKeys: expectedKeys.sort(), dir, expectedDir };
+      });
+    })()
+  }));
+  await page.hover(".guide-motion-demo.right");
+  await page.waitForTimeout(220);
+  const arrowMotionHoverState = await page.evaluate(() => ({
+    activeArrowKeys: document.querySelector(".guide-motion-demo.right").dataset.activeKeys.split(",").filter(Boolean).sort(),
+    liveArrowClasses: [...document.querySelectorAll(".guide-motion-demo.right .guide-key.active")].map(el => el.textContent.trim()).sort(),
+    wasdStopped: document.querySelector(".guide-motion-demo.left").dataset.activeKeys === ""
+  }));
+  await page.screenshot({ path: path.join(outDir, "tempo-how-to-play-motion-hover.png"), fullPage: false });
+  await page.hover(".guide-answer-demo.right");
+  await page.waitForTimeout(180);
+  const answerHoverState = await page.evaluate(() => ({
+    keyAnimation: getComputedStyle(document.querySelector(".guide-answer-demo.right .guide-key.wide")).animationName,
+    lockAnimation: getComputedStyle(document.querySelector("#guideAnswerRight .symbol.sharedhint")).animationName,
+    cardAnimation: getComputedStyle(document.querySelector("#guideAnswerRight .match-card")).animationName
+  }));
+  await page.screenshot({ path: path.join(outDir, "tempo-how-to-play-answer-hover.png"), fullPage: false });
+  await page.hover(".cooldown-demo");
+  await page.waitForTimeout(4350);
+  const cooldownHoverState = await page.evaluate(() => ({
+    playing: document.querySelector(".cooldown-demo").classList.contains("playing"),
+    done: document.querySelector(".cooldown-demo").classList.contains("done"),
+    wrongOutline: getComputedStyle(document.querySelector("#guideWrongPlayer .symbol.wronghint")).outlineColor,
+    playerCorrectOutline: getComputedStyle(document.querySelector("#guideWrongPlayer .symbol.sharedhint")).outlineColor,
+    middleCorrectOutline: getComputedStyle(document.querySelector("#guideWrongMiddle .symbol.sharedhint")).outlineColor,
+    barTransform: getComputedStyle(document.querySelector(".cooldown-demo .coolbar span")).transform,
+    cooldownText: document.querySelector(".guide-cooltime")?.textContent.trim(),
+    barUnderPersonal: (() => {
+      const bar = document.querySelector(".cooldown-demo .coolbar").getBoundingClientRect();
+      const card = document.querySelector("#guideWrongPlayer .match-card").getBoundingClientRect();
+      return bar.top >= card.bottom - 2 && Math.abs((bar.left + bar.right) / 2 - (card.left + card.right) / 2) < 5;
+    })()
+  }));
+  await page.screenshot({ path: path.join(outDir, "tempo-how-to-play-cooldown-hover.png"), fullPage: false });
+  await page.mouse.move(5, 5);
+  await page.waitForTimeout(220);
+  const cooldownPersistState = await page.evaluate(() => ({
+    done: document.querySelector(".cooldown-demo").classList.contains("done"),
+    wrongOutline: getComputedStyle(document.querySelector("#guideWrongPlayer .symbol.wronghint")).outlineColor,
+    middleCorrectOutline: getComputedStyle(document.querySelector("#guideWrongMiddle .symbol.sharedhint")).outlineColor
+  }));
+  await page.hover(".cooldown-demo");
+  await page.waitForTimeout(160);
+  const cooldownReplayState = await page.evaluate(() => ({
+    playing: document.querySelector(".cooldown-demo").classList.contains("playing"),
+    done: document.querySelector(".cooldown-demo").classList.contains("done"),
+    wrongOutline: getComputedStyle(document.querySelector("#guideWrongPlayer .symbol.wronghint")).outlineColor,
+    middleCorrectOutline: getComputedStyle(document.querySelector("#guideWrongMiddle .symbol.sharedhint")).outlineColor,
+    cooldownText: document.querySelector(".guide-cooltime")?.textContent.trim()
+  }));
 
   await setupRunningGame(page);
   const desktopBefore = await layoutMetrics(page);
@@ -281,9 +385,14 @@ async function run() {
     const bar = document.querySelector("#p1Panel .coolbar");
     const text = document.querySelector("#p1Panel .cooltext");
     const card = document.querySelector("#p1Slot .active-player-card");
+    const pile = document.querySelector("#p1Slot .card-pile");
     const fr = foot.getBoundingClientRect();
     const br = bar.getBoundingClientRect();
     const cr = card.getBoundingClientRect();
+    const visibleLayerRects = [...pile.querySelectorAll(".pile-layer")]
+      .filter((layer) => Number(getComputedStyle(layer).opacity) > 0.05)
+      .map((layer) => layer.getBoundingClientRect());
+    const minLayerTop = visibleLayerRects.length ? Math.min(...visibleLayerRects.map((rect) => rect.top)) : cr.top;
     return {
       footCooling: foot.classList.contains("cooling"),
       footText: text.textContent,
@@ -292,6 +401,7 @@ async function run() {
       cardRect: { top: cr.top, bottom: cr.bottom, left: cr.left, right: cr.right },
       barCenterDelta: Math.abs((br.left + br.right) / 2 - (cr.left + cr.right) / 2),
       barOverlapsCard: br.top < cr.bottom && br.bottom > cr.top,
+      pileTopProtrusion: Math.max(0, cr.top - minLayerTop),
       clipped: fr.left < -1 || fr.top < -1 || fr.right > innerWidth + 1 || fr.bottom > innerHeight + 1,
       cooldownMs: Math.round(game.p1.cooldownUntil - performance.now())
     };
@@ -374,6 +484,7 @@ async function run() {
   await setupRunningGame(page, 10);
   await page.evaluate(() => {
     game.p1.score = game.target - 1;
+    game.p2.score = 4;
     updateScores();
   });
   const winTiming = await forceCorrect(page, "p1");
@@ -408,13 +519,164 @@ async function run() {
       cardFilter: getComputedStyle(card).filter
     };
   });
+  await page.waitForFunction(() => document.body.classList.contains("middle-flipping-back") || document.querySelector("#middleSlot .flip-out,#middleSlot .flip-in-back"), null, { timeout: 3000 });
+  const flipBackState = await page.evaluate(() => ({
+    bodyFlag: document.body.classList.contains("middle-flipping-back"),
+    flipOut: !!document.querySelector("#middleSlot .flip-out"),
+    flipInBack: !!document.querySelector("#middleSlot .flip-in-back"),
+    middleBack: !!document.querySelector("#middleSlot .card-back")
+  }));
+  await page.screenshot({ path: path.join(outDir, "tempo-win-flip-back.png"), fullPage: false });
   await page.waitForFunction(() => !document.querySelector(".win-overlay"), null, { timeout: 5200 });
   await page.waitForTimeout(320);
   const refillEarlyState = await page.evaluate(() => ({
+    active: refillState.active,
+    started: refillState.started,
+    complete: refillState.complete,
+    scores: { ...refillState.scores },
+    finalCardIds: { ...refillState.finalCardIds },
+    committedCardIds: { ...refillState.committedCardIds },
+    startVisible: !document.getElementById("middleStart").classList.contains("hidden"),
     refillingPanels: document.querySelectorAll(".player-arena.refilling").length,
-    visiblePileLayers: [...document.querySelectorAll(".game-screen .pile-layer")].filter((layer) => Number(getComputedStyle(layer).opacity) > 0.05).length
+    refillCards: document.querySelectorAll(".refill-card").length,
+    visiblePileLayers: [...document.querySelectorAll(".game-screen .pile-layer")].filter((layer) => Number(getComputedStyle(layer).opacity) > 0.05).length,
+    activeCardIds: {
+      p1: document.querySelector("#p1Slot .active-player-card")?.dataset.cardId,
+      p2: document.querySelector("#p2Slot .active-player-card")?.dataset.cardId
+    }
   }));
-  await page.waitForFunction(() => !document.querySelector(".player-arena.refilling"), null, { timeout: 4200 });
+  await page.waitForTimeout(950);
+  const refillActiveState = await page.evaluate(() => {
+    const refillCards = [...document.querySelectorAll(".refill-card")];
+    const refillMeta = refillCards.map((card) => ({
+      side: card.dataset.refillFor,
+      index: Number(card.dataset.refillIndex),
+      z: Number(getComputedStyle(card).zIndex),
+      cardId: card.dataset.cardId,
+      final: card.dataset.refillFinal === "true"
+    }));
+    const zIncreasing = ["p1", "p2"].every((side) => {
+      const cards = refillMeta.filter((card) => card.side === side).sort((a, b) => a.index - b.index);
+      return cards.every((card, idx) => idx === 0 || card.z > cards[idx - 1].z);
+    });
+    const entryDirectionOk = refillCards.every((card) => {
+      const x = parseFloat(getComputedStyle(card).getPropertyValue("--refill-x")) || 0;
+      return card.dataset.refillFor === "p2" ? x < 0 : x > 0;
+    });
+    return {
+      active: refillState.active,
+      started: refillState.started,
+      finalCardIds: { ...refillState.finalCardIds },
+      initialActiveCardIds: { ...refillState.initialActiveCardIds },
+      committedCardIds: { ...refillState.committedCardIds },
+      refillingPanels: document.querySelectorAll(".player-arena.refilling").length,
+      refillCards: refillCards.length,
+      p1RefillCards: document.querySelectorAll(".refill-card.p1").length,
+      p2RefillCards: document.querySelectorAll(".refill-card.p2").length,
+      faceUpCardsHaveSymbols: refillCards.every((card) => card.querySelectorAll(".symbol-img").length > 0),
+      fullyOpaque: refillCards.every((card) => Number(getComputedStyle(card).opacity) === 1),
+      transitionDurations: [...new Set(refillCards.map((card) => getComputedStyle(card).transitionDuration))],
+      indexes: refillCards.map((card) => `${card.dataset.refillFor}:${card.dataset.refillIndex}`),
+      refillMeta,
+      zIncreasing,
+      entryDirectionOk,
+      visiblePileLayers: [...document.querySelectorAll(".game-screen .pile-layer")].filter((layer) => Number(getComputedStyle(layer).opacity) > 0.05).length,
+      activeCardIds: {
+        p1: document.querySelector("#p1Slot .active-player-card")?.dataset.cardId,
+        p2: document.querySelector("#p2Slot .active-player-card")?.dataset.cardId
+      },
+      zOrderOk: refillCards.every((card) => {
+        const slot = card.closest(".game-card-slot");
+        const active = slot.querySelector(".active-player-card");
+        const pile = slot.querySelector(".card-pile");
+        const layer = card.closest(".refill-layer");
+        return Number(getComputedStyle(card).zIndex) > Number(getComputedStyle(active).zIndex)
+          && Number(getComputedStyle(layer).zIndex) > Number(getComputedStyle(active).zIndex)
+          && Number(getComputedStyle(active).zIndex) > Number(getComputedStyle(pile).zIndex);
+      })
+    };
+  });
+  await page.screenshot({ path: path.join(outDir, "tempo-post-win-refill.png"), fullPage: false });
+  const sampleRefillStackFrame = () => page.evaluate(() => {
+    const sides = ["p1", "p2"];
+    const bySide = {};
+    for (const side of sides) {
+      const slot = document.getElementById(side === "p1" ? "p1Slot" : "p2Slot");
+      const slotRect = slot.getBoundingClientRect();
+      const cx = slotRect.left + slotRect.width / 2;
+      const cy = slotRect.top + slotRect.height / 2;
+      const cards = [...slot.querySelectorAll(".refill-card")].map((card) => {
+        const rect = card.getBoundingClientRect();
+        const centered = Math.hypot((rect.left + rect.width / 2) - cx, (rect.top + rect.height / 2) - cy) < 3;
+        const coversCenter = rect.left <= cx && rect.right >= cx && rect.top <= cy && rect.bottom >= cy;
+        return {
+          index: Number(card.dataset.refillIndex),
+          cardId: card.dataset.cardId,
+          z: Number(getComputedStyle(card).zIndex),
+          opacity: Number(getComputedStyle(card).opacity),
+          covered: card.classList.contains("covered"),
+          settling: card.classList.contains("settling"),
+          landing: card.classList.contains("landing"),
+          centered,
+          coversCenter
+        };
+      });
+      const centeredCards = cards.filter((card) => card.coversCenter).sort((a, b) => b.z - a.z);
+      const topRefill = centeredCards[0] || null;
+      bySide[side] = {
+        cards,
+        topRefill,
+        topCentered: centeredCards[0] || null,
+        activeCardId: slot.querySelector(".active-player-card")?.dataset.cardId,
+        committedCardId: refillState.committedCardIds[side] || null,
+        stackOrderOk: !centeredCards[0] || centeredCards.every((card, idx) => idx === 0 || card.z < centeredCards[idx - 1].z),
+        coveredCentered: cards.filter((card) => card.covered).every((card) => card.centered),
+        fullyOpaque: cards.every((card) => card.opacity === 1)
+      };
+    }
+    return {
+      timestamp: performance.now(),
+      p1: bySide.p1,
+      p2: bySide.p2
+    };
+  });
+  const refillFrameSamples = [];
+  for (let i = 0; i < 5; i++) {
+    await page.waitForTimeout(220);
+    refillFrameSamples.push(await sampleRefillStackFrame());
+  }
+  const refillStackState = await page.evaluate(() => {
+    const cards = [...document.querySelectorAll(".refill-card")].map((card) => ({
+      side: card.dataset.refillFor,
+      index: Number(card.dataset.refillIndex),
+      z: Number(getComputedStyle(card).zIndex),
+      opacity: Number(getComputedStyle(card).opacity),
+      final: card.dataset.refillFinal === "true"
+    }));
+    const bySide = (side) => cards.filter((card) => card.side === side).sort((a, b) => a.index - b.index);
+    const contiguous = ["p1", "p2"].every((side) => {
+      const sideCards = bySide(side);
+      return sideCards.every((card, idx) => card.index === idx);
+    });
+    const zIncreasing = ["p1", "p2"].every((side) => {
+      const sideCards = bySide(side);
+      return sideCards.every((card, idx) => idx === 0 || card.z > sideCards[idx - 1].z);
+    });
+    return {
+      cards,
+      contiguous,
+      zIncreasing,
+      fullyOpaque: cards.every((card) => card.opacity === 1),
+      visiblePileLayers: [...document.querySelectorAll(".game-screen .pile-layer")].filter((layer) => Number(getComputedStyle(layer).opacity) > 0.05).length,
+      committedCardIds: { ...refillState.committedCardIds },
+      activeCardIds: {
+        p1: document.querySelector("#p1Slot .active-player-card")?.dataset.cardId,
+        p2: document.querySelector("#p2Slot .active-player-card")?.dataset.cardId
+      }
+    };
+  });
+  await page.screenshot({ path: path.join(outDir, "tempo-post-win-refill-stack.png"), fullPage: false });
+  await page.waitForFunction(() => !document.querySelector(".player-arena.refilling") && !document.querySelector(".refill-card") && (!window.refillState || refillState.complete), null, { timeout: 6200 });
   await page.waitForTimeout(180);
   const winReadyState = await page.evaluate(() => {
     const startButton = document.getElementById("middleStart");
@@ -434,6 +696,18 @@ async function run() {
       p1Text: document.getElementById("p1Score").textContent,
       p2Text: document.getElementById("p2Score").textContent,
       activeCards: document.querySelectorAll(".active-player-card").length,
+      activeCardIds: {
+        p1: document.querySelector("#p1Slot .active-player-card")?.dataset.cardId,
+        p2: document.querySelector("#p2Slot .active-player-card")?.dataset.cardId
+      },
+      activeCommitted: {
+        p1: document.querySelector("#p1Slot .active-player-card")?.dataset.committedFromRefill === "true",
+        p2: document.querySelector("#p2Slot .active-player-card")?.dataset.committedFromRefill === "true"
+      },
+      finalCardIds: { ...refillState.finalCardIds },
+      committedCardIds: { ...refillState.committedCardIds },
+      hiddenRefreshStamp: refillState.hiddenRefreshStamp,
+      preloadedCardIds: [...document.querySelectorAll(".preloaded-next-card")].map((card) => card.dataset.preparedCardId),
       visiblePileLayers,
       staleWinner: !!document.querySelector(".player-arena.winner"),
       staleCooldown: !!document.querySelector(".player-foot.cooling"),
@@ -445,6 +719,26 @@ async function run() {
       clipped: br.left < -1 || br.top < -1 || br.right > innerWidth + 1 || br.bottom > innerHeight + 1
     };
   });
+  await page.waitForTimeout(260);
+  const postHiddenRefreshState = await page.evaluate(() => ({
+    hiddenRefreshStamp: refillState.hiddenRefreshStamp,
+    activeCardIds: {
+      p1: document.querySelector("#p1Slot .active-player-card")?.dataset.cardId,
+      p2: document.querySelector("#p2Slot .active-player-card")?.dataset.cardId
+    },
+    activeCommitted: {
+      p1: document.querySelector("#p1Slot .active-player-card")?.dataset.committedFromRefill === "true",
+      p2: document.querySelector("#p2Slot .active-player-card")?.dataset.committedFromRefill === "true"
+    },
+    preloadedCardIds: [...document.querySelectorAll(".preloaded-next-card")].map((card) => card.dataset.preparedCardId),
+    preloadedNotVisible: [...document.querySelectorAll(".preloaded-next-card")].every((card) => {
+      const activeIds = [
+        document.querySelector("#p1Slot .active-player-card")?.dataset.cardId,
+        document.querySelector("#p2Slot .active-player-card")?.dataset.cardId
+      ];
+      return !activeIds.includes(card.dataset.preparedCardId);
+    })
+  }));
   await page.screenshot({ path: path.join(outDir, "tempo-win-play-again.png"), fullPage: false });
   await page.dispatchEvent("#middleStart", "click");
   await page.waitForTimeout(180);
@@ -460,6 +754,31 @@ async function run() {
     staleSelection: !!document.querySelector(".symbol.selected,.symbol.p2selected"),
     staleCooldown: !!document.querySelector(".player-foot.cooling"),
     noGameGuide: !document.querySelector("#tab-game .guide-card, #tab-game .play-guide, #tab-game #guideMatch")
+  }));
+
+  await page.evaluate(() => {
+    setupGame(false);
+    clearCountdown();
+    showCleanStart();
+    schedulePostWinRefill({ p1:5, p2:3 }, 1000);
+  });
+  await page.waitForTimeout(120);
+  await page.dispatchEvent("#middleStart", "click");
+  await page.waitForTimeout(180);
+  const earlyStartRefillState = await page.evaluate(() => ({
+    buttonHidden: document.getElementById("middleStart").classList.contains("hidden"),
+    active: refillState.active,
+    started: refillState.started,
+    refillCards: document.querySelectorAll(".refill-card").length,
+    p1RefillCards: document.querySelectorAll(".refill-card.p1").length,
+    p2RefillCards: document.querySelectorAll(".refill-card.p2").length
+  }));
+  await page.waitForTimeout(430);
+  const earlyStartCountdownState = await page.evaluate(() => ({
+    counting: game.counting,
+    running: game.running,
+    countdownText: document.getElementById("playCountdown").textContent,
+    startHidden: document.getElementById("middleStart").classList.contains("hidden")
   }));
 
   const viewportCases = [
@@ -480,6 +799,12 @@ async function run() {
   const result = {
     initialState,
     instructionsState,
+    motionHoverState,
+    arrowMotionHoverState,
+    answerHoverState,
+    cooldownHoverState,
+    cooldownPersistState,
+    cooldownReplayState,
     initialLayout,
     guideDuringRun,
     staticChecks,
@@ -495,17 +820,36 @@ async function run() {
     winState,
     winLeavingState,
     refillEarlyState,
+    refillActiveState,
+    refillFrameSamples,
+    refillStackState,
     winReadyState,
+    postHiddenRefreshState,
     playAgainState,
+    earlyStartRefillState,
+    earlyStartCountdownState,
     responsive,
     errors
   };
   await browser.close();
   console.log(JSON.stringify(result, null, 2));
 
+  const phaseSamplesOk = motionHoverState.phaseSamples.every((sample) =>
+    JSON.stringify(sample.active) === JSON.stringify(sample.expectedKeys) &&
+    sample.dir[0] === sample.expectedDir[0] &&
+    sample.dir[1] === sample.expectedDir[1]
+  );
+  const visibleColor = (value, rgb) => value.includes(rgb) && !value.endsWith(", 0)") && !value.endsWith(", 0.0)");
+
   if (errors.length) process.exitCode = 1;
-  if (!initialState.gameVisible || !initialState.bodyGameActive || initialState.activeTab !== "game" || !initialState.startVisible || initialState.startText !== "START" || !initialState.buttonRound || !initialState.noGameGuide || !initialState.instructionsNav || !initialState.middleBack || !initialState.noBackMark || initialState.buttonCenterDelta > 5 || initialState.running || initialState.counting || initialState.ended || hasClipped(initialLayout)) process.exitCode = 1;
-  if (!instructionsState.visible || instructionsState.activeTab !== "instructions" || instructionsState.guideCards !== 5 || instructionsState.guideExampleCards < 2 || instructionsState.guideControlCards < 6 || instructionsState.overviewCards !== 3 || !instructionsState.allInstructionCardsFull || instructionsState.highlightedSymbols < 8 || instructionsState.wrongSymbols < 1 || instructionsState.motionPaths !== 2 || instructionsState.keyCount < 10 || instructionsState.dotCount !== 2 || instructionsState.cursorDots < 5 || !instructionsState.cooldownDemo || instructionsState.backButtons !== 1 || instructionsState.titleSize < 46 || instructionsState.surfaceHeight < 900 || instructionsState.playerOrder !== "wasd,arrows" || instructionsState.answerOrder !== "space,enter" || !instructionsState.stacked) process.exitCode = 1;
+  if (!initialState.gameVisible || !initialState.bodyGameActive || initialState.activeTab !== "game" || !initialState.startVisible || initialState.startText !== "START" || !initialState.buttonRound || !initialState.noGameGuide || !initialState.howToPlayNav || !initialState.howToPlayHud || !initialState.noInstructionsText || initialState.leftLabel !== "P1 · WASD" || initialState.rightLabel !== "P2 · ARROWS" || !initialState.leftPlayerHead.includes("Player 1") || !initialState.rightPlayerHead.includes("Player 2") || !initialState.middleBack || !initialState.noBackMark || initialState.buttonCenterDelta > 5 || initialState.running || initialState.counting || initialState.ended || hasClipped(initialLayout)) process.exitCode = 1;
+  if (!instructionsState.visible || instructionsState.activeTab !== "instructions" || instructionsState.guideCards !== 5 || instructionsState.guideExampleCards < 2 || instructionsState.guideControlCards < 6 || instructionsState.overviewCards !== 3 || !instructionsState.allInstructionCardsFull || instructionsState.highlightedSymbols < 5 || instructionsState.altHighlightedSymbols < 2 || instructionsState.wrongSymbols < 1 || instructionsState.motionPaths !== 0 || instructionsState.keyCount < 10 || instructionsState.dotCount !== 0 || instructionsState.cursorDots < 5 || !instructionsState.cooldownDemo || !instructionsState.cooldownTextClean || !instructionsState.cooldownNeutral || instructionsState.backButtons !== 1 || instructionsState.titleSize < 46 || instructionsState.surfaceHeight < 900 || instructionsState.playerOrder !== "wasd,arrows" || instructionsState.answerOrder !== "space,enter" || !instructionsState.overviewLabels.includes("Player 1 - WASD") || !instructionsState.overviewLabels.includes("Player 2 - Arrows") || new Set(instructionsState.overviewSharedIds).size !== 2 || new Set(instructionsState.overviewColors).size !== 2 || instructionsState.step2Highlights !== 0 || instructionsState.wasdGrid !== 3 || instructionsState.arrowGrid !== 3 || instructionsState.idleMotionAnimation !== "none" || instructionsState.idleAnswerAnimation !== "none" || instructionsState.idleCooldownAnimation !== "none" || instructionsState.idleCooldownCorrectAnimation !== "none" || !instructionsState.stacked) process.exitCode = 1;
+  if (motionHoverState.cursorAnimation !== "none" || JSON.stringify(motionHoverState.activeWasdKeys) !== JSON.stringify(["left", "up"]) || motionHoverState.activeArrowKeysBeforeHover.length !== 0 || JSON.stringify(motionHoverState.liveWasdClasses) !== JSON.stringify(["A", "W"]) || !phaseSamplesOk) process.exitCode = 1;
+  if (JSON.stringify(arrowMotionHoverState.activeArrowKeys) !== JSON.stringify(["left", "up"]) || JSON.stringify(arrowMotionHoverState.liveArrowClasses) !== JSON.stringify(["←", "↑"]) || !arrowMotionHoverState.wasdStopped) process.exitCode = 1;
+  if (answerHoverState.keyAnimation !== "answerPress" || answerHoverState.lockAnimation !== "guideCorrectLock" || !["none", "cardPop"].includes(answerHoverState.cardAnimation)) process.exitCode = 1;
+  if (cooldownHoverState.playing || !cooldownHoverState.done || !visibleColor(cooldownHoverState.wrongOutline, "239, 68, 68") || !visibleColor(cooldownHoverState.playerCorrectOutline, "22, 163, 74") || !visibleColor(cooldownHoverState.middleCorrectOutline, "22, 163, 74") || cooldownHoverState.barTransform === "none" || cooldownHoverState.cooldownText !== "0.0s" || !cooldownHoverState.barUnderPersonal) process.exitCode = 1;
+  if (!cooldownPersistState.done || !visibleColor(cooldownPersistState.wrongOutline, "239, 68, 68") || !visibleColor(cooldownPersistState.middleCorrectOutline, "22, 163, 74")) process.exitCode = 1;
+  if (!cooldownReplayState.playing || cooldownReplayState.done || visibleColor(cooldownReplayState.wrongOutline, "239, 68, 68") || visibleColor(cooldownReplayState.middleCorrectOutline, "22, 163, 74") || cooldownReplayState.cooldownText !== "") process.exitCode = 1;
   if (guideDuringRun.visible || !guideDuringRun.playingClass) process.exitCode = 1;
   if (Object.values(staticChecks.validations).some(Boolean)) process.exitCode = 1;
   if (staticChecks.fileCount !== 57 || staticChecks.overlappingPairs > 0) process.exitCode = 1;
@@ -513,7 +857,7 @@ async function run() {
   if (staticChecks.centerItems < 80 || staticChecks.edgeItems < 480 || staticChecks.emptyQuadrantCards > 0 || staticChecks.narrowSpreadCards > 12 || staticChecks.lowCoverageCards > 0 || staticChecks.emptyHalfCards > 0 || staticChecks.centerVoidCards > 12 || staticChecks.lowSizeRangeCards > 0 || staticChecks.missingSmallCards > 0 || staticChecks.missingLargeCards > 0 || staticChecks.tinySymbolCount > 0) process.exitCode = 1;
   if (hasClipped(desktopBefore) || hasClipped(afterCorrect) || hasBadPile(desktopBefore) || hasBadPile(afterCorrect)) process.exitCode = 1;
   if (desktopBefore.middle.width <= Math.max(...desktopBefore.activeCards.map((card) => card.width))) process.exitCode = 1;
-  if (cooldownBefore !== 0 || !cooldownAfterWrong.footCooling || !/s$/.test(cooldownAfterWrong.footText) || cooldownAfterWrong.barCenterDelta > 2 || cooldownAfterWrong.barOverlapsCard || cooldownAfterWrong.clipped) process.exitCode = 1;
+  if (cooldownBefore !== 0 || !cooldownAfterWrong.footCooling || !/s$/.test(cooldownAfterWrong.footText) || cooldownAfterWrong.barCenterDelta > 2 || cooldownAfterWrong.barOverlapsCard || cooldownAfterWrong.pileTopProtrusion > 2 || cooldownAfterWrong.clipped) process.exitCode = 1;
   if (scoreStart.p1Text !== "10" || scoreStart.p2Text !== "10" || scoreStart.p1Label !== "LEFT" || scoreStart.p2Label !== "LEFT") process.exitCode = 1;
   if (scoreAfterCorrect.p2Internal !== 1 || scoreAfterCorrect.p2Text !== "9") process.exitCode = 1;
   if (answerTiming > 10 || winTiming > 35) process.exitCode = 1;
@@ -527,9 +871,37 @@ async function run() {
   if (!countdownChecks[countdownChecks.length - 1].running) process.exitCode = 1;
   if (!winState.exists || winState.leaving || !winState.text.includes("WINS") || winState.clipped || winState.cardFilter !== "none") process.exitCode = 1;
   if (!winLeavingState.exists || !winLeavingState.leaving || winLeavingState.text !== winState.text || winLeavingState.titleLetterSpacing !== winState.titleLetterSpacing || winLeavingState.cardFilter !== "none") process.exitCode = 1;
-  if (refillEarlyState.refillingPanels < 1 || refillEarlyState.visiblePileLayers >= 18) process.exitCode = 1;
+  if (!flipBackState.bodyFlag || (!flipBackState.flipOut && !flipBackState.flipInBack && !flipBackState.middleBack)) process.exitCode = 1;
+  if (!refillEarlyState.active || refillEarlyState.started || refillEarlyState.complete || !refillEarlyState.startVisible || refillEarlyState.refillingPanels !== 0 || refillEarlyState.refillCards !== 0 || refillEarlyState.visiblePileLayers >= 18) process.exitCode = 1;
+  if (!refillActiveState.active || !refillActiveState.started || refillActiveState.refillingPanels !== 2 || refillActiveState.refillCards < 2 || refillActiveState.p1RefillCards < 1 || refillActiveState.p2RefillCards < 1 || !refillActiveState.faceUpCardsHaveSymbols || !refillActiveState.fullyOpaque || refillActiveState.transitionDurations.length !== 1 || !refillActiveState.indexes.includes("p1:0") || !refillActiveState.indexes.includes("p2:0") || !refillActiveState.zOrderOk || !refillActiveState.zIncreasing || !refillActiveState.entryDirectionOk || refillActiveState.visiblePileLayers !== refillEarlyState.visiblePileLayers || refillActiveState.activeCardIds.p1 !== refillEarlyState.activeCardIds.p1 || refillActiveState.activeCardIds.p2 !== refillEarlyState.activeCardIds.p2) process.exitCode = 1;
+  const refillStackSideOk = ["p1", "p2"].every((side) => {
+    const sideCards = refillStackState.cards.filter((card) => card.side === side);
+    if (refillStackState.committedCardIds[side]) {
+      return sideCards.length === 0 && refillStackState.activeCardIds[side] === refillStackState.committedCardIds[side];
+    }
+    return sideCards.length >= Math.min(4, refillEarlyState.scores[side]) && refillStackState.activeCardIds[side] === refillEarlyState.activeCardIds[side];
+  });
+  const refillLongSide = refillEarlyState.scores.p1 >= refillEarlyState.scores.p2 ? "p1" : "p2";
+  const longSideCards = refillStackState.cards.filter((card) => card.side === refillLongSide);
+  const expectedStackPileLayersMin = refillEarlyState.visiblePileLayers + ["p1", "p2"]
+    .filter((side) => refillStackState.committedCardIds[side])
+    .reduce((total, side) => total + refillEarlyState.scores[side], 0);
+  if (!refillStackState.contiguous || !refillStackState.zIncreasing || !refillStackState.fullyOpaque || refillStackState.visiblePileLayers < expectedStackPileLayersMin || !refillStackSideOk || refillStackState.committedCardIds[refillLongSide] || longSideCards.length < Math.min(5, refillEarlyState.scores[refillLongSide])) process.exitCode = 1;
+  const refillFrameSamplesOk = refillFrameSamples.every((sample) => ["p1", "p2"].every((side) => {
+    const state = sample[side];
+    if (state.committedCardId) {
+      return state.cards.length === 0 && state.activeCardId === state.committedCardId;
+    }
+    return state.stackOrderOk && state.coveredCentered && state.fullyOpaque;
+  }));
+  if (!refillFrameSamplesOk) process.exitCode = 1;
   if (!winReadyState.overlayGone || !winReadyState.middleBack || !winReadyState.noBackMark || !winReadyState.buttonVisible || winReadyState.buttonText !== "START" || winReadyState.playAgainClass || !winReadyState.buttonRound || winReadyState.buttonCenterDelta > 5 || winReadyState.p1Score !== 0 || winReadyState.p2Score !== 0 || winReadyState.p1Text !== "10" || winReadyState.p2Text !== "10" || winReadyState.activeCards !== 2 || winReadyState.visiblePileLayers < 16 || winReadyState.staleWinner || winReadyState.staleCooldown || winReadyState.staleSelection || !winReadyState.noGameGuide || winReadyState.clipped) process.exitCode = 1;
+  if (winReadyState.activeCardIds.p1 !== winReadyState.finalCardIds.p1 || winReadyState.activeCardIds.p2 !== winReadyState.finalCardIds.p2 || winReadyState.committedCardIds.p1 !== winReadyState.finalCardIds.p1 || winReadyState.committedCardIds.p2 !== winReadyState.finalCardIds.p2 || !winReadyState.activeCommitted.p1 || !winReadyState.activeCommitted.p2) process.exitCode = 1;
+  if ((refillEarlyState.scores.p1 > 0 && winReadyState.activeCardIds.p1 === refillEarlyState.activeCardIds.p1) || (refillEarlyState.scores.p2 > 0 && winReadyState.activeCardIds.p2 === refillEarlyState.activeCardIds.p2)) process.exitCode = 1;
+  if (postHiddenRefreshState.hiddenRefreshStamp < winReadyState.hiddenRefreshStamp || postHiddenRefreshState.activeCardIds.p1 !== winReadyState.activeCardIds.p1 || postHiddenRefreshState.activeCardIds.p2 !== winReadyState.activeCardIds.p2 || !postHiddenRefreshState.activeCommitted.p1 || !postHiddenRefreshState.activeCommitted.p2 || postHiddenRefreshState.preloadedCardIds.length < 2 || !postHiddenRefreshState.preloadedNotVisible) process.exitCode = 1;
   if (!playAgainState.overlayGone || playAgainState.p1Score !== 0 || playAgainState.p2Score !== 0 || !playAgainState.counting || playAgainState.ended || playAgainState.scoreText !== "10" || playAgainState.staleSelection || playAgainState.staleCooldown || !playAgainState.noGameGuide) process.exitCode = 1;
+  if (!earlyStartRefillState.buttonHidden || !earlyStartRefillState.active || !earlyStartRefillState.started || earlyStartRefillState.refillCards < 1 || earlyStartRefillState.p1RefillCards < 1 || earlyStartRefillState.p2RefillCards < 1) process.exitCode = 1;
+  if (!earlyStartCountdownState.counting || earlyStartCountdownState.running || earlyStartCountdownState.countdownText !== "3" || !earlyStartCountdownState.startHidden) process.exitCode = 1;
   for (const metrics of Object.values(responsive)) {
     if (hasClipped(metrics) || hasBadPile(metrics)) process.exitCode = 1;
     if (metrics.middle.width <= Math.max(...metrics.activeCards.map((card) => card.width))) process.exitCode = 1;

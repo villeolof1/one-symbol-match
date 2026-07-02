@@ -35,7 +35,7 @@ The game screen is optimized as a near-fullscreen arena:
 - The top HUD is minimal: score, status, restart, and exit.
 - Dots move quickly and update with GPU-friendly transforms.
 - The card DOM is not rebuilt while the dots move; only dot transforms, highlights, and cooldown bars update.
-- Player 2 uses a magenta/purple selection highlight so it is easier to distinguish from Player 1 and the artwork.
+- Player 1 uses a magenta/purple selection highlight on the left/WASD side so it is easier to distinguish from Player 2 and the artwork.
 - The middle card starts face-down. Press START, then a 3-2-1 countdown flips it into play.
 - When a player scores, their card flies visibly to the middle pile. The next player card is pre-rendered behind it, so the replacement appears immediately. Correct feedback is blue from either side.
 - A short input grace/lock window after a correct answer prevents the other player from being punished for pressing just as the cards switch.
@@ -49,8 +49,8 @@ The game screen is optimized as a near-fullscreen arena:
 
 Controls:
 
-- Left player / Player 2: W/A/S/D to move, Space to answer
-- Right player / Player 1: Arrow keys to move, Enter to answer
+- Left player / Player 1: W/A/S/D to move, Space to answer
+- Right player / Player 2: Arrow keys to move, Enter to answer
 
 Rules:
 

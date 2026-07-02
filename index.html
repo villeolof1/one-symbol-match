@@ -91,6 +91,7 @@
     .symbol.selected{outline:4px solid rgba(37,99,235,.98); background:rgba(37,99,235,.14); box-shadow:0 0 0 9px rgba(37,99,235,.11),0 0 25px rgba(37,99,235,.25); z-index:4}
     .symbol.p2selected{outline-color:var(--p2); background:rgba(168,85,247,.16); box-shadow:0 0 0 9px rgba(168,85,247,.13),0 0 26px rgba(236,72,153,.28); z-index:4}
     .symbol.sharedhint{outline:3px solid rgba(22,163,74,.95); background:rgba(22,163,74,.12)}
+    .symbol.sharedhint2{outline:3px solid rgba(37,99,235,.96); background:rgba(37,99,235,.12); box-shadow:0 0 0 8px rgba(37,99,235,.10)}
     .cursor-dot{
       position:absolute; left:0; top:0; width:20px; height:20px; border-radius:999px; transform:translate3d(calc(var(--dot-x,50) * 1px),calc(var(--dot-y,50) * 1px),0) translate(-50%,-50%); z-index:8;
       background:var(--blue); border:3px solid white; box-shadow:0 0 0 5px rgba(37,99,235,.18),0 8px 18px rgba(15,23,42,.28); pointer-events:none;
@@ -147,6 +148,8 @@
     .middle-zone{height:100%; display:grid; place-items:end center; position:relative; padding-bottom:clamp(2px,.7vh,8px)}
     .middle-zone .match-card{--card-size:min(66vw,calc((100vh - 104px) * .605),700px); animation:cardPop .16s cubic-bezier(.2,.9,.25,1)}
     .middle-zone .match-card.reveal{animation:cardFlipReveal .26s cubic-bezier(.18,.9,.24,1)}
+    .middle-zone .match-card.flip-out{animation:cardFlipOut .28s cubic-bezier(.22,.72,.22,1) forwards}
+    .middle-zone .match-card.flip-in-back{animation:cardFlipInBack .38s cubic-bezier(.16,.84,.18,1) forwards}
     .card-back{display:grid; place-items:center; background:radial-gradient(circle at 33% 24%,#f8fbff,#dbeafe 45%,#93c5fd 78%,#2563eb 100%); border-color:#eaf2ff}
     .card-back::after{background:repeating-conic-gradient(from 20deg,rgba(255,255,255,.34) 0 12deg,rgba(37,99,235,.13) 12deg 24deg); z-index:2}
     .start-overlay{position:fixed; left:var(--start-x,50vw); top:var(--start-y,50vh); z-index:40; pointer-events:none}
@@ -185,6 +188,8 @@
     .player-arena.p2 .match-card{animation-delay:.02s}
     .game-screen .player-foot.cooling .cooltext{display:block; min-width:0; text-align:center; font-size:12px; line-height:1}
     .game-card-slot{display:grid; place-items:center; min-height:0; position:relative}
+    .player-arena .game-card-slot{transition:transform .18s cubic-bezier(.16,.84,.18,1)}
+    .player-arena.cooling .game-card-slot{transform:translateY(clamp(-56px,-6vh,-28px))}
     .instructions-hero{position:sticky; top:8px; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:22px; padding:10px 0 14px; background:linear-gradient(180deg,rgba(15,23,42,.96),rgba(15,23,42,.72) 72%,transparent)}
     .instructions-hero h2{margin:0; font-size:clamp(38px,5.2vw,82px); line-height:.9; letter-spacing:-.075em}
     .instructions-hero p{margin:10px 0 0; max-width:760px; color:#cfe2ff; font-size:clamp(16px,1.35vw,22px); line-height:1.3}
@@ -195,15 +200,16 @@
     .guide-visual{display:flex; align-items:center; justify-content:center; gap:clamp(14px,2vw,32px); min-width:80px}.guide-match-visual{gap:clamp(18px,2.4vw,40px)}.guide-example-card{--card-size:clamp(220px,22vw,360px); border-width:7px; box-shadow:0 24px 62px rgba(0,0,0,.30), inset 0 -8px 18px rgba(15,23,42,.07)}.guide-control-card{--card-size:clamp(190px,18vw,300px); border-width:6px; box-shadow:0 22px 54px rgba(0,0,0,.28), inset 0 -8px 18px rgba(15,23,42,.07)}.guide-overview-card{--card-size:clamp(170px,16vw,280px); border-width:6px}.guide-overview-middle{--card-size:clamp(230px,22vw,390px); border-width:7px}.guide-example-card .symbol-label,.guide-control-card .symbol-label,.guide-overview-card .symbol-label{display:none}.guide-control-card .cursor-dot{display:block; left:calc(var(--guide-dot-x,50) * 1%); top:calc(var(--guide-dot-y,50) * 1%); transform:translate(-50%,-50%)}.symbol.wronghint{outline:3px solid rgba(239,68,68,.95); background:rgba(239,68,68,.14); box-shadow:0 0 0 9px rgba(239,68,68,.12)}
     .guide-versus{font-size:clamp(26px,3vw,46px); font-weight:1000; color:#dbeafe; opacity:.78}.guide-players{display:grid; grid-template-columns:1fr 1fr; gap:clamp(18px,2.2vw,34px)}.guide-player{position:relative; display:grid; gap:clamp(12px,1.5vw,20px); align-items:center; justify-items:center; padding:clamp(16px,2vw,26px); border-radius:24px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.10)}.guide-player.left{box-shadow:inset 6px 0 0 var(--p2b)}.guide-player.right{box-shadow:inset 6px 0 0 var(--blue)}.guide-player-label{font-size:clamp(16px,1.3vw,22px); font-weight:1000; color:#e0f2fe}
     .guide-arena{display:grid; grid-template-columns:1fr 1.16fr 1fr; align-items:end; gap:clamp(16px,2.4vw,34px)}.guide-arena-card{display:grid; gap:12px; justify-items:center}.guide-arena-label{font-weight:1000; color:#dbeafe; font-size:clamp(15px,1.3vw,22px); text-align:center}.guide-arena-note{padding:clamp(14px,1.6vw,22px); border-radius:20px; color:#dbeafe; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); font-size:clamp(16px,1.35vw,22px); line-height:1.3}
-    .guide-keys{display:flex; gap:7px; align-items:center; justify-content:center; flex-wrap:wrap}.guide-key{min-width:clamp(44px,3.7vw,64px); min-height:clamp(40px,3.2vw,56px); display:grid; place-items:center; border-radius:12px; color:#0f172a; background:#f8fbff; border:1px solid rgba(148,163,184,.45); font-weight:1000; font-size:clamp(15px,1.25vw,21px); box-shadow:0 10px 22px rgba(0,0,0,.22)}.guide-key.wide{min-width:clamp(118px,10vw,180px)}.guide-dot{width:34px; height:34px; border-radius:50%; background:var(--blue); border:5px solid white; box-shadow:0 0 0 8px rgba(37,99,235,.20)}.guide-dot.p2{background:var(--p2)}
-    .guide-motion-path{position:absolute; height:4px; border-radius:999px; background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(255,255,255,.92)); z-index:7; transform-origin:left center; box-shadow:0 0 16px rgba(255,255,255,.28); pointer-events:none}.guide-motion-path::after{content:""; position:absolute; right:-7px; top:50%; width:14px; height:14px; border-radius:50%; transform:translateY(-50%); background:currentColor; box-shadow:0 0 0 7px color-mix(in srgb,currentColor 24%,transparent)}.guide-motion-path.p2{color:var(--p2)}.guide-motion-path.p1{color:var(--blue)}.guide-motion-card .cursor-dot{animation:guideDotMove 2.2s cubic-bezier(.4,0,.18,1) infinite}
-    .answer-demo{display:grid; gap:clamp(16px,2vw,26px)}.answer-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 18px; border-radius:18px; background:rgba(255,255,255,.06); font-size:clamp(16px,1.25vw,22px); color:#dbeafe}.answer-mark{width:42px; height:42px; border-radius:50%; display:grid; place-items:center; font-weight:1000}.answer-mark.ok{background:rgba(34,197,94,.22); color:#bbf7d0}.answer-mark.bad{background:rgba(239,68,68,.22); color:#fecaca}.cooldown-demo{display:grid; gap:14px; padding:clamp(16px,2vw,26px); border-radius:22px; background:rgba(239,68,68,.10); border:1px solid rgba(248,113,113,.20)}.cooldown-demo .coolbar{width:100%; max-width:none; opacity:1}.cooldown-cards{display:grid; grid-template-columns:1fr auto 1fr; gap:clamp(14px,2vw,28px); align-items:center}.cooldown-label{font-weight:1000; font-size:clamp(17px,1.4vw,24px); color:#fecaca}.cooldown-arrow{font-size:clamp(28px,3vw,46px); color:#fecaca; font-weight:1000}
+    .guide-keys{display:grid; gap:7px; align-items:center; justify-content:center; justify-items:center}.guide-keys.wasd,.guide-keys.arrows{grid-template-columns:repeat(3,minmax(44px,64px)); grid-template-rows:repeat(2,auto)}.guide-keys .top{grid-column:2; grid-row:1}.guide-keys .move-a,.guide-keys .move-left{grid-column:1; grid-row:2}.guide-keys .move-s,.guide-keys .move-down{grid-column:2; grid-row:2}.guide-keys .move-d,.guide-keys .move-right{grid-column:3; grid-row:2}.guide-key{min-width:clamp(44px,3.7vw,64px); min-height:clamp(40px,3.2vw,56px); display:grid; place-items:center; border-radius:12px; color:#0f172a; background:#f8fbff; border:1px solid rgba(148,163,184,.45); font-weight:1000; font-size:clamp(15px,1.25vw,21px); box-shadow:0 10px 22px rgba(0,0,0,.22); transition:transform .12s ease, background .12s ease, box-shadow .12s ease}.guide-key.wide{min-width:clamp(118px,10vw,180px)}.guide-key.active{transform:translateY(3px) scale(.96); background:#bfdbfe; box-shadow:0 4px 10px rgba(0,0,0,.28)}.guide-dot{width:34px; height:34px; border-radius:50%; background:var(--blue); border:5px solid white; box-shadow:0 0 0 8px rgba(37,99,235,.20)}.guide-dot.p2{background:var(--p2)}
+    .guide-motion-card .cursor-dot{left:50%; top:50%; transform:translate(-50%,-50%); transition:left .08s linear, top .08s linear}.guide-player:is(:hover,:focus-within),.cooldown-demo:is(:hover,:focus-within){outline:1px solid rgba(255,255,255,.22)}
+    .guide-answer-card .symbol.sharedhint{outline-color:rgba(22,163,74,0); background:transparent; box-shadow:none}.guide-player:is(:hover,:focus-within) .guide-answer-card .symbol.sharedhint{animation:guideCorrectLock 2.15s ease-in-out infinite}.guide-player:is(:hover,:focus-within) .answer-row .guide-key,.guide-player:is(:hover,:focus-within) .answer-mark.ok{animation:answerPress 2.15s ease-in-out infinite}.guide-player:is(:hover,:focus-within) .answer-mark.ok{animation-name:answerOk}
+    .answer-demo{display:grid; gap:clamp(16px,2vw,26px)}.answer-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 18px; border-radius:18px; background:rgba(255,255,255,.06); font-size:clamp(16px,1.25vw,22px); color:#dbeafe}.answer-mark{width:42px; height:42px; border-radius:50%; display:grid; place-items:center; font-weight:1000}.answer-mark.ok{background:rgba(34,197,94,.22); color:#bbf7d0}.answer-mark.bad{background:rgba(239,68,68,.22); color:#fecaca}.cooldown-demo{display:grid; gap:14px; padding:clamp(16px,2vw,26px); border-radius:24px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.10)}.cooldown-demo .coolbar{width:min(100%,var(--guide-cool-width,320px)); max-width:none; opacity:.36; justify-self:center; transition:opacity .18s ease}.cooldown-demo .coolbar span{transform:scaleX(0)}.cooldown-demo.playing .coolbar,.cooldown-demo.done .coolbar{opacity:1}.cooldown-demo.playing .coolbar span{animation:cooldownDrainOnce 4.2s linear forwards}.cooldown-demo.done .coolbar span{transform:scaleX(0)}.guide-cooltime{min-height:1.2em; font-weight:1000; font-size:clamp(14px,1.15vw,18px); color:#fecaca; text-align:center; letter-spacing:.02em}.cooldown-cards{display:grid; grid-template-columns:1fr 1fr; gap:clamp(18px,3vw,46px); align-items:start; justify-items:center}.cooldown-card-wrap{display:grid; gap:10px; justify-items:center}.cooldown-card-wrap .coolbar{width:min(76%,320px)}.cooldown-label,.cooldown-arrow{display:none}.guide-wrong-card .symbol.wronghint{outline-color:rgba(239,68,68,0); background:transparent; box-shadow:none}.guide-cooldown-card .symbol.sharedhint{outline-color:rgba(22,163,74,0); background:transparent; box-shadow:none}.cooldown-demo.playing .guide-wrong-card .cursor-dot{animation:cooldownDotMove 4.2s cubic-bezier(.28,.78,.2,1) forwards}.cooldown-demo.playing .guide-wrong-card .symbol.wronghint{animation:cooldownWrongLock 4.2s ease-in-out forwards}.cooldown-demo.playing .guide-cooldown-card .symbol.sharedhint{animation:cooldownCorrectReveal 4.2s ease-in-out forwards}.cooldown-demo.done .guide-wrong-card .cursor-dot{left:var(--guide-wrong-x,50%); top:var(--guide-wrong-y,50%)}.cooldown-demo.done .guide-wrong-card .symbol.wronghint{outline-color:rgba(239,68,68,.98); background:rgba(239,68,68,.14); box-shadow:0 0 0 10px rgba(239,68,68,.13),0 0 26px rgba(239,68,68,.24)}.cooldown-demo.done .guide-cooldown-card .symbol.sharedhint{outline-color:rgba(22,163,74,.96); background:rgba(22,163,74,.13); box-shadow:0 0 0 10px rgba(22,163,74,.13),0 0 28px rgba(22,163,74,.22)}
     .player-arena.reset-fade .game-card-slot{opacity:.18; transform:scale(.975); transition:opacity .55s ease, transform .55s cubic-bezier(.16,.84,.18,1)}
     .player-arena.refilling .game-card-slot{animation:refillSettle .74s cubic-bezier(.14,.84,.18,1)}
     .player-arena.deal-in .active-player-card{animation:dealIn .34s cubic-bezier(.14,.84,.18,1)}
     .card-pile{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; z-index:0; transform:translateY(clamp(3px,.7vh,8px))}
     .card-pile::before{content:""; position:absolute; width:calc(var(--player-card-size) * .92); height:calc(var(--player-card-size) * .18); left:50%; top:calc(50% + var(--player-card-size) * .43); transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(ellipse at center,rgba(0,0,0,.24),rgba(15,23,42,.14) 48%,transparent 74%); opacity:.58}
-    .player-arena.cooling .card-pile{transform:translateY(clamp(-4px,-.45vh,-2px)) scaleY(.68); transform-origin:center top}
+    .player-arena.cooling .card-pile{transform:translateY(clamp(0px,.18vh,2px)); transform-origin:center center}
     .pile-layer{--paper-shade:0%; --edge-tint:rgba(148,163,184,.16); position:absolute; width:var(--player-card-size); height:var(--player-card-size); border-radius:50%; overflow:hidden; background:radial-gradient(circle at 34% 22%,hsl(210 100% calc(99% - var(--paper-shade))),hsl(210 74% calc(98% - var(--paper-shade))) 48%,hsl(211 52% calc(94% - var(--paper-shade))) 83%,hsl(212 36% calc(86% - var(--paper-shade))) 100%); border:clamp(3px,.72vw,5px) solid rgba(255,255,255,.99); box-shadow:0 1px 0 rgba(255,255,255,.92),0 4px 9px rgba(15,23,42,.06),inset -15px -17px 27px rgba(15,23,42,.058),inset 9px 8px 16px rgba(255,255,255,.28),inset 0 0 0 1px rgba(15,23,42,.052); opacity:0; transform:translate3d(0,14px,0) scale(.995); transition:opacity .18s ease, transform .24s cubic-bezier(.16,.88,.24,1); will-change:transform,opacity; transform-origin:center center}
     .pile-layer::before{content:""; position:absolute; inset:clamp(7px,1.2vw,12px); border-radius:50%; background:radial-gradient(circle at 52% 48%,transparent 0 64%,rgba(255,255,255,.44) 65%,rgba(148,163,184,.12) 72%,transparent 78%),conic-gradient(from 210deg,var(--edge-tint),transparent 14%,transparent 68%,rgba(255,255,255,.32) 84%,rgba(148,163,184,.10)); border:1px solid rgba(148,163,184,.13); opacity:.76}
     .player-arena.refilling .pile-layer{transition-property:opacity,transform; transition-timing-function:cubic-bezier(.12,.88,.16,1)}
@@ -211,6 +217,12 @@
     .game-card-slot > .match-card.preloaded-next-card{position:absolute; z-index:1; opacity:0; pointer-events:none; transform:translate3d(0,0,0) scale(.996); transition:opacity .055s linear, transform .085s cubic-bezier(.16,.88,.24,1); will-change:opacity,transform}
     .game-card-slot > .match-card.preloaded-next-card.ready{opacity:1; transform:translate3d(0,0,0) scale(1)}
     .game-card-slot > .match-card.active-player-card{position:relative; z-index:2}
+    .refill-layer{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; z-index:30; isolation:isolate}
+    .refill-layer > .match-card.refill-card{position:absolute; z-index:var(--refill-z,30); --card-size:var(--player-card-size); pointer-events:none; opacity:1; transform:translate3d(var(--refill-x,0),var(--refill-y,-28px),0) rotate(var(--refill-rot,0deg)) scale(.84); transition:transform .34s cubic-bezier(.12,.84,.16,1), box-shadow .18s ease; will-change:transform; backface-visibility:hidden; contain:layout paint; box-shadow:0 34px 78px rgba(0,0,0,.40),inset 0 -10px 26px rgba(15,23,42,.08)}
+    .refill-layer > .match-card.refill-card.landing{opacity:1; transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+    .refill-layer > .match-card.refill-card.settling,
+    .refill-layer > .match-card.refill-card.covered{opacity:1; transform:translate3d(0,0,0) rotate(0deg) scale(1); box-shadow:0 18px 42px rgba(0,0,0,.26),inset 0 -10px 26px rgba(15,23,42,.08)}
+    .match-card.active-player-card.refill-committed{animation:refillTopCommit .24s cubic-bezier(.14,.84,.18,1)}
     .game-card-slot > .match-card.source-card-sent{opacity:.02; transform:scale(.985); transition:opacity .025s linear, transform .025s linear}
     .empty-player-card{width:var(--player-card-size); height:var(--player-card-size); border-radius:50%; display:grid; place-items:center; opacity:.24; background:radial-gradient(circle,rgba(255,255,255,.13),rgba(255,255,255,.02) 62%,transparent 70%); border:2px dashed rgba(255,255,255,.16)}
     .game-card-slot.empty .card-pile{display:none}
@@ -244,7 +256,17 @@
     @keyframes cardPop{from{transform:scale(.982)}to{transform:scale(1)}}
     @keyframes dealIn{0%{transform:translate3d(0,-22px,0) scale(.94); opacity:.25}68%{transform:translate3d(0,3px,0) scale(1.018); opacity:1}100%{transform:translate3d(0,0,0) scale(1); opacity:1}}
     @keyframes cardFlipReveal{0%{transform:perspective(900px) rotateY(89deg) scale(.98); filter:brightness(1.15)}55%{transform:perspective(900px) rotateY(-8deg) scale(1.018)}100%{transform:perspective(900px) rotateY(0) scale(1); filter:brightness(1)}}
+    @keyframes cardFlipOut{0%{transform:perspective(900px) rotateY(0deg) scale(1); filter:brightness(1)}100%{transform:perspective(900px) rotateY(-88deg) scale(.982); filter:brightness(.94)}}
+    @keyframes cardFlipInBack{0%{transform:perspective(900px) rotateY(88deg) scale(.982); filter:brightness(1.08)}58%{transform:perspective(900px) rotateY(-6deg) scale(1.012); filter:brightness(1.02)}100%{transform:perspective(900px) rotateY(0deg) scale(1); filter:brightness(1)}}
     @keyframes guideDotMove{0%,22%{left:calc(var(--guide-dot-x,50) * 1%); top:calc(var(--guide-dot-y,50) * 1%)}74%,100%{left:calc(var(--guide-target-x,var(--guide-dot-x,50)) * 1%); top:calc(var(--guide-target-y,var(--guide-dot-y,50)) * 1%)}}
+    @keyframes guideCorrectLock{0%,35%{outline-color:rgba(22,163,74,0);background:transparent;box-shadow:none}52%,100%{outline-color:rgba(22,163,74,.96);background:rgba(22,163,74,.13);box-shadow:0 0 0 10px rgba(22,163,74,.13),0 0 28px rgba(22,163,74,.22)}}
+    @keyframes answerPress{0%,35%,82%,100%{transform:none;background:#f8fbff}46%,66%{transform:translateY(4px) scale(.96);background:#bbf7d0}}
+    @keyframes answerOk{0%,50%{transform:scale(.9);opacity:.55}62%,100%{transform:scale(1.08);opacity:1;box-shadow:0 0 0 10px rgba(34,197,94,.13)}}
+    @keyframes guideWrongLock{0%,45%{outline-color:rgba(239,68,68,0);background:transparent;box-shadow:none}58%,100%{outline-color:rgba(239,68,68,.98);background:rgba(239,68,68,.14);box-shadow:0 0 0 10px rgba(239,68,68,.13),0 0 26px rgba(239,68,68,.24)}}
+    @keyframes cooldownDotMove{0%,16%{left:50%;top:50%}38%,100%{left:var(--guide-wrong-x,50%);top:var(--guide-wrong-y,50%)}}
+    @keyframes cooldownWrongLock{0%,34%{outline-color:rgba(239,68,68,0);background:transparent;box-shadow:none}46%,100%{outline-color:rgba(239,68,68,.98);background:rgba(239,68,68,.14);box-shadow:0 0 0 10px rgba(239,68,68,.13),0 0 26px rgba(239,68,68,.24)}}
+    @keyframes cooldownCorrectReveal{0%,56%{outline-color:rgba(22,163,74,0);background:transparent;box-shadow:none}74%,100%{outline-color:rgba(22,163,74,.96);background:rgba(22,163,74,.13);box-shadow:0 0 0 10px rgba(22,163,74,.13),0 0 28px rgba(22,163,74,.22)}}
+    @keyframes cooldownDrainOnce{0%,45%{transform:scaleX(0)}46%{transform:scaleX(1)}100%{transform:scaleX(0)}}
     @keyframes countPulse{0%{transform:translate(-50%,-50%) scale(.72); opacity:.3}72%{transform:translate(-50%,-50%) scale(1.1); opacity:1}100%{transform:translate(-50%,-50%) scale(1); opacity:1}}
     @keyframes feedbackPulse{
       0%{transform:translate(-50%,-50%) scale(.24); opacity:.92}
@@ -256,6 +278,7 @@
     @keyframes winFadeIn{from{opacity:0}to{opacity:1}}
     @keyframes winPop{0%{transform:scale(.75) rotate(-2deg); opacity:.25}70%{transform:scale(1.05) rotate(.8deg); opacity:1}100%{transform:scale(1) rotate(0); opacity:1}}
     @keyframes refillSettle{0%{opacity:.22; transform:translateY(-18px) scale(.985)}58%{opacity:1; transform:translateY(2px) scale(1.012)}100%{opacity:1; transform:translateY(0) scale(1)}}
+    @keyframes refillTopCommit{0%{transform:translate3d(0,0,0) scale(1)}54%{transform:translate3d(0,-4px,0) scale(1.006)}100%{transform:translate3d(0,0,0) scale(1)}}
     @keyframes confettiBurst{0%{opacity:1; transform:translate(-50%,-50%) rotate(var(--r)) scale(.2)}82%{opacity:1}100%{opacity:0; transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) rotate(calc(var(--r) + 520deg)) scale(1)}}
     .game-screen .symbol{transition:background .045s, outline-color .045s, box-shadow .045s; text-shadow:0 2px 0 rgba(255,255,255,.50),0 1px 4px rgba(15,23,42,.14); will-change:auto}
     .game-screen .symbol.selected{outline:5px solid var(--blue); background:rgba(37,99,235,.13); box-shadow:0 0 0 7px rgba(37,99,235,.12)}
@@ -287,7 +310,7 @@
       </section>
       <nav class="navtabs" aria-label="Main views">
         <button class="tabbtn active" data-tab="game">Play</button>
-        <button class="tabbtn" data-tab="instructions">Instructions</button>
+        <button class="tabbtn" data-tab="instructions">How to play</button>
         <button class="tabbtn" data-tab="browse">Cards</button>
         <button class="tabbtn" data-tab="how">How it works</button>
       </nav>
@@ -323,13 +346,13 @@
         <div class="game-hud">
           <div class="hud-buttons">
             <button id="exitGame">Cards</button>
-            <button id="showInstructions">Instructions</button>
+            <button id="showInstructions">How to play</button>
             <button id="startGame">Start / restart</button>
           </div>
           <div class="scoreline">
-            <div class="scorepill p2" id="p2Scorepill"><span class="score-label">P2 · WASD</span><span class="score-main"><span class="score-num" id="p2Score">10</span><span class="score-target"><span id="p2Target">LEFT</span></span></span></div>
-            <div id="gameStatus">Start a game. WASD + Space vs Arrows + Enter.</div>
-            <div class="scorepill p1" id="p1Scorepill"><span class="score-label">P1 · ARROWS</span><span class="score-main"><span class="score-num" id="p1Score">10</span><span class="score-target"><span id="p1Target">LEFT</span></span></span></div>
+            <div class="scorepill p2" id="p2Scorepill"><span class="score-label">P1 · WASD</span><span class="score-main"><span class="score-num" id="p2Score">10</span><span class="score-target"><span id="p2Target">LEFT</span></span></span></div>
+            <div id="gameStatus">Start a game. Player 1 uses WASD + Space. Player 2 uses arrows + Enter.</div>
+            <div class="scorepill p1" id="p1Scorepill"><span class="score-label">P2 · ARROWS</span><span class="score-main"><span class="score-num" id="p1Score">10</span><span class="score-target"><span id="p1Target">LEFT</span></span></span></div>
           </div>
           <div class="hud-options">
             <label class="small">Target</label><input id="targetScore" type="number" min="1" max="50" value="10" />
@@ -341,13 +364,13 @@
           <section class="middle-zone"><div class="game-card-slot" id="middleSlot"></div><div class="start-overlay hidden" id="startOverlay"><div class="start-panel"><button id="middleStart">START</button></div></div></section>
           <section class="players-row">
             <div class="player-arena p1" id="p1Panel">
-              <div class="player-head"><span class="player-name">Player 1 · Arrows</span><span class="selected-name" id="p1Selected">No symbol</span></div>
+              <div class="player-head"><span class="player-name">Player 2 · Arrows</span><span class="selected-name" id="p1Selected">No symbol</span></div>
               <div class="game-card-slot" id="p1Slot"></div>
               <div class="player-foot"><span class="keyhint">Arrows · Enter</span><div class="coolbar"><span id="p1Coolbar"></span></div><span class="cooltext" id="p1Cooltext"></span></div>
               <div class="match-flash"></div>
             </div>
             <div class="player-arena p2" id="p2Panel">
-              <div class="player-head"><span class="player-name">Player 2 · WASD</span><span class="selected-name" id="p2Selected">No symbol</span></div>
+              <div class="player-head"><span class="player-name">Player 1 · WASD</span><span class="selected-name" id="p2Selected">No symbol</span></div>
               <div class="game-card-slot" id="p2Slot"></div>
               <div class="player-foot"><span class="keyhint">WASD · Space</span><div class="coolbar"><span id="p2Coolbar"></span></div><span class="cooltext" id="p2Cooltext"></span></div>
               <div class="match-flash"></div>
@@ -372,7 +395,7 @@
               <div class="guide-arena">
                 <div class="guide-arena-card">
                   <div class="guide-control-card-slot" id="guideArenaLeft"></div>
-                  <div class="guide-arena-label">Player 2 - WASD</div>
+                  <div class="guide-arena-label">Player 1 - WASD</div>
                 </div>
                 <div class="guide-arena-card">
                   <div class="guide-control-card-slot" id="guideArenaMiddle"></div>
@@ -380,7 +403,7 @@
                 </div>
                 <div class="guide-arena-card">
                   <div class="guide-control-card-slot" id="guideArenaRight"></div>
-                  <div class="guide-arena-label">Player 1 - Arrows</div>
+                  <div class="guide-arena-label">Player 2 - Arrows</div>
                 </div>
               </div>
               <div class="guide-arena-note">Left player searches the middle card plus the left card. Right player searches the middle card plus the right card.</div>
@@ -396,26 +419,26 @@
             <div class="guide-card">
               <div><div class="guide-step">Step 2</div><div class="guide-title">Move your dot</div><div class="guide-copy">Left player uses WASD. Right player uses the arrow keys.</div></div>
               <div class="guide-players">
-                <div class="guide-player left">
+                <div class="guide-player left guide-motion-demo" tabindex="0">
                   <div class="guide-control-card-slot" id="guideWasdCard"></div>
-                  <div class="guide-keys"><span class="guide-key">W</span><span class="guide-key">A</span><span class="guide-key">S</span><span class="guide-key">D</span><span class="guide-dot p2"></span></div>
+                  <div class="guide-keys wasd" aria-label="WASD keys"><span class="guide-key top move-w">W</span><span class="guide-key move-a">A</span><span class="guide-key move-s">S</span><span class="guide-key move-d">D</span></div>
                 </div>
-                <div class="guide-player right">
+                <div class="guide-player right guide-motion-demo" tabindex="0">
                   <div class="guide-control-card-slot" id="guideArrowCard"></div>
-                  <div class="guide-keys"><span class="guide-key">&uarr;</span><span class="guide-key">&larr;</span><span class="guide-key">&darr;</span><span class="guide-key">&rarr;</span><span class="guide-dot"></span></div>
+                  <div class="guide-keys arrows" aria-label="Arrow keys"><span class="guide-key top move-up">&uarr;</span><span class="guide-key move-left">&larr;</span><span class="guide-key move-down">&darr;</span><span class="guide-key move-right">&rarr;</span></div>
                 </div>
               </div>
             </div>
             <div class="guide-card">
               <div><div class="guide-step">Step 3</div><div class="guide-title">Lock your answer</div><div class="guide-copy">When your dot is on the matching object, press your answer key.</div></div>
               <div class="guide-players answer-demo">
-                <div class="guide-player left">
-                  <div class="guide-player-label">Player 2</div>
+                <div class="guide-player left guide-answer-demo" tabindex="0">
+                  <div class="guide-player-label">Player 1</div>
                   <div class="guide-control-card-slot" id="guideAnswerLeft"></div>
                   <div class="answer-row"><span>Answer with</span><span class="guide-key wide">Space</span><span class="answer-mark ok">OK</span></div>
                 </div>
-                <div class="guide-player right">
-                  <div class="guide-player-label">Player 1</div>
+                <div class="guide-player right guide-answer-demo" tabindex="0">
+                  <div class="guide-player-label">Player 2</div>
                   <div class="guide-control-card-slot" id="guideAnswerRight"></div>
                   <div class="answer-row"><span>Answer with</span><span class="guide-key wide">Enter</span><span class="answer-mark ok">OK</span></div>
                 </div>
@@ -423,14 +446,17 @@
             </div>
             <div class="guide-card">
               <div><div class="guide-step">Step 4</div><div class="guide-title">Wrong guess cooldown</div><div class="guide-copy">If your dot is on an object that is not the shared match, you pause briefly before trying again.</div></div>
-              <div class="cooldown-demo">
-                <div class="cooldown-label">Wrong object selected</div>
+              <div class="cooldown-demo" tabindex="0">
                 <div class="cooldown-cards">
-                  <div class="guide-control-card-slot" id="guideWrongPlayer"></div>
-                  <div class="cooldown-arrow">not on</div>
-                  <div class="guide-control-card-slot" id="guideWrongMiddle"></div>
+                  <div class="cooldown-card-wrap">
+                    <div class="guide-control-card-slot" id="guideWrongPlayer"></div>
+                    <div class="coolbar"><span></span></div>
+                    <div class="guide-cooltime" aria-live="polite"></div>
+                  </div>
+                  <div class="cooldown-card-wrap">
+                    <div class="guide-control-card-slot" id="guideWrongMiddle"></div>
+                  </div>
                 </div>
-                <div class="coolbar"><span style="transform:scaleX(.58)"></span></div>
               </div>
             </div>
           </div>
@@ -446,8 +472,8 @@
 7 + 1 = 8 symbols per card</pre>
         <p>The browser creates the cards automatically from modular arithmetic. It starts with 49 grid symbols plus 8 “infinity” symbols. Lines across the grid become cards. Two lines always meet in exactly one point, so two cards always share exactly one symbol.</p>
         <h3>Keyboard controls</h3>
-        <pre>Left player: W/A/S/D moves the dot, Space answers
-Right player: Arrow keys move the dot, Enter answers
+        <pre>Player 1 left side: W/A/S/D moves the dot, Space answers
+Player 2 right side: Arrow keys move the dot, Enter answers
 Wrong answers: escalating cooldown for that player only
 No symbol selected: answer key does nothing</pre>
         <h3>Symbols</h3>
@@ -1017,6 +1043,7 @@ No symbol selected: answer key does nothing</pre>
       const el = document.createElement("div");
       el.className = `match-card ${opts.className || ""}`.trim();
       el.setAttribute("aria-label", `Card ${card.id + 1}`);
+      el.dataset.cardId = String(card.id);
       el._symbolEls = new Map();
       for(const item of layoutForCard(card)){
         const s = symbols[item.symbolId];
@@ -1024,6 +1051,7 @@ No symbol selected: answer key does nothing</pre>
         symbolEl.className = "symbol";
         if(opts.selectedSymbolId === item.symbolId) symbolEl.classList.add(opts.p2 ? "p2selected" : "selected");
         if(opts.hintSymbolId === item.symbolId) symbolEl.classList.add("sharedhint");
+        if(opts.altHintSymbolId === item.symbolId) symbolEl.classList.add("sharedhint2");
         if(opts.wrongSymbolId === item.symbolId) symbolEl.classList.add("wronghint");
         symbolEl.style.left = item.x + "%";
         symbolEl.style.top = item.y + "%";
@@ -1130,15 +1158,180 @@ No symbol selected: answer key does nothing</pre>
     function renderSymbols(){
       document.getElementById("symbolList").innerHTML = activeSymbols().map(s => `<div class="symbol-chip"><img class="e" src="${symbolImageUrl(s)}" alt="${s.name}" loading="lazy" decoding="async"><span><span class="n">${s.name}</span><br><span class="id">symbol ${s.id + 1}</span></span></div>`).join("");
     }
+    const GUIDE_MOTION_POINTS = [
+      { x:50, y:50 },
+      { x:34, y:34 },
+      { x:50, y:34 },
+      { x:66, y:34 },
+      { x:50, y:50 },
+      { x:66, y:66 },
+      { x:50, y:66 },
+      { x:34, y:66 },
+      { x:34, y:50 },
+      { x:50, y:50 }
+    ];
+    const GUIDE_MOVE_MS = 430;
+    const GUIDE_PAUSE_MS = 110;
+    function guideKeysForMove(from, to){
+      const keys = [];
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      if(dx < -0.5) keys.push("left");
+      if(dx > 0.5) keys.push("right");
+      if(dy < -0.5) keys.push("up");
+      if(dy > 0.5) keys.push("down");
+      return keys;
+    }
+    function setGuideKeyState(panel, keys){
+      const active = new Set(keys);
+      panel.querySelectorAll(".guide-key").forEach(key => {
+        const on =
+          (active.has("up") && (key.classList.contains("move-w") || key.classList.contains("move-up"))) ||
+          (active.has("down") && (key.classList.contains("move-s") || key.classList.contains("move-down"))) ||
+          (active.has("left") && (key.classList.contains("move-a") || key.classList.contains("move-left"))) ||
+          (active.has("right") && (key.classList.contains("move-d") || key.classList.contains("move-right")));
+        key.classList.toggle("active", on);
+      });
+      panel.dataset.activeKeys = keys.join(",");
+    }
+    function updateGuideMotionPanel(panel, elapsed){
+      const card = panel.querySelector(".guide-motion-card");
+      const dot = card?.querySelector(".cursor-dot");
+      if(!card || !dot) return;
+      const segmentMs = GUIDE_MOVE_MS + GUIDE_PAUSE_MS;
+      const totalMs = (GUIDE_MOTION_POINTS.length - 1) * segmentMs;
+      const t = ((elapsed % totalMs) + totalMs) % totalMs;
+      const segment = Math.min(GUIDE_MOTION_POINTS.length - 2, Math.floor(t / segmentMs));
+      const local = t - segment * segmentMs;
+      const from = GUIDE_MOTION_POINTS[segment];
+      const to = GUIDE_MOTION_POINTS[segment + 1];
+      const moving = local < GUIDE_MOVE_MS;
+      const p = moving ? local / GUIDE_MOVE_MS : 1;
+      const x = from.x + (to.x - from.x) * p;
+      const y = from.y + (to.y - from.y) * p;
+      dot.style.left = `${x.toFixed(2)}%`;
+      dot.style.top = `${y.toFixed(2)}%`;
+      const keys = moving ? guideKeysForMove(from, to) : [];
+      setGuideKeyState(panel, keys);
+      panel.dataset.dotX = x.toFixed(2);
+      panel.dataset.dotY = y.toFixed(2);
+      panel.dataset.dotDir = keys.join(",");
+    }
+    function resetGuideMotionPanel(panel){
+      const dot = panel.querySelector(".guide-motion-card .cursor-dot");
+      if(dot){
+        dot.style.left = "50%";
+        dot.style.top = "50%";
+      }
+      setGuideKeyState(panel, []);
+      panel.dataset.dotX = "50";
+      panel.dataset.dotY = "50";
+      panel.dataset.dotDir = "";
+    }
+    function setupGuideMotionControls(){
+      document.querySelectorAll(".guide-player").forEach(panel => {
+        if(!panel.querySelector(".guide-motion-card") || panel._guideMotionBound) return;
+        panel._guideMotionBound = true;
+        let raf = null;
+        let start = 0;
+        const tick = now => {
+          updateGuideMotionPanel(panel, now - start);
+          raf = requestAnimationFrame(tick);
+        };
+        const startMotion = () => {
+          if(raf) cancelAnimationFrame(raf);
+          start = performance.now();
+          updateGuideMotionPanel(panel, 0);
+          raf = requestAnimationFrame(tick);
+        };
+        const stopMotion = () => {
+          if(raf) cancelAnimationFrame(raf);
+          raf = null;
+          resetGuideMotionPanel(panel);
+        };
+        panel.addEventListener("pointerenter", startMotion);
+        panel.addEventListener("pointerleave", stopMotion);
+        panel.addEventListener("focusin", startMotion);
+        panel.addEventListener("focusout", event => {
+          if(!panel.contains(event.relatedTarget)) stopMotion();
+        });
+        resetGuideMotionPanel(panel);
+      });
+    }
+    window.__sampleGuideMotion = elapsed => {
+      const points = GUIDE_MOTION_POINTS;
+      const segmentMs = GUIDE_MOVE_MS + GUIDE_PAUSE_MS;
+      const totalMs = (points.length - 1) * segmentMs;
+      const t = ((elapsed % totalMs) + totalMs) % totalMs;
+      const segment = Math.min(points.length - 2, Math.floor(t / segmentMs));
+      const local = t - segment * segmentMs;
+      const from = points[segment];
+      const to = points[segment + 1];
+      const moving = local < GUIDE_MOVE_MS;
+      const p = moving ? local / GUIDE_MOVE_MS : 1;
+      return {
+        x: from.x + (to.x - from.x) * p,
+        y: from.y + (to.y - from.y) * p,
+        keys: moving ? guideKeysForMove(from, to) : []
+      };
+    };
+    function setupCooldownDemoReplay(){
+      const demo = document.querySelector(".cooldown-demo");
+      if(!demo || demo._cooldownReplayBound) return;
+      demo._cooldownReplayBound = true;
+      let timer = null;
+      let frame = null;
+      const play = () => {
+        if(timer) clearTimeout(timer);
+        if(frame) cancelAnimationFrame(frame);
+        const time = demo.querySelector(".guide-cooltime");
+        if(time) time.textContent = "";
+        demo.classList.remove("playing", "done");
+        void demo.offsetWidth;
+        demo.classList.add("playing");
+        const startedAt = performance.now();
+        const cooldownStart = 1930;
+        const cooldownMs = 2400;
+        const tick = now => {
+          const elapsed = now - startedAt;
+          if(time){
+            if(elapsed < cooldownStart){
+              time.textContent = "";
+            }else{
+              const left = Math.max(0, cooldownMs - (elapsed - cooldownStart));
+              time.textContent = `${(left / 1000).toFixed(1)}s`;
+            }
+          }
+          if(elapsed < 4240) frame = requestAnimationFrame(tick);
+        };
+        frame = requestAnimationFrame(tick);
+        timer = setTimeout(() => {
+          if(frame) cancelAnimationFrame(frame);
+          frame = null;
+          if(time) time.textContent = "0.0s";
+          demo.classList.remove("playing");
+          demo.classList.add("done");
+          timer = null;
+        }, 4240);
+      };
+      demo.addEventListener("pointerenter", play);
+      demo.addEventListener("focusin", play);
+    }
     function renderGuideExamples(){
       const ids = ["guideArenaMiddle","guideArenaLeft","guideArenaRight","guideMatchMiddle","guideMatchPlayer","guideWasdCard","guideArrowCard","guideAnswerLeft","guideAnswerRight","guideWrongPlayer","guideWrongMiddle"];
       const els = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
       if(!els.guideMatchMiddle) return;
+      document.querySelector(".cooldown-demo")?.classList.remove("playing", "done");
+      const cooltime = document.querySelector(".guide-cooltime");
+      if(cooltime) cooltime.textContent = "";
       const deck = activeDeck();
-      const middle = deck[0];
-      const left = deck.find(card => card.id !== middle.id && sharedSymbolIds(middle, card).length === 1) || deck[1];
-      const right = deck.find(card => card.id !== middle.id && card.id !== left.id && sharedSymbolIds(middle, card).length === 1) || deck[2];
+      const modeSeed = deckMode === "quick31" ? 31 : deckMode === "classic55" ? 55 : 57;
+      const startIndex = Math.abs((layoutSalt ^ (modeSeed * 2654435761)) >>> 0) % deck.length;
+      const middle = deck[startIndex];
+      const partners = deck.filter(card => card.id !== middle.id && sharedSymbolIds(middle, card).length === 1);
+      const left = partners[0] || deck[(startIndex + 1) % deck.length];
       const sharedLeft = sharedSymbolIds(middle, left)[0];
+      const right = partners.find(card => card.id !== left.id && sharedSymbolIds(middle, card)[0] !== sharedLeft) || partners[1] || deck[(startIndex + 2) % deck.length];
       const sharedRight = sharedSymbolIds(middle, right)[0];
       const wrongLeft = left.symbols.find(id => id !== sharedLeft && !middle.symbols.includes(id)) ?? left.symbols.find(id => id !== sharedLeft) ?? left.symbols[0];
       const guidePos = (card, symbolId, fallback = { x:50, y:50 }) => {
@@ -1157,39 +1350,29 @@ No symbol selected: answer key does nothing</pre>
         }
         return cardEl;
       };
-      const addPath = (cardEl, from, to, cls) => {
-        if(!cardEl) return;
-        cardEl.style.setProperty("--guide-target-x", to.x);
-        cardEl.style.setProperty("--guide-target-y", to.y);
-        const dx = to.x - from.x;
-        const dy = to.y - from.y;
-        const path = document.createElement("span");
-        path.className = `guide-motion-path ${cls}`;
-        path.style.left = `${from.x}%`;
-        path.style.top = `${from.y}%`;
-        path.style.width = `${Math.hypot(dx, dy).toFixed(2)}%`;
-        path.style.transform = `rotate(${Math.atan2(dy, dx) * 180 / Math.PI}deg)`;
-        cardEl.appendChild(path);
-      };
       const leftTarget = guidePos(left, sharedLeft, { x:58, y:42 });
       const rightTarget = guidePos(right, sharedRight, { x:42, y:58 });
-      setSlot("guideArenaMiddle", middle, { className:"guide-overview-card guide-overview-middle", hintSymbolId:sharedLeft });
+      setSlot("guideArenaMiddle", middle, { className:"guide-overview-card guide-overview-middle", hintSymbolId:sharedLeft, altHintSymbolId:sharedRight });
       setSlot("guideArenaLeft", left, { className:"guide-overview-card", hintSymbolId:sharedLeft });
-      setSlot("guideArenaRight", right, { className:"guide-overview-card", hintSymbolId:sharedRight });
+      setSlot("guideArenaRight", right, { className:"guide-overview-card", altHintSymbolId:sharedRight });
       setSlot("guideMatchMiddle", middle, { className:"guide-example-card", hintSymbolId:sharedLeft });
       setSlot("guideMatchPlayer", left, { className:"guide-example-card", hintSymbolId:sharedLeft });
-      const wasdCard = setSlot("guideWasdCard", left, { className:"guide-control-card guide-motion-card", cursor:{ x:32, y:72 }, p2:true, hintSymbolId:sharedLeft });
-      addPath(wasdCard, { x:32, y:72 }, leftTarget, "p2");
-      wasdCard?.style.setProperty("--guide-dot-x", "32");
-      wasdCard?.style.setProperty("--guide-dot-y", "72");
-      const arrowCard = setSlot("guideArrowCard", right, { className:"guide-control-card guide-motion-card", cursor:{ x:72, y:34 }, hintSymbolId:sharedRight });
-      addPath(arrowCard, { x:72, y:34 }, rightTarget, "p1");
-      arrowCard?.style.setProperty("--guide-dot-x", "72");
-      arrowCard?.style.setProperty("--guide-dot-y", "34");
-      setSlot("guideAnswerLeft", left, { className:"guide-control-card", cursor:leftTarget, p2:true, hintSymbolId:sharedLeft, selectedSymbolId:sharedLeft });
-      setSlot("guideAnswerRight", right, { className:"guide-control-card", cursor:rightTarget, hintSymbolId:sharedRight, selectedSymbolId:sharedRight });
-      setSlot("guideWrongPlayer", left, { className:"guide-control-card", cursor:guidePos(left, wrongLeft, { x:35, y:65 }), p2:true, wrongSymbolId:wrongLeft, selectedSymbolId:wrongLeft });
-      setSlot("guideWrongMiddle", middle, { className:"guide-control-card", hintSymbolId:sharedLeft });
+      setSlot("guideWasdCard", left, { className:"guide-control-card guide-motion-card", cursor:{ x:50, y:50 }, p2:true });
+      setSlot("guideArrowCard", right, { className:"guide-control-card guide-motion-card", cursor:{ x:50, y:50 } });
+      setSlot("guideAnswerLeft", left, { className:"guide-control-card guide-answer-card", cursor:leftTarget, p2:true, hintSymbolId:sharedLeft, selectedSymbolId:sharedLeft });
+      setSlot("guideAnswerRight", right, { className:"guide-control-card guide-answer-card", cursor:rightTarget, hintSymbolId:sharedRight, selectedSymbolId:sharedRight });
+      const wrongTarget = guidePos(left, wrongLeft, { x:58, y:56 });
+      const wrongPlayerCard = setSlot("guideWrongPlayer", left, { className:"guide-control-card guide-cooldown-card guide-wrong-card", cursor:{ x:50, y:50 }, p2:true, wrongSymbolId:wrongLeft, hintSymbolId:sharedLeft });
+      if(wrongPlayerCard){
+        wrongPlayerCard.style.setProperty("--guide-wrong-x", `${wrongTarget.x}%`);
+        wrongPlayerCard.style.setProperty("--guide-wrong-y", `${wrongTarget.y}%`);
+      }
+      setSlot("guideWrongMiddle", middle, { className:"guide-control-card guide-cooldown-card", hintSymbolId:sharedLeft });
+      setupGuideMotionControls();
+      document.querySelectorAll(".guide-player").forEach(panel => {
+        if(panel.querySelector(".guide-motion-card")) resetGuideMotionPanel(panel);
+      });
+      setupCooldownDemoReplay();
     }
     function setTab(name){
       document.querySelectorAll(".tabbtn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
@@ -1217,9 +1400,30 @@ No symbol selected: answer key does nothing</pre>
     game.p2.coolText = document.getElementById("p2Cooltext");
     game.p1.coolBar = document.getElementById("p1Coolbar");
     game.p2.coolBar = document.getElementById("p2Coolbar");
+    const refillState = {
+      active:false,
+      started:false,
+      complete:true,
+      scores:{p1:0,p2:0},
+      timers:[],
+      startTimer:null,
+      countdownTimer:null,
+      promise:null,
+      plans:{ p1:null, p2:null },
+      finalCardIds:{ p1:null, p2:null },
+      initialActiveCardIds:{ p1:null, p2:null },
+      committedCardIds:{ p1:null, p2:null },
+      hiddenRefreshStamp:0
+    };
 
     function now(){ return performance.now(); }
     function playerLocked(player){ return now() < player.cooldownUntil; }
+    function displayPlayerName(which){ return which === "p2" ? "Player 1" : "Player 2"; }
+    function displayScore(scoreLike = game){
+      const p1 = scoreLike.p2 && typeof scoreLike.p2 === "object" ? scoreLike.p2.score : scoreLike.p2;
+      const p2 = scoreLike.p1 && typeof scoreLike.p1 === "object" ? scoreLike.p1.score : scoreLike.p1;
+      return `${p1}-${p2}`;
+    }
     function setStatus(text){ document.getElementById("gameStatus").textContent = text; }
     function updateGuideVisibility(){
       const screen = document.getElementById("tab-game");
@@ -1399,6 +1603,26 @@ No symbol selected: answer key does nothing</pre>
       warmCardSymbolsIdle(game.middle);
       return slot.appendChild(createCardElement(game.middle,{ className:`middle-card ${reveal ? "reveal" : ""}`, eagerImages:true }));
     }
+    function flipMiddleToBack(){
+      const slot = document.getElementById("middleSlot");
+      const current = slot.querySelector(".match-card");
+      hideStartOverlay();
+      document.body.classList.add("middle-flipping-back");
+      const mountBack = () => {
+        slot.innerHTML = "";
+        const back = document.createElement("div");
+        back.className = "match-card card-back flip-in-back";
+        slot.appendChild(back);
+      };
+      setTimeout(() => document.body.classList.remove("middle-flipping-back"), 680);
+      if(!current || current.classList.contains("card-back")){
+        mountBack();
+        return 380;
+      }
+      current.classList.add("flip-out");
+      setTimeout(mountBack, 210);
+      return 590;
+    }
     function makePileElement(which){
       const pile = document.createElement("div");
       pile.className = "card-pile";
@@ -1416,9 +1640,11 @@ No symbol selected: answer key does nothing</pre>
     }
     function pileLayerStyle(which, depth, cooling = false){
       const side = which === "p1" ? 1 : -1;
-      const fan = Math.sin(depth * 1.73) * 1.15;
-      const dx = side * (fan + depth * (cooling ? .22 : .62));
-      const dy = depth * (cooling ? .42 : 1.62) + Math.cos(depth * 1.31) * .34;
+      const fan = Math.sin(depth * 1.73) * (cooling ? .38 : 1.15);
+      const dx = side * (fan + depth * (cooling ? .18 : .62));
+      const dy = cooling
+        ? .2 + depth * .12 + Math.max(0, Math.cos(depth * 1.31) * .04)
+        : depth * 1.62 + Math.cos(depth * 1.31) * .34;
       const rot = side * (Math.sin(depth * .91) * .28 + depth * (cooling ? .04 : .11));
       const scale = 1 - Math.min(cooling ? .017 : .033, depth * (cooling ? .00125 : .0030));
       const opacity = Math.max(.70, .985 - depth * .024);
@@ -1494,6 +1720,285 @@ No symbol selected: answer key does nothing</pre>
         updatePile(which);
       }, duration + 420);
       return duration + 420;
+    }
+    function clearRefillVisuals(resetState = true){
+      refillState.timers.forEach(timer => clearTimeout(timer));
+      refillState.timers = [];
+      if(refillState.startTimer) clearTimeout(refillState.startTimer);
+      if(refillState.countdownTimer) clearTimeout(refillState.countdownTimer);
+      refillState.startTimer = null;
+      refillState.countdownTimer = null;
+      document.querySelectorAll(".refill-card").forEach(el => el.remove());
+      document.querySelectorAll(".refill-layer").forEach(el => el.remove());
+      document.querySelectorAll(".player-arena.refilling").forEach(el => el.classList.remove("refilling"));
+      refillState.plans = { p1:null, p2:null };
+      refillState.finalCardIds = { p1:null, p2:null };
+      refillState.initialActiveCardIds = { p1:null, p2:null };
+      refillState.committedCardIds = { p1:null, p2:null };
+      if(resetState){
+        refillState.active = false;
+        refillState.started = false;
+        refillState.complete = true;
+        refillState.promise = null;
+      }
+    }
+    function setPileVisibleCount(which, visibleCount){
+      const slot = document.getElementById(which === "p1" ? "p1Slot" : "p2Slot");
+      const pile = slot?.querySelector(".card-pile");
+      if(!pile) return;
+      const visible = Math.max(0, Math.min(pile.children.length, Math.round(visibleCount)));
+      pile.querySelectorAll(".pile-layer").forEach((layer, idx) => {
+        const show = idx < visible;
+        if(show){
+          const style = pileLayerStyle(which, idx + 1, false);
+          layer.style.opacity = style.opacity;
+          layer.style.transform = style.transform;
+        } else {
+          layer.style.opacity = "0";
+        layer.style.transform = `translate3d(0,${(12 + idx * .45).toFixed(1)}px,0) scale(.995)`;
+        }
+      });
+    }
+    function ensureRefillLayer(which){
+      const slot = document.getElementById(which === "p1" ? "p1Slot" : "p2Slot");
+      if(!slot) return null;
+      let layer = slot.querySelector(".refill-layer");
+      if(!layer){
+        layer = document.createElement("div");
+        layer.className = "refill-layer";
+        layer.dataset.refillFor = which;
+        slot.appendChild(layer);
+      }
+      return layer;
+    }
+    function primePileRefillVisuals(scores){
+      for(const which of ["p1","p2"]){
+        const baseVisible = Math.max(0, Math.min(9, game.target - 1 - Math.max(0, scores[which] || 0)));
+        setPileVisibleCount(which, baseVisible);
+      }
+    }
+    function buildRefillPlans(counts, bases){
+      const plans = { p1:null, p2:null };
+      const usedIds = new Set([game.middle?.id, game.p1.card?.id, game.p2.card?.id].filter(id => id != null));
+      for(const which of ["p1","p2"]){
+        const count = Math.max(0, Math.round(counts[which] || 0));
+        const seed = ((Date.now() + layoutSalt + (which === "p1" ? 0x51f15e : 0xa2270f) + count * 997) >>> 0);
+        const source = shuffle(activeDeck(), seed);
+        const cards = [];
+        for(let i = 0; i < count; i++){
+          const candidate = source.find(card => !usedIds.has(card.id) && !cards.some(existing => existing.id === card.id))
+            || source.find(card => !cards.some(existing => existing.id === card.id))
+            || source[i % Math.max(1, source.length)];
+          if(candidate){
+            cards.push(candidate);
+            usedIds.add(candidate.id);
+            warmCardSymbolsIdle(candidate);
+          }
+        }
+        const finalCard = count > 0 ? cards[count - 1] : game[which].card;
+        plans[which] = {
+          which,
+          count,
+          baseVisible:bases[which],
+          finalIndex:count - 1,
+          finalCard,
+          cards,
+          committed:count === 0
+        };
+      }
+      return plans;
+    }
+    function commitRefillTopCard(which, el, card, plan){
+      if(!el || !card || !plan || plan.committed) return;
+      const player = game[which];
+      const slot = document.getElementById(which === "p1" ? "p1Slot" : "p2Slot");
+      if(!slot) return;
+      const layer = el.closest(".refill-layer");
+      const oldEl = player.cardEl;
+      player.card = card;
+      player.cursor = { x:50, y:50 };
+      player.lastSelected = null;
+      player.selectedSymbolId = null;
+      if(player.nextCardEl) player.nextCardEl.remove();
+      player.nextCardEl = null;
+      player.nextPreparedCard = null;
+      el.classList.remove("refill-card", "landing", "settling", "p1", "p2");
+      el.classList.add("active-player-card", "ready", "refill-committed");
+      el.dataset.cardId = String(card.id);
+      el.dataset.committedFromRefill = "true";
+      el.style.removeProperty("--refill-z");
+      el.style.removeProperty("--refill-x");
+      el.style.removeProperty("--refill-y");
+      el.style.removeProperty("--refill-rot");
+      el.style.removeProperty("--refill-arc-x");
+      el.style.removeProperty("--refill-arc-y");
+      el.style.removeProperty("--refill-land-rot");
+      el.style.removeProperty("--settle-rot");
+      el.style.zIndex = "";
+      el.style.opacity = "";
+      el.style.transform = "";
+      el.style.transition = "";
+      if(layer){
+        layer.querySelectorAll(".refill-card").forEach(cardEl => {
+          if(cardEl !== el) cardEl.remove();
+        });
+      }
+      slot.appendChild(el);
+      if(layer && !layer.querySelector(".refill-card")) layer.remove();
+      if(oldEl && oldEl !== el) oldEl.remove();
+      player.cardEl = el;
+      player.cardPx = el.clientWidth || player.cardPx || 400;
+      setPileVisibleCount(which, Math.max(0, Math.min(9, game.target - 1)));
+      updateDot(which);
+      el.querySelectorAll(".symbol.selected,.symbol.p2selected").forEach(symbol => symbol.classList.remove("selected", "p2selected"));
+      if(player.selectedText) player.selectedText.textContent = "";
+      plan.committed = true;
+      refillState.committedCardIds[which] = String(card.id);
+      setTimeout(() => el.classList.remove("refill-committed"), 300);
+    }
+    function coverOlderRefillCards(layer, currentIndex){
+      if(!layer) return;
+      layer.querySelectorAll(".refill-card").forEach(cardEl => {
+        const index = Number(cardEl.dataset.refillIndex);
+        if(Number.isFinite(index) && index < currentIndex){
+          cardEl.classList.remove("landing", "settling");
+          cardEl.classList.add("covered");
+        }
+      });
+    }
+    function refillVisualCard(which, index, plan){
+      const slot = document.getElementById(which === "p1" ? "p1Slot" : "p2Slot");
+      if(!slot || !plan || !plan.cards[index]) return;
+      const side = which === "p1" ? 1 : -1;
+      const slotRect = slot.getBoundingClientRect();
+      const screenExit = side < 0
+        ? -(slotRect.left + slotRect.width + 130 + index * 20)
+        : (window.innerWidth - slotRect.left + 130 + index * 20);
+      const card = plan.cards[index];
+      const isFinal = index === plan.finalIndex;
+      const layer = ensureRefillLayer(which);
+      if(!layer) return;
+      const el = createCardElement(card, { cursor:isFinal ? { x:50, y:50 } : null, p2:which === "p2", className:`refill-card ${which}`, eagerImages:true });
+      el.dataset.refillFor = which;
+      el.dataset.refillIndex = String(index);
+      el.dataset.refillFinal = isFinal ? "true" : "false";
+      el.style.setProperty("--refill-z", String(40 + index));
+      el.style.zIndex = String(40 + index);
+      el.style.setProperty("--refill-x", `${screenExit.toFixed(1)}px`);
+      el.style.setProperty("--refill-y", `${(-74 - (index % 3) * 7).toFixed(1)}px`);
+      el.style.setProperty("--refill-rot", `${side * (11 + (index % 4) * 1.1)}deg`);
+      el.style.setProperty("--refill-arc-x", `${side * (34 + (index % 3) * 3)}px`);
+      el.style.setProperty("--refill-arc-y", `${(-10 - (index % 2) * 3).toFixed(1)}px`);
+      el.style.setProperty("--refill-land-rot", `${side * (.35 + (index % 3) * .08)}deg`);
+      layer.appendChild(el);
+      void el.offsetWidth;
+      requestAnimationFrame(() => el.classList.add("landing"));
+      const settleTimer = setTimeout(() => {
+        el.classList.add("settling");
+        el.classList.remove("landing");
+        coverOlderRefillCards(layer, index);
+      }, 340);
+      if(isFinal){
+        const commitTimer = setTimeout(() => commitRefillTopCard(which, el, card, plan), 560);
+        refillState.timers.push(settleTimer, commitTimer);
+      } else {
+        refillState.timers.push(settleTimer);
+      }
+    }
+    function refreshHiddenDeckAfterRefill(){
+      const avoid = new Set([game.middle?.id, game.p1.card?.id, game.p2.card?.id].filter(id => id != null));
+      const fresh = shuffle(activeDeck().filter(card => !avoid.has(card.id)), (Date.now() ^ layoutSalt ^ 0x9e3779b9) >>> 0);
+      if(fresh.length) game.deck = fresh;
+      preparePreloadedCard("p1");
+      preparePreloadedCard("p2");
+      refillState.hiddenRefreshStamp += 1;
+    }
+    function startFaceUpRefill(){
+      if(!refillState.active || refillState.started) return refillState.promise || Promise.resolve();
+      if(refillState.startTimer){
+        clearTimeout(refillState.startTimer);
+        refillState.startTimer = null;
+      }
+      refillState.started = true;
+      refillState.complete = false;
+      const cadence = 260;
+      const counts = {
+        p1:Math.max(0, Math.min(game.target, Math.round(refillState.scores.p1 || 0))),
+        p2:Math.max(0, Math.min(game.target, Math.round(refillState.scores.p2 || 0)))
+      };
+      const bases = {
+        p1:Math.max(0, Math.min(9, game.target - 1 - counts.p1)),
+        p2:Math.max(0, Math.min(9, game.target - 1 - counts.p2))
+      };
+      refillState.initialActiveCardIds = {
+        p1:game.p1.card ? String(game.p1.card.id) : null,
+        p2:game.p2.card ? String(game.p2.card.id) : null
+      };
+      refillState.plans = buildRefillPlans(counts, bases);
+      refillState.finalCardIds = {
+        p1:refillState.plans.p1?.finalCard ? String(refillState.plans.p1.finalCard.id) : null,
+        p2:refillState.plans.p2?.finalCard ? String(refillState.plans.p2.finalCard.id) : null
+      };
+      refillState.committedCardIds = {
+        p1:counts.p1 === 0 ? refillState.initialActiveCardIds.p1 : null,
+        p2:counts.p2 === 0 ? refillState.initialActiveCardIds.p2 : null
+      };
+      for(const which of ["p1","p2"]){
+        game[which].panel.classList.add("refilling");
+        ensureRefillLayer(which);
+        setPileVisibleCount(which, bases[which]);
+        for(let i = 0; i < counts[which]; i++){
+          const timer = setTimeout(() => refillVisualCard(which, i, refillState.plans[which]), i * cadence);
+          refillState.timers.push(timer);
+        }
+      }
+      const duration = Math.max(counts.p1, counts.p2) * cadence + 900;
+      refillState.promise = new Promise(resolve => {
+        const doneTimer = setTimeout(() => {
+          document.querySelectorAll(".refill-layer .refill-card").forEach(el => el.remove());
+          document.querySelectorAll(".refill-layer").forEach(el => el.remove());
+          game.p1.panel.classList.remove("refilling");
+          game.p2.panel.classList.remove("refilling");
+          updatePiles();
+          refreshHiddenDeckAfterRefill();
+          refillState.active = false;
+          refillState.started = false;
+          refillState.complete = true;
+          refillState.promise = null;
+          resolve();
+        }, duration);
+        refillState.timers.push(doneTimer);
+      });
+      return refillState.promise;
+    }
+    function schedulePostWinRefill(scores, delay = 1000){
+      clearRefillVisuals(true);
+      refillState.active = true;
+      refillState.started = false;
+      refillState.complete = false;
+      refillState.scores = { p1:scores.p1 || 0, p2:scores.p2 || 0 };
+      primePileRefillVisuals(refillState.scores);
+      refillState.startTimer = setTimeout(() => startFaceUpRefill(), delay);
+      return refillState;
+    }
+    function handleStartPressed(){
+      if(refillState.active && !refillState.complete){
+        document.getElementById("middleStart").classList.add("hidden");
+        startFaceUpRefill();
+        if(!refillState.countdownTimer){
+          refillState.countdownTimer = setTimeout(() => {
+            refillState.countdownTimer = null;
+            beginCountdown();
+          }, 500);
+        }
+        return;
+      }
+      if(game.ended){
+        setupGame(false);
+        requestAnimationFrame(beginCountdown);
+      } else {
+        beginCountdown();
+      }
     }
     function nextDeckCardForPreload(which){
       const player = game[which];
@@ -1614,6 +2119,7 @@ No symbol selected: answer key does nothing</pre>
     }
     function setupGame(switchTab = true, opts = {}){
       clearCountdown();
+      if(!opts.preserveRefill) clearRefillVisuals(true);
       game.target = Math.max(1, Math.min(50, Number(document.getElementById("targetScore").value) || 10));
       const seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
       game.deck = shuffle(activeDeck(), seed);
@@ -1642,7 +2148,7 @@ No symbol selected: answer key does nothing</pre>
       updateCooldownUi("p1");
       updateCooldownUi("p2");
       showCleanStart();
-      setStatus("Press START on the middle card. WASD left, arrows right.");
+      setStatus("Press START on the middle card. Player 1 uses WASD. Player 2 uses arrows.");
       if(switchTab) setTab("game");
     }
     function beginCountdown(){
@@ -1671,7 +2177,7 @@ No symbol selected: answer key does nothing</pre>
             hidePlayCountdown();
             mountMiddleCard(false, true);
             updateGuideVisibility();
-            setStatus("Go! Shared symbol, then answer. WASD left · arrows right.");
+            setStatus("Go! Shared symbol, then answer. Player 1 WASD · Player 2 arrows.");
           }, 520);
         }
       };
@@ -1794,14 +2300,14 @@ No symbol selected: answer key does nothing</pre>
       return duration;
     }
     function showWin(which){
-      const playerName = which === "p1" ? "Player 1" : "Player 2";
+      const playerName = displayPlayerName(which);
       const refillScores = { p1:game.p1.score, p2:game.p2.score };
       game.p1.panel.classList.remove("winner");
       game.p2.panel.classList.remove("winner");
       playSound("win");
       const overlay = document.createElement("div");
       overlay.className = "win-overlay";
-      overlay.innerHTML = `<div class="win-card"><span class="win-title">${playerName} WINS!</span><span class="win-sub">Final score ${game.p1.score}-${game.p2.score}</span></div>`;
+      overlay.innerHTML = `<div class="win-card"><span class="win-title">${playerName} WINS!</span><span class="win-sub">Final score ${displayScore(game)}</span></div>`;
       for(let i = 0; i < 44; i++){
         const bit = document.createElement("div");
         bit.className = "win-confetti";
@@ -1818,26 +2324,21 @@ No symbol selected: answer key does nothing</pre>
       setTimeout(() => {
         game.p1.panel.classList.add("reset-fade");
         game.p2.panel.classList.add("reset-fade");
-        mountMiddleCard(true);
+        flipMiddleToBack();
         overlay.classList.add("leaving");
       }, 1550);
       setTimeout(() => {
         setupGame(false, { preserveWinOverlay:true });
         game.p1.panel.classList.add("reset-fade");
         game.p2.panel.classList.add("reset-fade");
-        setStatus(`${playerName} wins! Final score ${refillScores.p1}–${refillScores.p2}.`);
+        setStatus(`${playerName} wins! Final score ${displayScore(refillScores)}.`);
       }, 2250);
       setTimeout(() => {
         overlay.remove();
         game.p1.panel.classList.remove("reset-fade");
         game.p2.panel.classList.remove("reset-fade");
-        const p1Duration = animatePileRefill("p1", refillScores.p1);
-        const p2Duration = animatePileRefill("p2", refillScores.p2);
-        const doneAfter = Math.max(p1Duration || 0, p2Duration || 0);
-        setTimeout(() => {
-          updatePiles();
-          setStatus("Press START on the middle card. WASD left, arrows right.");
-        }, doneAfter + 40);
+        schedulePostWinRefill(refillScores, 1000);
+        setStatus("Press START on the middle card. Player 1 uses WASD. Player 2 uses arrows.");
       }, 2860);
     }
     function answer(which){
@@ -1848,7 +2349,7 @@ No symbol selected: answer key does nothing</pre>
       if(playerLocked(player)) return;
       if(player.selectedSymbolId == null) return;
       const shared = sharedSymbolIds(player.card, game.middle)[0];
-      const playerName = which === "p1" ? "Player 1" : "Player 2";
+      const playerName = displayPlayerName(which);
       if(player.selectedSymbolId === shared){
         const scoringCardEl = player.cardEl;
         const scoringCard = player.card;
@@ -1874,7 +2375,7 @@ No symbol selected: answer key does nothing</pre>
           promotePreloadedCard(which, null, null);
           updateScores();
           hideStartOverlay();
-          setStatus(`${playerName} wins! Final score ${game.p1.score}–${game.p2.score}.`);
+          setStatus(`${playerName} wins! Final score ${displayScore(game)}.`);
           setTimeout(() => showWin(which), Math.max(360, flightMs + 120));
         } else {
           player.card = nextCard;
@@ -1989,14 +2490,7 @@ No symbol selected: answer key does nothing</pre>
       else box.innerHTML = `<strong style="color:#ef4444">Problems found.</strong><br>${result.problems.slice(0,8).join("<br>")}`;
     });
     document.getElementById("startGame").addEventListener("click", () => setupGame(false));
-    document.getElementById("middleStart").addEventListener("click", () => {
-      if(game.ended){
-        setupGame(false);
-        requestAnimationFrame(beginCountdown);
-      } else {
-        beginCountdown();
-      }
-    });
+    document.getElementById("middleStart").addEventListener("click", handleStartPressed);
     window.addEventListener("resize", () => {
       if(game.counting) positionCountdown();
       if(!document.getElementById("startOverlay").classList.contains("hidden")) positionStartOverlay();
