@@ -47,6 +47,9 @@ async function layoutMetrics(page) {
     const guides = [...document.querySelectorAll(".game-screen .play-guide:not(.hidden-guide)")]
       .filter((guide) => getComputedStyle(guide).display !== "none" && Number(getComputedStyle(guide).opacity) > 0.05)
       .map(rectPayload);
+    const hudControls = [...document.querySelectorAll(".game-screen .hud-buttons button, .game-screen .scorepill")]
+      .filter((el) => getComputedStyle(el).display !== "none" && Number(getComputedStyle(el).opacity) > 0.05)
+      .map(rectPayload);
     const activeCards = [...document.querySelectorAll(".active-player-card")].map(rectPayload);
     const piles = [...document.querySelectorAll(".game-screen .card-pile")].map((pile) => {
       const payload = rectPayload(pile);
@@ -75,12 +78,12 @@ async function layoutMetrics(page) {
       };
     });
     const middle = document.querySelector(".middle-zone .match-card");
-    return { viewport, cards, labels, cooldowns, guides, activeCards, piles, middle: middle ? rectPayload(middle) : null };
+    return { viewport, cards, labels, cooldowns, guides, hudControls, activeCards, piles, middle: middle ? rectPayload(middle) : null };
   });
 }
 
 function hasClipped(metrics) {
-  return [...metrics.cards, ...metrics.labels, ...metrics.cooldowns, ...metrics.guides, ...metrics.piles].some((item) => item.clipped);
+  return [...metrics.cards, ...metrics.labels, ...metrics.cooldowns, ...metrics.guides, ...metrics.hudControls, ...metrics.piles].some((item) => item.clipped);
 }
 
 function hasBadPile(metrics) {
@@ -132,6 +135,18 @@ async function run() {
     const middle = document.querySelector("#middleSlot .card-back");
     const br = startButton.getBoundingClientRect();
     const mr = middle ? middle.getBoundingClientRect() : null;
+    const hud = document.querySelector(".game-hud");
+    const hudStyle = getComputedStyle(hud);
+    const status = document.getElementById("gameStatus");
+    const statusStyle = getComputedStyle(status);
+    const cardsButton = document.getElementById("exitGame");
+    const howButton = document.getElementById("showInstructions");
+    const leftScore = document.getElementById("p2Scorepill");
+    const rightScore = document.getElementById("p1Scorepill");
+    const cb = cardsButton.getBoundingClientRect();
+    const hb = howButton.getBoundingClientRect();
+    const ls = leftScore.getBoundingClientRect();
+    const rs = rightScore.getBoundingClientRect();
     return {
       gameVisible: !gameTab.classList.contains("hidden"),
       bodyGameActive: document.body.classList.contains("game-active"),
@@ -142,6 +157,13 @@ async function run() {
       noGameGuide: !document.querySelector("#tab-game .guide-card, #tab-game .play-guide, #tab-game #guideMatch"),
       howToPlayNav: document.querySelector('[data-tab="instructions"]')?.textContent.trim() === "How to play",
       howToPlayHud: document.getElementById("showInstructions")?.textContent.trim() === "How to play",
+      noTopRestart: !document.getElementById("startGame") && ![...document.querySelectorAll("#tab-game button")].some((button) => button.textContent.trim() === "Start / restart"),
+      statusHidden: status.textContent.trim() === "" && statusStyle.display === "none",
+      noStartInstruction: !document.body.innerText.includes("Press START on the middle card. Player 1 uses WASD. Player 2 uses arrows."),
+      hudUnframed: hudStyle.backgroundColor === "rgba(0, 0, 0, 0)" && hudStyle.borderTopWidth === "0px" && hudStyle.boxShadow === "none",
+      navStacked: Math.abs(cb.left - hb.left) < 3 && hb.top > cb.bottom - 1,
+      navLeftBelowScores: cb.left < 34 && cb.top > Math.min(ls.bottom, rs.bottom) - 2,
+      scoreEdges: ls.left <= 32 && innerWidth - rs.right <= 32,
       noInstructionsText: ![...document.querySelectorAll("button")].some((button) => button.textContent.trim() === "Instructions"),
       leftLabel: document.querySelector("#p2Scorepill .score-label")?.textContent.trim(),
       rightLabel: document.querySelector("#p1Scorepill .score-label")?.textContent.trim(),
@@ -475,7 +497,8 @@ async function run() {
             };
           })(),
           running: game.running,
-          counting: game.counting
+          counting: game.counting,
+          statusText: document.getElementById("gameStatus").textContent.trim()
         });
         resolve();
       }, ms);
@@ -973,7 +996,7 @@ async function run() {
   const visibleColor = (value, rgb) => value.includes(rgb) && !value.endsWith(", 0)") && !value.endsWith(", 0.0)");
 
   if (errors.length) process.exitCode = 1;
-  if (!initialState.gameVisible || !initialState.bodyGameActive || initialState.activeTab !== "game" || !initialState.startVisible || initialState.startText !== "START" || !initialState.buttonRound || !initialState.noGameGuide || !initialState.howToPlayNav || !initialState.howToPlayHud || !initialState.noInstructionsText || initialState.leftLabel !== "P1 · WASD" || initialState.rightLabel !== "P2 · ARROWS" || !initialState.leftPlayerHead.includes("Player 1") || !initialState.rightPlayerHead.includes("Player 2") || !initialState.middleBack || !initialState.noBackMark || initialState.buttonCenterDelta > 5 || initialState.running || initialState.counting || initialState.ended || hasClipped(initialLayout)) process.exitCode = 1;
+  if (!initialState.gameVisible || !initialState.bodyGameActive || initialState.activeTab !== "game" || !initialState.startVisible || initialState.startText !== "START" || !initialState.buttonRound || !initialState.noGameGuide || !initialState.howToPlayNav || !initialState.howToPlayHud || !initialState.noTopRestart || !initialState.statusHidden || !initialState.noStartInstruction || !initialState.hudUnframed || !initialState.navStacked || !initialState.navLeftBelowScores || !initialState.scoreEdges || !initialState.noInstructionsText || initialState.leftLabel !== "P1 · WASD" || initialState.rightLabel !== "P2 · ARROWS" || !initialState.leftPlayerHead.includes("Player 1") || !initialState.rightPlayerHead.includes("Player 2") || !initialState.middleBack || !initialState.noBackMark || initialState.buttonCenterDelta > 5 || initialState.running || initialState.counting || initialState.ended || hasClipped(initialLayout)) process.exitCode = 1;
   if (!instructionsState.visible || instructionsState.activeTab !== "instructions" || instructionsState.guideCards !== 5 || instructionsState.guideExampleCards < 2 || instructionsState.guideControlCards < 6 || instructionsState.overviewCards !== 3 || !instructionsState.allInstructionCardsFull || instructionsState.highlightedSymbols < 5 || instructionsState.altHighlightedSymbols < 2 || instructionsState.wrongSymbols < 1 || instructionsState.motionPaths !== 0 || instructionsState.keyCount < 10 || instructionsState.dotCount !== 0 || instructionsState.cursorDots < 5 || !instructionsState.cooldownDemo || !instructionsState.cooldownTextClean || !instructionsState.cooldownNeutral || instructionsState.backButtons !== 1 || instructionsState.titleSize < 46 || instructionsState.surfaceHeight < 900 || instructionsState.playerOrder !== "wasd,arrows" || instructionsState.answerOrder !== "space,enter" || !instructionsState.overviewLabels.includes("Player 1 - WASD") || !instructionsState.overviewLabels.includes("Player 2 - Arrows") || new Set(instructionsState.overviewSharedIds).size !== 2 || new Set(instructionsState.overviewColors).size !== 2 || instructionsState.step2Highlights !== 0 || instructionsState.wasdGrid !== 3 || instructionsState.arrowGrid !== 3 || instructionsState.idleMotionAnimation !== "none" || instructionsState.idleAnswerAnimation !== "none" || instructionsState.idleCooldownAnimation !== "none" || instructionsState.idleCooldownCorrectAnimation !== "none" || !instructionsState.stacked) process.exitCode = 1;
   if (motionHoverState.cursorAnimation !== "none" || JSON.stringify(motionHoverState.activeWasdKeys) !== JSON.stringify(["left", "up"]) || motionHoverState.activeArrowKeysBeforeHover.length !== 0 || JSON.stringify(motionHoverState.liveWasdClasses) !== JSON.stringify(["A", "W"]) || !phaseSamplesOk) process.exitCode = 1;
   if (JSON.stringify(arrowMotionHoverState.activeArrowKeys) !== JSON.stringify(["left", "up"]) || JSON.stringify(arrowMotionHoverState.liveArrowClasses) !== JSON.stringify(["←", "↑"]) || !arrowMotionHoverState.wasdStopped) process.exitCode = 1;
@@ -994,6 +1017,7 @@ async function run() {
   if (answerTiming > 10 || winTiming > 35) process.exitCode = 1;
   const expectedCountdown = ["3", "2", "2", "1", "1", "GO!", "GO!", ""];
   if (countdownChecks.some((sample, idx) => sample.text !== expectedCountdown[idx])) process.exitCode = 1;
+  if (countdownChecks.some((sample) => sample.statusText !== "")) process.exitCode = 1;
   if (countdownChecks.slice(0, 7).some((sample) => !sample.visible || sample.inStartOverlay || !sample.middleBack || sample.countdownRect.width < 130 || sample.countdownRect.height < 130)) process.exitCode = 1;
   if (countdownChecks.slice(0, 7).some((sample) => sample.countdownPosition.xDelta > 8 || sample.countdownPosition.overlapsP1 || sample.countdownPosition.overlapsP2)) process.exitCode = 1;
   const countdownXDrift = Math.max(...countdownChecks.slice(0, 7).map((sample) => sample.countdownPosition.centerX)) - Math.min(...countdownChecks.slice(0, 7).map((sample) => sample.countdownPosition.centerX));
